@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        #date-range-picker {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: inherit;
+            width: 100%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-container">
+        <div class="logo-row">
+            <a href="/">
+            <div class="logo-box">
+                <img src="/logo.svg" alt="ФИТОФАРМ" style="height: 6vh;">
+            </div>
+        </a>
+        </div>
+
+        <div class="filter-row">
+            <div class="dropdown">
+                <div class="input-capsule">
+                    <%= (activePeriod === 'today') ? 'Сегодня' : 
+                        (activePeriod === 'yesterday') ? 'Вчера' :
+                        (activePeriod === '2days') ? '2 дня' :
+                        (activePeriod === 'week') ? 'Неделя' :
+                        (activePeriod === 'month') ? 'Месяц' :
+                        (activePeriod === '6months') ? '6 месяцев' : 'Год' %> ▾
+                </div>
+                <div class="dropdown-content">
+                    <a href="/?period=today">Сегодня</a>
+                    <a href="/?period=yesterday">Вчера</a>
+                    <a href="/?period=2days">2 дня</a>
+                    <a href="/?period=week">Неделя</a>
+                    <a href="/?period=month">Месяц</a>
+                    <a href="/?period=6months">6 месяцев</a>
+                    <a href="/?period=year">Год</a>
+                </div>
+            </div>
+            
+            <div class="input-capsule">
+                <input type="text" id="date-range-picker" placeholder="с 1.01 по 1.01" value="<%= typeof currentRange !== 'undefined' ? currentRange : '' %>">
+            </div>
+            <div class="input-capsule" style="color: #ccc;">Город</div>
+            <div class="input-capsule" style="color: #ccc;">Адрес</div>
+            <div class="input-capsule" style="margin-left: auto;">≡ Фильтр</div>
+        </div>
+    </div>
+
+    <div class="main-layout">
+
+        <div class="grid-system data-row-container">
+
+            <div class="data-main-card table_header" >
+                <div class="data-main-card_border table_header">
+                    <div class="address-cell">
+                        <p class="address-cell-adress" style="color: rgb(29, 29, 27);">
+                            Анапа
+                        </p>
+                    </div>
+
+                    <p>Продажа</p>
+                    <p>Отказ</p>
+                    <p>Нераспознанный</p>
+                </div>
+            </div>
+
+            <div class="total-card" style="background-color: rgb(223, 225, 229); border-radius: 5px; font-size: 1.3vw; color: rgb(178, 178, 178); font-weight: 400;">
+                Итог
+            </div>
+
+        </div>
+
+        <% data.forEach(item=> { %>
+            <div class="grid-system data-row-container">
+
+                <div class="data-main-card" onclick="window.location.href='/details/<%= item.id %>'">
+                    <div class="data-main-card_border">
+                    <div class="address-cell">
+                        <b style="font-size: 0.9vw;">
+                            <%= item.address %>
+                        </b>
+                    </div>
+
+                    <div class="pill green">✓ <%= item.sales %>
+                    </div>
+                    <div class="pill red">× <%= item.refusals %>
+                    </div>
+                    <div class="pill grey">① <%= item.unknown %>
+                    </div>
+                </div>
+                </div>
+
+                <div class="total-card">
+                    <%= item.sales + item.refusals + item.unknown %>
+                </div>
+
+            </div>
+            <% }) %>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script> <script>
+        flatpickr("#date-range-picker", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            locale: "ru",
+            onClose: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    const start = instance.formatDate(selectedDates[0], "Y-m-d");
+                    const end = instance.formatDate(selectedDates[1], "Y-m-d");
+                    window.location.href = `/?startDate=${start}&endDate=${end}`;
+                }
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdown = document.querySelector('.dropdown');
+            const trigger = dropdown.querySelector('.input-capsule');
+            trigger.addEventListener('click', function(event) {
+                event.stopPropagation();
+                dropdown.classList.toggle('active');
+            });
+            document.addEventListener('click', function(event) {
+                if (!dropdown.contains(event.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

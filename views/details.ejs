@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Детали адреса</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        #details-date-picker {
+            border: none; outline: none; background: transparent;
+            font-family: inherit; font-size: 0.9vw; width: 100%; cursor: pointer;
+        }
+        /* Стиль для активной кнопки навигации диалога */
+        .dialog-nav-btn.active-dialog {
+            background: #e9eaec;
+            font-weight: bold;
+            border-left: 4px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div style="padding: 2vh 2vw;">
+            <a href="/"><img src="/logo.svg" alt="ФИТОФАРМ" style="height: 4vh;"></a>
+        </div>
+    </div>
+
+    <div class="details-container">
+        
+        <div class="object-header">
+            <div class="object-title-box">
+                <span class="object-label">Адрес</span>
+                <span class="object-name"><%= item.city %> <br> <%= item.address %></span>
+            </div>
+    
+            <div class="header-stats">
+                <a href="/details/<%= item.id %>?type=sales" 
+                   class="stat-badge <%= activeType === 'sales' ? 'active' : '' %>" 
+                   style="text-decoration: none; color: inherit;">
+                    <span class="label">Продажа</span>
+                    <span class="value" style="color:#27ae60;">✓ <%= item.sales %></span>
+                </a>
+
+                <a href="/details/<%= item.id %>?type=refusals" 
+                   class="stat-badge <%= activeType === 'refusals' ? 'active' : '' %>"
+                   style="text-decoration: none; color: inherit;">
+                    <span class="label">Отказы</span>
+                    <span class="value" style="color:#c0392b;">× <%= item.refusals %></span>
+                </a>
+
+                <a href="/details/<%= item.id %>?type=unknown" 
+                   class="stat-badge <%= activeType === 'unknown' ? 'active' : '' %>"
+                   style="text-decoration: none; color: inherit;">
+                    <span class="label">Нераспозн</span>
+                    <span class="value" style="color:#7f8c8d;">ⓘ <%= item.unknown %></span>
+                </a>
+
+                <div class="stat-badge">
+                    <span class="label">Итого</span>
+                    <span class="value">127</span>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5vh; align-items: flex-end;">
+                <div class="capsule" style="background:white; border:1px solid #ccc; padding: 0.6vh 1vw; min-width: 12vw;">
+                    <input type="text" id="details-date-picker" placeholder="Выбрать даты" value="<%= currentRange %>">
+                </div>
+            </div>
+        </div>
+
+        <div class="details-grid">
+            
+            <div class="dialog-sidebar">
+                <% if(dialogues.length === 0) { %>
+                    <div style="color: #999; text-align: center; margin-top: 2vh;">Нет диалогов</div>
+                <% } %>
+
+                <% dialogues.forEach(dialog => { %>
+                    <a href="/details/<%= item.id %>?type=<%= activeType %>&dialogId=<%= dialog.id %>" 
+                       class="dialog-nav-btn <%= (activeDialog && activeDialog.id === dialog.id) ? 'active-dialog' : '' %>"
+                       style="text-decoration: none; color: inherit;">
+                        <%= dialog.title %> 
+                        <span style="font-size:0.7vw; color: #888;"><%= dialog.startTime %></span>
+                    </a>
+                <% }) %>
+            </div>
+
+            <div class="transcript-area">
+                <% if (activeDialog) { %>
+                    <div style="margin-bottom: 2vh; border-bottom: 1px solid #eee; padding-bottom: 1vh;">
+                        <span style="font-weight: bold; font-size: 1.1vw;"><%= activeDialog.title %></span>
+                        <span style="color: #888; font-size: 0.9vw; margin-left: 1vw;">
+                            (<%= activeDialog.status === 'sales' ? 'Продажа' : activeDialog.status === 'refusals' ? 'Отказ' : 'Нераспознан' %>)
+                        </span>
+                    </div>
+                    <pre style="white-space: pre-wrap; font-family: inherit; color: #444; font-size: 0.9vw;"><%= activeDialog.text %></pre>
+                <% } else { %>
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #999;">
+                        Выберите фильтр или диалог
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="actions-sidebar">
+                <div class="tabs-container">
+                    <button class="tab-btn active">Краткий отчет</button>
+                    <button class="tab-btn">Заметки</button>
+                </div>
+
+                <div class="report-body">
+                    <p><strong>Резюме диалога:</strong></p>
+                    <p style="line-height: 1.6; color: #555;">
+                        <%= activeDialog ? activeDialog.summary : '...' %>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+    <script>
+        flatpickr("#details-date-picker", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "j.m", 
+            locale: "ru",
+            onClose: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    const start = instance.formatDate(selectedDates[0], "Y-m-d");
+                    const end = instance.formatDate(selectedDates[1], "Y-m-d");
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('startDate', start);
+                    currentUrl.searchParams.set('endDate', end);
+                    window.location.href = currentUrl.toString();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
