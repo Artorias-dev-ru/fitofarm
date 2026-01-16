@@ -32,9 +32,9 @@ async function initDB() {
     await sequelize.sync({ force: true });
 
     const pharmacies = await Record.bulkCreate([
-        { city: "Анапа", address: "Владимирская 155", sales: 40, refusals: 78, unknown: 9, date: '2026-01-15' },
-        { city: "Анапа", address: "Тургенева 255", sales: 20, refusals: 30, unknown: 5, date: '2026-01-14' },
-        { city: "Анапа", address: "Гоголя 983", sales: 10, refusals: 10, unknown: 1, date: '2026-01-08' }
+        { city: "Анапа", address: "Владимирская 155", date: '2026-01-15' },
+        { city: "Анапа", address: "Тургенева 255", date: '2026-01-14' },
+        { city: "Анапа", address: "Гоголя 983", date: '2026-01-08' }
     ]);
 
     const dialogsData = [

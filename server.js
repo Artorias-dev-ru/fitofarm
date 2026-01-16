@@ -54,12 +54,28 @@ app.get('/', checkAuth, async (req, res) => {
         }
     }
 
-    let order = [['address', 'ASC']];
-    if (sortType === 'sales') order = [['sales', 'DESC']];
-    else if (sortType === 'refusals') order = [['refusals', 'DESC']];
-
     try {
-        const viewData = await Record.findAll({ where: whereClause, order: order });
+        const recordsRaw = await Record.findAll({ 
+            where: whereClause,
+            include: [Dialog]
+        });
+
+        const viewData = recordsRaw.map(rec => {
+            const plainRec = rec.get({ plain: true });
+            plainRec.sales = plainRec.Dialogs.filter(d => d.status === 'sales').length;
+            plainRec.refusals = plainRec.Dialogs.filter(d => d.status === 'refusals').length;
+            plainRec.unknown = plainRec.Dialogs.filter(d => d.status === 'unknown').length;
+            return plainRec;
+        });
+
+        if (sortType === 'sales') {
+            viewData.sort((a, b) => b.sales - a.sales);
+        } else if (sortType === 'refusals') {
+            viewData.sort((a, b) => b.refusals - a.refusals);
+        } else {
+            viewData.sort((a, b) => a.address.localeCompare(b.address));
+        }
+
         const currentRange = startDate && endDate ? `${startDate} to ${endDate}` : '';
 
         res.render('dashboard', {
@@ -79,11 +95,17 @@ app.get('/details/:id', checkAuth, async (req, res) => {
         const { startDate, endDate, type, dialogId } = req.query;
         const recordId = req.params.id;
 
-        const item = await Record.findByPk(recordId);
-        if (!item) return res.redirect('/');
+        const itemRaw = await Record.findByPk(recordId);
+        if (!itemRaw) return res.redirect('/');
+        
+        const allDialogs = await Dialog.findAll({ where: { RecordId: recordId } });
+
+        const item = itemRaw.get({ plain: true });
+        item.sales = allDialogs.filter(d => d.status === 'sales').length;
+        item.refusals = allDialogs.filter(d => d.status === 'refusals').length;
+        item.unknown = allDialogs.filter(d => d.status === 'unknown').length;
 
         let dialogWhere = { RecordId: recordId };
-
         if (type) {
             dialogWhere.status = type;
         }
