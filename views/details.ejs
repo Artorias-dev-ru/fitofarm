@@ -79,8 +79,8 @@
                 <% dialogues.forEach(dialog => { %>
                     <a href="/details/<%= item.id %>?type=<%= activeType %>&dialogId=<%= dialog.id %>" 
                        class="dialog-nav-btn <%= (activeDialog && activeDialog.id === dialog.id) ? 'active-dialog' : '' %>"
-                       style="text-decoration: none; color: inherit;">
-                        <%= dialog.title %> 
+                       style="text-decoration: none; color: inherit; display: flex; justify-content: space-between; align-items: center;">
+                        <span><%= dialog.title %></span>
                         <span style="font-size:0.7vw; color: #888;"><%= dialog.startTime %></span>
                     </a>
                 <% }) %>
