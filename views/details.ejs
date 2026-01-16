@@ -10,7 +10,6 @@
             border: none; outline: none; background: transparent;
             font-family: inherit; font-size: 0.9vw; width: 100%; cursor: pointer;
         }
-        /* Стиль для активной кнопки навигации диалога */
         .dialog-nav-btn.active-dialog {
             background: #e9eaec;
             font-weight: bold;
@@ -55,10 +54,12 @@
                     <span class="value" style="color:#7f8c8d;">ⓘ <%= item.unknown %></span>
                 </a>
 
-                <div class="stat-badge">
+                <a href="/details/<%= item.id %>" 
+                   class="stat-badge <%= !activeType ? 'active' : '' %>"
+                   style="text-decoration: none; color: inherit;">
                     <span class="label">Итого</span>
-                    <span class="value">127</span>
-                </div>
+                    <span class="value"><%= item.sales + item.refusals + item.unknown %></span>
+                </a>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 0.5vh; align-items: flex-end;">
@@ -93,7 +94,7 @@
                             (<%= activeDialog.status === 'sales' ? 'Продажа' : activeDialog.status === 'refusals' ? 'Отказ' : 'Нераспознан' %>)
                         </span>
                     </div>
-                    <pre style="white-space: pre-wrap; font-family: inherit; color: #444; font-size: 0.9vw;"><%= activeDialog.text %></pre>
+                    <pre style="white-space: pre-wrap; font-family: inherit; color: #444; font-size: 0.9vw; line-height: 1.6;"><%= activeDialog.text %></pre>
                 <% } else { %>
                     <div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #999;">
                         Выберите фильтр или диалог
