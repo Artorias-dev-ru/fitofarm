@@ -22,7 +22,8 @@ const Dialog = sequelize.define('Dialog', {
     date: { type: DataTypes.DATEONLY, allowNull: false },
     endTime: DataTypes.STRING,
     number: { type: DataTypes.INTEGER, allowNull: false },
-    note: { type: DataTypes.TEXT }
+    note: { type: DataTypes.TEXT },
+    audioUrl: { type: DataTypes.STRING }
 });
 
 Record.hasMany(Dialog);
@@ -32,69 +33,97 @@ async function initDB() {
     console.log("checking database");
     const start = Date.now();
     await sequelize.sync({ alter: true });
+    
     const count = await Dialog.count();
     if (count > 0) {
         console.log(`database already contains ${count} dialogs parsing skipped data preserved`);
         return;
     }
+
     console.log("database is empty starting initial load from files");
     const dataDir = path.join(__dirname, 'data');
     if (!fs.existsSync(dataDir)) {
         console.log("data folder not found");
         return;
     }
-    const pharmacyFolders = fs.readdirSync(dataDir);
+
+    const pharmacyFolders = fs.readdirSync(dataDir); 
+    console.log(`Found pharmacies: ${pharmacyFolders.join(', ')}`);
+
     for (const phId of pharmacyFolders) {
         const phPath = path.join(dataDir, phId);
         if (!fs.lstatSync(phPath).isDirectory()) continue;
+
         const [record] = await Record.findOrCreate({
             where: { address: phId === "1" ? "Владимирская 114" : `аптека № ${phId}` },
             defaults: { city: "Анапа" }
         });
+
         let dialogCounter = 1;
         let dialogsBatch = [];
-        const groupFolders = fs.readdirSync(phPath).sort();
+
+        const groupFolders = fs.readdirSync(phPath).sort(); 
+        
         for (const groupFolder of groupFolders) {
             const groupPath = path.join(phPath, groupFolder);
             if (!fs.lstatSync(groupPath).isDirectory()) continue;
+
             const outFolders = fs.readdirSync(groupPath);
+
             for (const outFolder of outFolders) {
                 const outPath = path.join(groupPath, outFolder);
                 if (!fs.lstatSync(outPath).isDirectory()) continue;
+
                 const folderParts = outFolder.split('_');
                 if (folderParts.length < 3) continue;
-                const dateRaw = folderParts[1];
-                const timeRaw = folderParts[2];
+
+                const dateRaw = folderParts[1]; 
+                const timeRaw = folderParts[2]; 
+
                 const [dd, mm, yyyy] = dateRaw.split('-');
-                const dbDate = `${yyyy}-${mm}-${dd}`;
-                const baseHour = timeRaw.split('-')[0];
+                const dbDate = `${yyyy}-${mm}-${dd}`; 
+                const baseHour = timeRaw.split('-')[0]; 
+
                 const dialogFolders = fs.readdirSync(outPath);
+
                 for (const dFolder of dialogFolders) {
                     const dPath = path.join(outPath, dFolder);
                     if (!fs.lstatSync(dPath).isDirectory()) continue;
+
                     const files = fs.readdirSync(dPath);
                     const txtFile = files.find(f => f.toLowerCase().endsWith('.txt'));
                     const jsonFile = files.find(f => f.toLowerCase().endsWith('.json'));
+                    const audioFile = files.find(f => ['.mp3', '.wav', '.ogg', '.m4a'].some(ext => f.toLowerCase().endsWith(ext)));
+
                     if (txtFile && jsonFile) {
                         try {
                             const txtContent = fs.readFileSync(path.join(dPath, txtFile), 'utf-8');
                             const jsonData = JSON.parse(fs.readFileSync(path.join(dPath, jsonFile), 'utf-8'));
+
                             const dParts = dFolder.split('_');
-                            let finalTime = `${baseHour}:00`;
+                            let finalTime = `${baseHour}:00`; 
                             if (dParts.length > 1 && dParts[1].length >= 4) {
                                 finalTime = `${baseHour}:${dParts[1].substring(2, 4)}`;
                             }
-                            let status = 'refusals';
-                            if (dFolder.toLowerCase().includes('bad')) status = 'unknown';
-                            else if (jsonData.metrics && jsonData.metrics.sale_occurred === true) status = 'sales';
+
+                            let status = 'refusals'; 
+                            if (dFolder.toLowerCase().includes('bad')) status = 'unknown'; 
+                            else if (jsonData.metrics && jsonData.metrics.sale_occurred === true) status = 'sales'; 
+
                             let summaryText = "";
                             if (jsonData.metrics && jsonData.metrics.summary) {
                                 summaryText = jsonData.metrics.summary;
                             } else if (jsonData.summary) {
                                 summaryText = jsonData.summary;
                             }
+
+                            let audioWebPath = null;
+                            if (audioFile) {
+                                audioWebPath = `/data/${phId}/${groupFolder}/${outFolder}/${dFolder}/${audioFile}`;
+                            }
+
                             dialogsBatch.push({
-                                title: `dialog ${dialogCounter}`,
+                                title: `dialog ${dialogCounter}`, 
                                 number: dialogCounter,
                                 status: status,
                                 text: txtContent,
@@ -102,21 +131,24 @@ async function initDB() {
                                 startTime: finalTime,
                                 date: dbDate,
                                 RecordId: record.id,
-                                note: ""
+                                note: "",
+                                audioUrl: audioWebPath
                             });
                             dialogCounter++;
+
                         } catch (err) {
-                            console.log(`error parsing dialog ${dFolder} ${err.message}`);
+                            console.log(`Error parsing dialog ${dFolder}: ${err.message}`);
                         }
                     }
                 }
             }
         }
+
         if (dialogsBatch.length > 0) {
             await Dialog.bulkCreate(dialogsBatch);
             console.log(`loaded ${dialogsBatch.length} dialogs for ${record.address}`);
         } else {
-            console.log(`no dialogs found for ${record.address} folder ${phId}`);
+            console.log(`No dialogs found for ${record.address}`);
         }
     }
     console.log(`initial load completed took ${(Date.now() - start) / 1000} seconds`);

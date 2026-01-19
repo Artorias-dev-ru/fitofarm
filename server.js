@@ -8,6 +8,7 @@ const { Record, Dialog, Op, initDB } = require('./db');
 const app = express();
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/data', express.static(path.join(__dirname, 'data')));
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -33,12 +34,12 @@ function getDateWhere(period, startDate, endDate) {
     }
     if (period === 'today') return today;
     if (period === 'yesterday') return moment().subtract(1, 'days').format('YYYY-MM-DD');
-    if (period === '2days') return { [Op.gte]: moment().subtract(1, 'days').format('YYYY-MM-DD') };
+    if (period === '2days') return { [Op.gte]: moment().subtract(1, 'days').format('YYYY-MM-DD') }; 
     if (period === 'week') return { [Op.gte]: moment().subtract(7, 'days').format('YYYY-MM-DD') };
     if (period === 'month') return { [Op.gte]: moment().subtract(1, 'months').format('YYYY-MM-DD') };
     if (period === '6months') return { [Op.gte]: moment().subtract(6, 'months').format('YYYY-MM-DD') };
     if (period === 'year') return { [Op.gte]: moment().subtract(1, 'years').format('YYYY-MM-DD') };
-    return { [Op.not]: null };
+    return { [Op.not]: null }; 
 }
 
 app.post('/api/save-note', checkAuth, async (req, res) => {
@@ -47,7 +48,7 @@ app.post('/api/save-note', checkAuth, async (req, res) => {
         await Dialog.update({ note: note }, { where: { id: dialogId } });
         res.json({ success: true });
     } catch (err) {
-        console.error("error saving note");
+        console.error("Ошибка сохранения заметки:", err);
         res.status(500).json({ success: false });
     }
 });
@@ -62,7 +63,7 @@ app.get('/', checkAuth, async (req, res) => {
             include: [{
                 model: Dialog,
                 where: { date: dateWhere },
-                required: true
+                required: true 
             }]
         });
 
@@ -94,8 +95,8 @@ app.get('/', checkAuth, async (req, res) => {
             currentRange: currentRange
         });
     } catch (err) {
-        console.error("error loading dashboard");
-        res.status(500).send("error loading dashboard");
+        console.error(err);
+        res.status(500).send("Ошибка сервера: " + err.message);
     }
 });
 
@@ -103,6 +104,7 @@ app.get('/details/:id', checkAuth, async (req, res) => {
     try {
         const { startDate, endDate, type, dialogId, period, tab } = req.query;
         const recordId = req.params.id;
+        
         const activePeriod = period || (startDate ? '' : 'year');
         const dateWhere = getDateWhere(activePeriod, startDate, endDate);
 
@@ -125,7 +127,7 @@ app.get('/details/:id', checkAuth, async (req, res) => {
 
         const dialogues = await Dialog.findAll({
             where: listWhere,
-            order: [['id', 'ASC']]
+            order: [['id', 'ASC']] 
         });
 
         let activeDialog = null;
@@ -146,12 +148,12 @@ app.get('/details/:id', checkAuth, async (req, res) => {
             activeDialog: activeDialog,
             activeType: type || '',
             currentRange: currentRange,
-            activeTab: tab || 'summary'
+            activeTab: tab || 'summary' 
         });
 
     } catch (err) {
-        console.error("error loading details");
-        res.status(500).send("error loading details");
+        console.error(err);
+        res.status(500).send("Ошибка при загрузке деталей");
     }
 });
 
@@ -165,14 +167,15 @@ app.post('/login', (req, res) => {
         req.session.isAuthenticated = true;
         res.redirect('/');
     } else {
-        res.render('login', { error: 'invalid password' });
+        res.render('login', { error: 'Неверный пароль' });
     }
 });
 
+console.log("Ждем загрузки данных...");
 initDB().then(() => {
     app.listen(3000, () => {
-        console.log('server started on port 3000');
+        console.log('Server started on port 3000 (Data fully loaded)');
     });
 }).catch(err => {
-    console.error("error initializing database");
+    console.error("Ошибка инициализации БД:", err);
 });
