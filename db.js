@@ -91,7 +91,7 @@ async function initDB() {
                             number: dialogCounter,
                             status: status,
                             text: txtContent,
-                            summary: `quality ${jsonData.quality} turns ${jsonData.num_turns}`,
+                            summary: `Качество ${jsonData.quality} Фраз ${jsonData.num_turns}`,
                             startTime: finalTime,
                             date: dbDate,
                             RecordId: record.id,
