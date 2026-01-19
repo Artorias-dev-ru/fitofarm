@@ -6,8 +6,8 @@
 </head>
 <body class="center">
     <div class="login-box">
-        <h2>Фитофарм</h2>
-        <% if(error) { %> <p style="color: var(--red)"><%= error %></p> <% } %>
+        <img src="/logo.svg" alt="ФИТОФАРМ">
+        <% if(error) { %> <p><%= error %></p> <% } %>
         <form action="/login" method="POST" class="flex-col" style="gap:1vh;">
             <input type="password" name="password" placeholder="Введите пароль (admin)">
             <button type="submit">Войти</button>

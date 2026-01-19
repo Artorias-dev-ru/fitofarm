@@ -16,7 +16,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: var(--bg-main);
+    background-color: #ededed;
     color: var(--text-dark);
     font-family: 'Segoe UI', Roboto, sans-serif;
     font-size: 0.85vw;
@@ -168,7 +168,9 @@ body {
     border-radius: 0.6vw;
     font-weight: bold;
     font-size: 1.7vw;
-    padding: 5px;
+    padding: 5px 10px;
+    min-width: 70px;
+    gap: 5px;
 }
 .data-row-container {
     transition: all 0.2s;
@@ -452,7 +454,6 @@ body {
     background: white;
     border-radius: 0.8vw;
     padding: 2vw;
-    overflow-y: auto;
     box-shadow: 0 2px 10px rgba(0,0,0,0.03);
     position: relative;
 }
@@ -473,29 +474,12 @@ body {
     border: 1px solid #eee;
 }
 
-.tabs-container {
-    background: #e9eaec;
-    padding: 0.3vh;
-    border-radius: 0.4vw;
-    display: flex;
-}
-
-.tab-btn {
-    flex: 1;
-    padding: 1vh;
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 0.8vw;
-    border-radius: 0.3vw;
-}
-
 .tab-btn.active { background: white; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
 .report-body {
     background: white;
     padding: 1.5vw;
-    border-radius: 0.6vw;
+    border-radius: 0px 10px 10px 10px;
     font-size: 0.85vw;
     line-height: 1.6;
     overflow-y: auto;
@@ -514,6 +498,8 @@ body {
 .flatpickr-day.inRange {
     background: #f0f0f0 !important;
     box-shadow: -5px 0 0 #f0f0f0, 5px 0 0 #f0f0f0 !important;
+    border-color: transparent !important;
+    color: var(--text-dark) !important;
 }
 .dropdown {
     position: relative;
@@ -553,50 +539,37 @@ body {
 .dropdown.active .input-capsule {
     background-color: #e9eaec;
 }
-/* =========================================
-   СТИЛИ ДЛЯ КАЛЕНДАРЯ (FLATPICKR) - ФИНАЛЬНЫЕ
-   ========================================= */
 
-/* 1. Стилизация самого поля ввода */
 #date-range-picker,
 #date-picker,
 .flatpickr-input {
-    border: none !important;        /* Убираем рамку */
-    outline: none !important;       /* Убираем обводку при клике */
-    background: transparent !important; /* Прозрачный фон */
-    box-shadow: none !important;    /* Убираем любые тени */
-    
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
     font-family: 'Segoe UI', Roboto, sans-serif;
-    font-size: 1vw;                 /* Размер шрифта подстраиваем под соседей */
+    font-size: 1vw;
     font-weight: 500;
     color: var(--text-dark);
-    
     width: 100%;
     height: 100%;
     cursor: pointer;
-    
-    /* Отступ слева для иконки + отступ текста */
     padding: 0 0 0 28px;
-    
-    /* Добавляем красивую иконку календаря */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: left center; /* Иконка всегда слева по центру */
-    background-size: 1.1vw; /* Размер иконки масштабируется */
+    background-position: left center;
+    background-size: 1.1vw;
 }
 
-/* Цвет плейсхолдера (подсказки) */
 .flatpickr-input::placeholder {
     color: #b2b2b2;
     opacity: 1;
 }
 
-/* Убираем стандартную обводку в некоторых браузерах */
 .flatpickr-input:focus-visible {
     outline: none;
 }
 
-/* 2. Стилизация выпадающего окна календаря */
 .flatpickr-calendar {
     font-family: 'Segoe UI', Roboto, sans-serif !important;
     border: 1px solid #e0e0e0 !important;
@@ -604,16 +577,14 @@ body {
     border-radius: 0.8vw !important;
     margin-top: 8px !important;
     background: white !important;
-    width: 320px !important; /* Фиксированная ширина для аккуратности */
+    width: 320px !important;
 }
 
-/* Стрелочка сверху календаря */
 .flatpickr-calendar::before,
 .flatpickr-calendar::after {
-    display: none !important; /* Убираем треугольник, он часто выглядит устаревшим */
+    display: none !important;
 }
 
-/* Шапка календаря (Месяц Год) */
 .flatpickr-months {
     background: transparent !important;
     padding-top: 10px !important;
@@ -627,7 +598,6 @@ body {
     font-weight: 600 !important;
 }
 
-/* Дни недели */
 .flatpickr-weekdays {
     margin-bottom: 5px !important;
 }
@@ -636,7 +606,6 @@ span.flatpickr-weekday {
     font-size: 0.9em !important;
 }
 
-/* Сетка дней */
 .flatpickr-day {
     border-radius: 6px !important;
     border: 1px solid transparent !important;
@@ -644,7 +613,6 @@ span.flatpickr-weekday {
     font-weight: 500 !important;
 }
 
-/* Выбранный диапазон (ЗЕЛЕНЫЙ БРЕНДОВЫЙ) */
 .flatpickr-day.selected, 
 .flatpickr-day.startRange, 
 .flatpickr-day.endRange {
@@ -653,67 +621,50 @@ span.flatpickr-weekday {
     color: white !important;
 }
 
-/* Промежуток (светло-зеленый) */
 .flatpickr-day.inRange {
-    background: #e8f5e9 !important; /* Очень светлый зеленый */
+    background: #e8f5e9 !important;
     box-shadow: -5px 0 0 #e8f5e9, 5px 0 0 #e8f5e9 !important;
     border-color: transparent !important;
     color: var(--text-dark) !important;
 }
 
-/* Эффект наведения */
 .flatpickr-day:hover {
     background: #f5f5f5 !important;
     border-color: #f5f5f5 !important;
 }
-/* =========================================
-   ФИНАЛЬНЫЕ СТИЛИ ДЛЯ ИНПУТА ДАТЫ
-   ========================================= */
 
-/* 1. Сбрасываем все стандартные стили браузера для инпута внутри капсулы */
 .input-capsule input,
 .input-capsule .flatpickr-input,
 #date-range-picker,
 #date-picker {
-    /* Самое важное: убираем рамки и фон */
     border: 0 !important;
     border-color: transparent !important;
     outline: none !important;
     background: transparent !important;
     box-shadow: none !important;
-    
-    /* Убираем нативные стили браузеров (черные рамки, выпуклости) */
     -webkit-appearance: none !important;
     -moz-appearance: none !important;
     appearance: none !important;
-    
-    /* Типографика */
     font-family: 'Segoe UI', Roboto, sans-serif;
-    font-size: 1.1vw; /* Размер текста как у соседей */
+    font-size: 1.2vw;
     font-weight: 500;
     color: var(--text-dark);
-    
-    /* Размеры и отступы */
     width: 100%;
     height: 100%;
-    padding: 0 0 0 28px; /* Отступ слева, чтобы текст не наезжал на иконку */
+    padding: 0 0 0 28px;
     margin: 0;
-    
-    /* Иконка календаря */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+    background-image: url("");
     background-repeat: no-repeat;
     background-position: left center;
     background-size: 1.1vw;
     cursor: pointer;
 }
 
-/* Цвет подсказки (placeholder) */
 .input-capsule input::placeholder {
     color: #b0b0b0;
     opacity: 1;
 }
 
-/* 2. Стили самого выпадающего календаря */
 .flatpickr-calendar {
     font-family: 'Segoe UI', Roboto, sans-serif !important;
     border: 1px solid #e0e0e0 !important;
@@ -723,13 +674,11 @@ span.flatpickr-weekday {
     background: white !important;
 }
 
-/* Убираем стрелочку над календарем */
 .flatpickr-calendar::before,
 .flatpickr-calendar::after {
     display: none !important;
 }
 
-/* Дни и выделение (Зеленый бренд) */
 .flatpickr-day.selected, 
 .flatpickr-day.startRange, 
 .flatpickr-day.endRange {
@@ -745,7 +694,6 @@ span.flatpickr-weekday {
     box-shadow: -5px 0 0 #e8f5e9, 5px 0 0 #e8f5e9 !important;
 }
 
-/* Ховер эффект */
 .flatpickr-day:hover {
     background: #f0f0f0 !important;
     border-color: #f0f0f0 !important;
@@ -755,11 +703,10 @@ span.flatpickr-weekday {
     font-weight: bold;
     border-left: 4px solid #333;
 }
-/* Стили для вкладок */
+
 .tab-content { display: none; height: 100%; }
 .tab-content.active { display: block; }
 
-/* Стили для текстового поля заметок */
 #note-textarea {
     width: 100%;
     height: 85%;
@@ -772,7 +719,7 @@ span.flatpickr-weekday {
     background: transparent;
     padding: 5px;
 }
-/* Кнопка сохранить */
+
 .save-btn {
     background: #333;
     color: white;
@@ -803,25 +750,11 @@ span.flatpickr-weekday {
 
 * { box-sizing: border-box; }
 
-body {
-    margin: 0;
-    padding: 0;
-    background-color: var(--bg-main);
-    color: var(--text-dark);
-    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif; /* Шрифт Inter как на макете */
-    font-size: 14px;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-/* --- HEADER --- */
 .header-section {
     background: transparent;
     padding: 15px 30px;
 }
 
-/* --- DETAILS LAYOUT --- */
 .details-container {
     padding: 0 30px 20px 30px;
     display: flex;
@@ -830,13 +763,12 @@ body {
     height: calc(100vh - 80px);
 }
 
-/* --- OBJECT HEADER (Address + Stats) --- */
 .object-header {
-    background: #e9eaec; /* Серый фон хедера как на макете */
+    background: #dfe1e5;
     border-radius: 12px;
     padding: 20px 30px;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr; /* Адрес | Статы | Дата */
+    grid-template-columns: 1fr 1fr 1fr;
     align-items: center;
     gap: 40px;
 }
@@ -865,7 +797,6 @@ body {
     color: #222;
 }
 
-/* --- STATS BADGES (Плашки статистики) --- */
 .header-stats {
     display: flex;
     gap: 45px;
@@ -894,7 +825,6 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* Заголовки над плашками (как "Продажа", "Отказы") */
 .stats-group {
     display: flex;
     flex-direction: column;
@@ -908,23 +838,22 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* Цвета плашек */
 .stat-card.sales {
-    background-color: #dbfadd; /* Светло-зеленый */
+    background-color: #cddbd2;
     color: #219653;
 }
 .stat-card.sales:hover {
     border: 1px solid #7dd27e;
 }
 .stat-card.refusals {
-    background-color: #fce8e8; /* Светло-красный */
+    background-color: #dbcbd0;
     color: #eb5757;
 }
 .stat-card.refusals:hover {
     border: 1px solid #f5a9a9;
 }
 .stat-card.unknown {
-    background-color: #e0e0e0; /* Серый */
+    background-color: #d0d2d5;
     color: #828282;
 }
 .stat-card.unknown:hover {
@@ -940,7 +869,6 @@ body {
 
 }
 
-/* --- DATE PICKER BUTTON --- */
 .date-picker-wrapper {
     background: transparent;
     border: 1px solid #ccc;
@@ -951,16 +879,14 @@ body {
     min-width: 180px;
 }
 
-/* --- MAIN GRID --- */
 .details-grid {
     display: grid;
-    grid-template-columns: 220px 1fr 380px; /* Левая | Центр | Правая */
+    grid-template-columns: 220px 1fr 380px;
     gap: 20px;
     height: 100%;
     overflow: hidden;
 }
 
-/* --- LEFT SIDEBAR (Dialog List) --- */
 .dialog-sidebar {
     display: flex;
     flex-direction: column;
@@ -989,9 +915,8 @@ body {
 }
 
 .dialog-card.active {
-    border-left: 4px solid #333;
-    background: white;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    background: #f1f1f1;
+    box-shadow: 0 4px 10px rgb(0 0 0 / 22%);
     font-weight: 700;
     color: #000;
 }
@@ -999,7 +924,6 @@ body {
 .dialog-card span { font-size: 14px; }
 .download-icon { width: 14px; opacity: 0.3; }
 
-/* --- CENTER (Transcript) --- */
 .transcript-area {
     background: white;
     border-radius: 12px;
@@ -1012,18 +936,13 @@ body {
     position: relative;
 }
 
-/* --- RIGHT SIDEBAR --- */
 .actions-sidebar {
-    background: white;
     border-radius: 12px;
-    padding: 20px;
     box-shadow: var(--shadow-sm);
     display: flex;
     flex-direction: column;
-    gap: 20px;
 }
 
-/* Аудио плеер (заглушка) */
 .audio-player-mock {
     background: #f8f9fa;
     border-radius: 8px;
@@ -1037,22 +956,20 @@ body {
 .progress-bar { flex: 1; height: 4px; background: #ddd; border-radius: 2px; position: relative; }
 .progress-bar::after { content: ''; position: absolute; left: 0; width: 30%; height: 100%; background: #333; border-radius: 2px; }
 
-/* Tabs (Сегментированный контрол) */
 .tabs-container {
-    background: #e9eaec;
-    border-radius: 8px;
-    padding: 4px;
+    background: #dfe1e5;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
     display: flex;
     gap: 0;
+    width: fit-content;
 }
 
 .tab-btn {
-    flex: 1;
-    padding: 8px;
+    padding: 13px 25px;
     border: none;
     background: transparent;
-    border-radius: 6px;
-    font-size: 13px;
+    font-size: 17px;
     font-weight: 500;
     color: #666;
     cursor: pointer;
@@ -1064,6 +981,8 @@ body {
     color: #000;
     font-weight: 600;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
 .report-body {
@@ -1071,17 +990,14 @@ body {
     overflow-y: auto;
 }
 
-/* Input styles for Datepicker */
 .input-capsule input {
     border: none;
     outline: none;
     width: 100%;
     font-family: inherit;
-    font-size: 14px;
     cursor: pointer;
 }
 
-/* Заметки */
 #note-textarea {
     width: 100%;
     height: 150px;
@@ -1105,8 +1021,52 @@ body {
 }
 .save-btn:hover { opacity: 0.9; }
 
-/* Скроллбары */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #bbb; }
+
+.login-box {
+    background: var(--bg-card);
+    padding: 2vw;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    width: 30vw;
+    margin: auto;
+    margin-top: 15vh;
+}
+
+.login-box img {
+    width: 10vw;
+    margin-bottom: 2vh;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 1vh;
+    margin-bottom: 1.5vh;
+    border: 1px solid var(--grey-bg);
+    border-radius: var(--border-radius);
+    font-size: 1vw;
+    outline: none;
+}
+
+.login-box button {
+    background: var(--green-accent);
+    color: white;
+    border: none;
+    padding: 1vh 2vw;
+    border-radius: var(--border-radius);
+    font-size: 1vw;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.login-box button:hover {
+    background: #1e8449;
+}
+
+.login-box p {
+    color: var(--red-accent);
+    font-size: 0.9vw;
+}
