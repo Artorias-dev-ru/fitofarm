@@ -35,21 +35,24 @@
                 <div class="stats-group">
                     <span class="stats-label">Продажа</span>
                     <a href="/details/<%= item.id %>?type=sales" class="stat-card sales">
-                        ✓ <%= item.sales %>
+                        <img src="/icons/sale.svg" class="stat-icon" alt="Sales" style="width: 30px; margin-right: 10px; ">
+                        <%= item.sales %>
                     </a>
                 </div>
 
                 <div class="stats-group">
                     <span class="stats-label">Отказы</span>
                     <a href="/details/<%= item.id %>?type=refusals" class="stat-card refusals">
-                        × <%= item.refusals %>
+                        <img src="/icons/refuse.svg" class="stat-icon" alt="Refusals" style="width: 30px; margin-right: 10px; ">
+                        <%= item.refusals %>
                     </a>
                 </div>
 
                 <div class="stats-group">
                     <span class="stats-label">Нераспозн</span>
                     <a href="/details/<%= item.id %>?type=unknown" class="stat-card unknown">
-                        ⓘ <%= item.unknown %>
+                        <img src="/icons/warning.svg" class="stat-icon" alt="Unknown" style="opacity: 0.6; width: 45px; margin-right: 10px; " >
+                        <%= item.unknown %>
                     </a>
                 </div>
 
