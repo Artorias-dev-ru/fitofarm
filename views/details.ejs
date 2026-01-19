@@ -2,69 +2,63 @@
 <html>
 <head>
     <title>Детали адреса</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
-        #details-date-picker {
-            border: none; outline: none; background: transparent;
-            font-family: inherit; font-size: 0.9vw; width: 100%; cursor: pointer;
-        }
-        .dialog-nav-btn.active-dialog {
-            background: #e9eaec;
-            font-weight: bold;
-            border-left: 4px solid #333;
-        }
+        /* Стили специфичные для контента вкладок */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
     <div class="header-section">
-        <div style="padding: 2vh 2vw;">
-            <a href="/"><img src="/logo.svg" alt="ФИТОФАРМ" style="height: 4vh;"></a>
-        </div>
+        <a href="/"><img src="/logo.svg" alt="ФИТОФАРМ" style="height: 32px;"></a>
     </div>
 
     <div class="details-container">
         
         <div class="object-header">
             <div class="object-title-box">
-                <span class="object-label">Адрес</span>
-                <span class="object-name"><%= item.city %> <br> <%= item.address %></span>
+                <div class="object-label">Адрес</div>
+                <div class="object-city"><%= item.city %></div>
+                <div class="object-address"><%= item.address %></div>
             </div>
     
             <div class="header-stats">
-                <a href="/details/<%= item.id %>?type=sales" 
-                   class="stat-badge <%= activeType === 'sales' ? 'active' : '' %>" 
-                   style="text-decoration: none; color: inherit;">
-                    <span class="label">Продажа</span>
-                    <span class="value" style="color:#27ae60;">✓ <%= item.sales %></span>
-                </a>
+                <div class="stats-group">
+                    <span class="stats-label">Продажа</span>
+                    <a href="/details/<%= item.id %>?type=sales" class="stat-card sales">
+                        ✓ <%= item.sales %>
+                    </a>
+                </div>
 
-                <a href="/details/<%= item.id %>?type=refusals" 
-                   class="stat-badge <%= activeType === 'refusals' ? 'active' : '' %>"
-                   style="text-decoration: none; color: inherit;">
-                    <span class="label">Отказы</span>
-                    <span class="value" style="color:#c0392b;">× <%= item.refusals %></span>
-                </a>
+                <div class="stats-group">
+                    <span class="stats-label">Отказы</span>
+                    <a href="/details/<%= item.id %>?type=refusals" class="stat-card refusals">
+                        × <%= item.refusals %>
+                    </a>
+                </div>
 
-                <a href="/details/<%= item.id %>?type=unknown" 
-                   class="stat-badge <%= activeType === 'unknown' ? 'active' : '' %>"
-                   style="text-decoration: none; color: inherit;">
-                    <span class="label">Нераспозн</span>
-                    <span class="value" style="color:#7f8c8d;">ⓘ <%= item.unknown %></span>
-                </a>
+                <div class="stats-group">
+                    <span class="stats-label">Нераспозн</span>
+                    <a href="/details/<%= item.id %>?type=unknown" class="stat-card unknown">
+                        ⓘ <%= item.unknown %>
+                    </a>
+                </div>
 
-                <a href="/details/<%= item.id %>" 
-                   class="stat-badge <%= !activeType ? 'active' : '' %>"
-                   style="text-decoration: none; color: inherit;">
-                    <span class="label">Итого</span>
-                    <span class="value"><%= item.sales + item.refusals + item.unknown %></span>
-                </a>
+                <div class="stats-group">
+                    <span class="stats-label">Итого</span>
+                    <a href="/details/<%= item.id %>" class="stat-card total">
+                        <%= item.sales + item.refusals + item.unknown %>
+                    </a>
+                </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 0.5vh; align-items: flex-end;">
-                <div class="capsule" style="background:white; border:1px solid #ccc; padding: 0.6vh 1vw; min-width: 12vw;">
-                    <input type="text" id="details-date-picker" placeholder="Выбрать даты" value="<%= currentRange %>">
+            <div style="margin-left: auto;">
+                <div class="input-capsule date-picker-wrapper">
+                    <input type="text" id="details-date-picker" placeholder="с 12.01 по 20.01">
                 </div>
             </div>
         </div>
@@ -73,46 +67,82 @@
             
             <div class="dialog-sidebar">
                 <% if(dialogues.length === 0) { %>
-                    <div style="color: #999; text-align: center; margin-top: 2vh;">Нет диалогов</div>
+                    <div style="color: #999; text-align: center; margin-top: 20px;">Нет диалогов</div>
                 <% } %>
-
                 <% dialogues.forEach(dialog => { %>
-                    <a href="/details/<%= item.id %>?type=<%= activeType %>&dialogId=<%= dialog.id %>" 
-                       class="dialog-nav-btn <%= (activeDialog && activeDialog.id === dialog.id) ? 'active-dialog' : '' %>"
-                       style="text-decoration: none; color: inherit; display: flex; justify-content: space-between; align-items: center;">
-                        <span><%= dialog.title %></span>
-                        <span style="font-size:0.7vw; color: #888;"><%= dialog.startTime %></span>
+                    <a href="/details/<%= item.id %>?type=<%= activeType %>&dialogId=<%= dialog.id %>&tab=<%= activeTab %>" 
+                       class="dialog-card <%= (activeDialog && activeDialog.id === dialog.id) ? 'active' : '' %>"
+                       style="text-decoration: none;">
+                        <span>Диалог <%= dialog.number %></span>
+                        <svg class="download-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
                     </a>
                 <% }) %>
             </div>
 
             <div class="transcript-area">
                 <% if (activeDialog) { %>
-                    <div style="margin-bottom: 2vh; border-bottom: 1px solid #eee; padding-bottom: 1vh;">
-                        <span style="font-weight: bold; font-size: 1.1vw;"><%= activeDialog.title %></span>
-                        <span style="color: #888; font-size: 0.9vw; margin-left: 1vw;">
-                            (<%= activeDialog.status === 'sales' ? 'Продажа' : activeDialog.status === 'refusals' ? 'Отказ' : 'Нераспознан' %>)
-                        </span>
+                    <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="font-weight: 700; font-size: 16px;">Диалог <%= activeDialog.number %></span>
+                            <span style="color: #999; font-size: 13px; margin-left: 10px;">
+                                (<%= activeDialog.status === 'sales' ? 'Продажа' : activeDialog.status === 'refusals' ? 'Отказ' : 'Нераспознан' %>)
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 10px; opacity: 0.5;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="cursor: pointer;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="cursor: pointer;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        </div>
                     </div>
-                    <pre style="white-space: pre-wrap; font-family: inherit; color: #444; font-size: 0.9vw; line-height: 1.6;"><%= activeDialog.text %></pre>
+                    <pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px;"><%= activeDialog.text %></pre>
                 <% } else { %>
                     <div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #999;">
-                        Выберите фильтр или диалог
+                        Выберите диалог из списка слева
                     </div>
                 <% } %>
             </div>
 
             <div class="actions-sidebar">
+                
+                <div class="audio-player-mock">
+                    <div class="player-controls">
+                        <div class="play-btn">▶</div>
+                        <div style="font-size: 12px; font-weight: 600;">0:00 - 7:45</div>
+                        <div style="margin-left: auto; display: flex; gap: 5px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon></svg>
+                        </div>
+                    </div>
+                    <div class="progress-bar"></div>
+                </div>
+
                 <div class="tabs-container">
-                    <button class="tab-btn active">Краткий отчет</button>
-                    <button class="tab-btn">Заметки</button>
+                    <button class="tab-btn <%= activeTab === 'summary' ? 'active' : '' %>" onclick="openTab('summary')">Краткий отчет</button>
+                    <button class="tab-btn <%= activeTab === 'notes' ? 'active' : '' %>" onclick="openTab('notes')">Заметки</button>
                 </div>
 
                 <div class="report-body">
-                    <p><strong>Резюме диалога:</strong></p>
-                    <p style="line-height: 1.6; color: #555;">
-                        <%= activeDialog ? activeDialog.summary : '...' %>
-                    </p>
+                    <div id="tab-summary" class="tab-content <%= activeTab === 'summary' ? 'active' : '' %>">
+                        <% if (activeDialog) { %>
+                            <p style="margin-top: 0;"><strong>Краткое содержание:</strong></p>
+                            <p style="line-height: 1.6; color: #555;">
+                                <%= activeDialog.summary %>
+                            </p>
+                        <% } else { %>
+                            <p style="color:#999">...</p>
+                        <% } %>
+                    </div>
+
+                    <div id="tab-notes" class="tab-content <%= activeTab === 'notes' ? 'active' : '' %>">
+                        <% if (activeDialog) { %>
+                            <textarea id="note-textarea" placeholder="Напишите заметку к диалогу..."><%= activeDialog.note || '' %></textarea>
+                            <button class="save-btn" onclick="saveNote(<%= activeDialog.id %>)">Сохранить</button>
+                        <% } else { %>
+                            <p style="color:#999">Выберите диалог</p>
+                        <% } %>
+                    </div>
                 </div>
             </div>
         </div>
@@ -121,22 +151,96 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
     <script>
-        flatpickr("#details-date-picker", {
-            mode: "range",
-            dateFormat: "Y-m-d",
-            altInput: true,
-            altFormat: "j.m", 
-            locale: "ru",
-            onClose: function(selectedDates, dateStr, instance) {
-                if (selectedDates.length === 2) {
-                    const start = instance.formatDate(selectedDates[0], "Y-m-d");
-                    const end = instance.formatDate(selectedDates[1], "Y-m-d");
-                    const currentUrl = new URL(window.location.href);
-                    currentUrl.searchParams.set('startDate', start);
-                    currentUrl.searchParams.set('endDate', end);
-                    window.location.href = currentUrl.toString();
+        // Функция переключения вкладок
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabName).classList.add('active');
+            const btnIndex = tabName === 'summary' ? 0 : 1;
+            document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('tab', tabName);
+            window.history.replaceState({}, '', currentUrl);
+
+            const linksToUpdate = document.querySelectorAll('.stat-card, .dialog-card'); // Обновили селектор класса
+            linksToUpdate.forEach(link => {
+                const url = new URL(link.href, window.location.origin);
+                url.searchParams.set('tab', tabName);
+                link.href = url.toString();
+            });
+        }
+
+        async function saveNote(dialogId) {
+            const text = document.getElementById('note-textarea').value;
+            const btn = document.querySelector('.save-btn');
+            const originalText = btn.innerText;
+            
+            btn.innerText = "Сохранение...";
+            
+            try {
+                const response = await fetch('/api/save-note', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dialogId: dialogId, note: text })
+                });
+                
+                if (response.ok) {
+                    btn.innerText = "Сохранено!";
+                    setTimeout(() => btn.innerText = originalText, 2000);
+                } else {
+                    btn.innerText = "Ошибка";
                 }
+            } catch (e) {
+                console.error(e);
+                btn.innerText = "Ошибка сети";
             }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const startParam = urlParams.get('startDate');
+            const endParam = urlParams.get('endDate');
+            const currentTab = urlParams.get('tab') || 'summary';
+    
+            if (startParam && endParam) {
+                const linksToUpdate = document.querySelectorAll('.stat-card, .dialog-card');
+                linksToUpdate.forEach(link => {
+                    const url = new URL(link.href, window.location.origin);
+                    url.searchParams.set('startDate', startParam);
+                    url.searchParams.set('endDate', endParam);
+                    url.searchParams.set('tab', currentTab); 
+                    url.searchParams.delete('period');
+                    link.href = url.toString();
+                });
+            }
+
+            let defaultDates = [];
+            if (startParam && endParam) {
+                defaultDates = [startParam, endParam];
+            }
+    
+            flatpickr("#details-date-picker", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d.m.Y", 
+                locale: "ru",
+                defaultDate: defaultDates,
+                onClose: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 2) {
+                        const start = instance.formatDate(selectedDates[0], "Y-m-d");
+                        const end = instance.formatDate(selectedDates[1], "Y-m-d");
+                        const currentUrl = new URL(window.location.href);
+                        currentUrl.searchParams.set('startDate', start);
+                        currentUrl.searchParams.set('endDate', end);
+                        currentUrl.searchParams.delete('period'); 
+                        currentUrl.searchParams.set('tab', currentTab);
+                        window.location.href = currentUrl.toString();
+                    }
+                }
+            });
         });
     </script>
 </body>

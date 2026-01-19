@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes, Op } = require('sequelize');
 const path = require('path');
+const fs = require('fs');
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
@@ -9,11 +10,7 @@ const sequelize = new Sequelize({
 
 const Record = sequelize.define('Record', {
     city: { type: DataTypes.STRING, defaultValue: "Анапа" },
-    address: { type: DataTypes.STRING, allowNull: false },
-    sales: { type: DataTypes.INTEGER, defaultValue: 0 },
-    refusals: { type: DataTypes.INTEGER, defaultValue: 0 },
-    unknown: { type: DataTypes.INTEGER, defaultValue: 0 },
-    date: { type: DataTypes.DATEONLY, allowNull: false }
+    address: { type: DataTypes.STRING, allowNull: false }
 });
 
 const Dialog = sequelize.define('Dialog', {
@@ -22,269 +19,118 @@ const Dialog = sequelize.define('Dialog', {
     text: DataTypes.TEXT,
     summary: DataTypes.TEXT,
     startTime: DataTypes.STRING,
-    endTime: DataTypes.STRING
+    date: { type: DataTypes.DATEONLY, allowNull: false },
+    endTime: DataTypes.STRING,
+    number: { type: DataTypes.INTEGER, allowNull: false },
+    note: { type: DataTypes.TEXT } // Поле для заметки
 });
 
 Record.hasMany(Dialog);
 Dialog.belongsTo(Record);
 
 async function initDB() {
-    await sequelize.sync({ force: true });
+    console.log("Проверка базы данных...");
+    const start = Date.now();
+    
+    // ВАЖНОЕ ИЗМЕНЕНИЕ 1: alter: true
+    // Это сохранит данные при перезапуске, но обновит колонки, если вы их добавите
+    await sequelize.sync({ alter: true });
 
-    const pharmacies = await Record.bulkCreate([
-        { city: "Анапа", address: "Владимирская 155", date: '2026-01-15' },
-        { city: "Анапа", address: "Тургенева 255", date: '2026-01-14' },
-        { city: "Анапа", address: "Гоголя 983", date: '2026-01-08' }
-    ]);
+    // ВАЖНОЕ ИЗМЕНЕНИЕ 2: Проверка на пустоту
+    // Если диалоги уже есть в базе, мы НЕ парсим файлы заново.
+    // Это нужно, чтобы не создавать дубликаты и не перезаписывать ваши заметки.
+    const count = await Dialog.count();
+    if (count > 0) {
+        console.log(`База данных уже содержит ${count} диалогов. Парсинг пропущен (данные сохранены).`);
+        return;
+    }
 
-    const dialogsData = [
-        {
-            title: "Диалог 1",
-            status: "refusals",
-            startTime: "03:21",
-            endTime: "03:56",
-            summary: "Клиент спрашивает товар. Фармацевт сообщает, что его нет и направляет в соседний отдел техники.",
-            text: `[201.03-202.59] SPEAKER_00: здрасьте
-[203.05-205.00] SPEAKER_00: 
-[206.29-210.00] SPEAKER_00: как он там сейчас нет нету
-[210.30-215.00] SPEAKER_00: пройдите вот по вот этой ж дальше техника есть
-[215.07-216.08] SPEAKER_00: 
-[217.18-220.00] SPEAKER_00: ну в этом же здании только электронном только электронно
-[220.17-225.00] SPEAKER_00: еще до праздников все разобрали градус
-[225.20-230.00] SPEAKER_00: да вот вот через четыре магазинчика вот в эту сторону вам даже не туда это
-[230.00-232.27] SPEAKER_00: зайдите к ним может они
-[232.38-235.00] SPEAKER_00: до праздников у них были
-[235.20-236.47] SPEAKER_00: спасибо`
-        },
-        {
-            title: "Диалог 2",
-            status: "sales",
-            startTime: "14:06",
-            endTime: "20:30",
-            summary: "Обсуждение погоды, отсутствие товара в Альфе. Подбор 'Тринадус' и капель. Оформление бонусной карты и успешная продажа.",
-            text: `[846.16-847.32] SPEAKER_01: вет
-[847.32-850.00] SPEAKER_00: 
-[850.00-855.00] SPEAKER_00: тепло ветер такой ледяной как дела
-[855.00-860.00] SPEAKER_00: чуть ли не посреди дороги кидают
-[860.14-865.00] SPEAKER_00: данила тоже какие то бумажечки он наложила
-[866.29-868.20] SPEAKER_00: я продавал за наличку
-[870.17-875.00] SPEAKER_00: пятнадцать флаконов числится если попробовал
-[882.63-885.00] SPEAKER_00: тишина да тишина
-[890.88-895.00] SPEAKER_00: походу этот в альфу тоже не привезли
-[895.00-897.47] SPEAKER_01: у вас есть
-[897.47-898.58] SPEAKER_00: тринадус
-[907.92-910.00] SPEAKER_00: спрей нужен да
-[910.00-911.12] SPEAKER_00: можно как
-[926.70-929.13] SPEAKER_00: устойчивый секундочку
-[934.01-935.00] SPEAKER_00: так
-[937.12-940.00] SPEAKER_00: да по действующему
-[940.07-945.00] SPEAKER_00: действующую недорогое чтобы ну в каплях если есть капли каплях
-[947.60-950.00] SPEAKER_00: 
-[951.17-955.00] SPEAKER_00: а еще а а еще какие нибудь есть получит
-[955.00-957.39] SPEAKER_00: эти не понравится ну 
-[960.07-965.00] SPEAKER_00: смотрите стоп тоже по действующим
-[965.20-967.78] SPEAKER_00: они потом
-[967.78-969.19] SPEAKER_00: 
-[969.19-970.00] SPEAKER_00: 
-[971.77-974.51] SPEAKER_00: вот эти капли
-[974.51-975.00] SPEAKER_00: что же
-[975.00-979.30] SPEAKER_00: ну давайте а давайте попробуем сделаем
-[980.26-985.00] SPEAKER_00: а там сколько десять грамм ну двадцать миллилитров больше а это спрей да получается
-[985.00-986.54] SPEAKER_00: нет это капельки душ
-[986.67-988.62] SPEAKER_00: есть как
-[989.04-990.00] SPEAKER_00: а еще можно
-[991.54-993.68] SPEAKER_00: упаковочками
-[1002.25-1004.50] SPEAKER_00: еще одна пачка на витрине осталась
-[1016.26-1020.00] SPEAKER_00: а еще есть откашля чтоб для взрослого
-[1020.66-1021.88] SPEAKER_00: ринголо
-[1021.88-1025.00] SPEAKER_00: таблетки для рассасывания от кашля хорошие
-[1025.00-1026.50] SPEAKER_00: давайте
-[1039.20-1040.00] SPEAKER_00: юрия удали
-[1045.94-1050.00] SPEAKER_00: угу что еще все бонусную карту
-[1050.00-1053.10] SPEAKER_00: по телефону по телефону
-[1053.10-1055.00] SPEAKER_00: восемь 
-[1055.52-1059.10] SPEAKER_00: триста восемьдесят два тринадцать восемьдесят девять
-[1063.37-1064.83] SPEAKER_00: всегда помню
-[1065.00-1068.49] SPEAKER_00: начислится тысяча двести тридцать семь рублей девяносто пять копеек
-[1068.98-1070.00] SPEAKER_00: карте
-[1070.74-1072.30] SPEAKER_00: опять это можно какой
-[1072.30-1074.64] SPEAKER_00: 
-[1093.18-1094.22] SPEAKER_00: и
-[1095.00-1097.43] SPEAKER_00: всего доброго хорошего дня
-[1108.11-1110.00] SPEAKER_00: вика ну конечно прикольно
-[1110.00-1115.00] SPEAKER_00: на праздники все можно завтра а давай который у меня в этом
-[1115.00-1120.00] SPEAKER_00: ща подожди ищу у меня здесь пробью как раз
-[1120.07-1125.00] SPEAKER_00: таблетки для женск клима смотрите для женск клима
-[1125.00-1127.18] SPEAKER_00: так и называются
-[1127.50-1130.00] SPEAKER_00: это же апрелевский да нет
-[1130.36-1133.42] SPEAKER_00: ну мало ли
-[1135.81-1138.10] SPEAKER_00: аптечные сети
-[1140.17-1144.19] SPEAKER_00: крыма отдельно для женского да я вижу
-[1152.18-1155.00] 
-[1155.00-1160.00] SPEAKER_00: а вы сами по себе или тоже они где в ваших
-[1160.01-1162.56] SPEAKER_00: посмотрите пожалуйста может где то там
-[1163.85-1165.00] SPEAKER_00: есть
-[1165.00-1166.66] SPEAKER_00: суки
-[1166.99-1168.17] SPEAKER_00: 
-[1186.74-1190.00] SPEAKER_00: прометри есть юфа который вам
-[1190.00-1192.24] SPEAKER_00: все спасибо
-[1192.66-1193.97] SPEAKER_00: 
-[1195.39-1200.00] SPEAKER_00: так здесь я уже сделала сейчас я
-[1200.00-1202.56] SPEAKER_00: у него жесткий оторвала
-[1202.66-1205.00] SPEAKER_00: сейчас давай я вот эти пробью которые
-[1205.00-1206.70] SPEAKER_00: и сейчас
-[1206.86-1210.00] SPEAKER_00: он такой зачем вы забираете отрываете я говорю
-[1210.00-1213.71] SPEAKER_00: мне вот эти кизы нужны
-[1213.91-1215.00] SPEAKER_00: и пакетику
-[1215.20-1217.56] SPEAKER_00: у меня пакет
-[1218.98-1220.00] SPEAKER_00: нет
-[1220.68-1221.79] SPEAKER_00: 
-[1222.92-1224.93] SPEAKER_00: здрасьте
-[1226.00-1229.16] SPEAKER_00: так секундочку сейчас
-[1229.16-1230.00] SPEAKER_00:`
-        },
-        {
-            title: "Диалог 3",
-            status: "refusals",
-            startTime: "20:48",
-            endTime: "23:45",
-            summary: "Обсуждение цены (111 рублей) и 'последней пачки'. Продажа не состоялась.",
-            text: `[1248.53-1249.93] SPEAKER_00: здравствуйте
-[1250.52-1252.08] SPEAKER_00: такое че нибудь
-[1263.24-1264.29] SPEAKER_00: давай
-[1265.42-1266.54] SPEAKER_00: тихо
-[1270.26-1272.50] SPEAKER_00: сто одиннадцать рублей
-[1286.03-1287.30] SPEAKER_00: можете
-[1291.51-1294.83] SPEAKER_00: хорошего дня
-[1300.62-1303.90] SPEAKER_00: последнюю пачку
-[1305.00-1306.45] SPEAKER_01: а давление
-[1306.45-1308.15] SPEAKER_00: 
-[1315.74-1320.00] SPEAKER_00: раствором он мелочи взяла
-[1320.14-1325.00] SPEAKER_00: вот это что наука надо что это
-[1326.48-1328.81] SPEAKER_00: 
-[1329.04-1330.00] SPEAKER_00: а что
-[1352.38-1355.00] SPEAKER_00: ответственность за
-[1376.77-1378.07] SPEAKER_00: один
-[1380.52-1384.06] SPEAKER_00: 
-[1400.26-1401.82] SPEAKER_00: а настроение произве
-[1424.17-1425.00] SPEAKER_00: `
-        },
-        {
-            title: "Диалог 4",
-            status: "unknown",
-            startTime: "24:03",
-            endTime: "31:40",
-            summary: "Длинный диалог с личными обсуждениями и ненормативной лексикой. Покупка антибиотика.",
-            text: `[1443.59-1443.98] SPEAKER_01: финал
-[1443.98-1445.00] SPEAKER_00: у меня тоже
-[1445.00-1450.00] SPEAKER_00: ну хотя у меня хорошая квартира но вчера прям прохладно дома было а я еще
-[1450.10-1454.32] SPEAKER_00: балкон открыт в моей комнате
-[1455.33-1457.18] SPEAKER_00: мама закрой окно
-[1458.40-1459.80] SPEAKER_00: ну вот короче
-[1461.45-1463.87] SPEAKER_00: 
-[1463.87-1465.00] SPEAKER_00: 
-[1466.61-1468.23] SPEAKER_00: буквально на
-[1468.23-1470.00] SPEAKER_00: да у меня вот это
-[1472.54-1474.86] SPEAKER_00: подкашливает постоянно
-[1475.71-1477.85] SPEAKER_00: здравствуйте
-[1477.85-1479.59] SPEAKER_00: какие
-[1480.00-1481.82] SPEAKER_00: антибиотик
-[1482.09-1485.00] SPEAKER_00: 
-[1485.07-1488.07] SPEAKER_00: капельки антибиотик
-[1488.08-1490.00] SPEAKER_00: есть
-[1490.46-1491.63] SPEAKER_00: о
-[1492.95-1494.16] SPEAKER_00: не
-[1501.99-1505.00] SPEAKER_00: так девушка смотрите эти капельки вынулась
-[1505.00-1506.89] SPEAKER_00: холодильника до
-[1507.02-1510.00] SPEAKER_00: продажи они хранились в холодильнике
-[1510.00-1515.00] SPEAKER_00: уже не убираете при вскрытии упаковка хранится при температуре не выше тридцати
-[1515.00-1517.02] SPEAKER_00: 
-[1517.41-1520.00] SPEAKER_00: и потом их выкидывать икорд
-[1520.00-1522.88] SPEAKER_00: бонусная карта фитофарма есть у вас
-[1524.17-1525.00] SPEAKER_00: давайте по номеру
-[1525.00-1528.01] SPEAKER_00: пятьсот восемнадцать
-[1528.01-1530.00] SPEAKER_00: шестьсот девяносто пять
-[1530.00-1533.07] SPEAKER_00: восемь семь девять три
-[1533.07-1535.00] SPEAKER_00: посмотреть
-[1536.02-1540.00] SPEAKER_00: да есть анна дмитриевна да тридцать один балл вам начислится на карту у вас как
-[1540.00-1543.74] SPEAKER_00: две тысячи пятьдесят рублей катя наличные
-[1552.63-1554.26] SPEAKER_00: пятьдесят не посмотрит
-[1557.06-1560.00] SPEAKER_00: вы мне дадите пять тысяч пятьдесят рублей
-[1560.01-1561.18] SPEAKER_00: тысяч пятьдесят
-[1561.18-1563.10] SPEAKER_00: кирч
-[1565.39-1567.91] SPEAKER_00: че
-[1569.01-1570.00] SPEAKER_00: три тысячи
-[1570.00-1571.12] SPEAKER_00: дачи
-[1571.12-1572.43] SPEAKER_00: у нас че
-[1572.44-1573.65] SPEAKER_00: 
-[1580.00-1585.00] SPEAKER_00: всего доброго здрасьте
-[1585.00-1587.02] SPEAKER_00: пожалуйста одну
-[1596.06-1600.00] SPEAKER_00: двести двадцать ой двести тридцать 
-[1600.00-1601.06] SPEAKER_00: катя
-[1602.12-1604.54] SPEAKER_00: спасибо
-[1604.54-1605.00] SPEAKER_00: когда
-[1612.02-1613.71] SPEAKER_00: двести тридцать пять
-[1631.00-1632.34] SPEAKER_00: ника
-[1632.73-1633.84] SPEAKER_00: 
-[1634.14-1635.00] SPEAKER_00: 
-[1712.63-1715.00] SPEAKER_00: ну она же тоже должна ну
-[1715.10-1717.21] SPEAKER_00: 
-[1717.57-1720.00] SPEAKER_00: ну да
-[1722.02-1725.00] SPEAKER_00: вот да ты ищешь косметолога ты заходишь
-[1725.55-1729.90] SPEAKER_00: 
-[1735.33-1740.00] SPEAKER_00: которая рядом у нее там и у нее деньги
-[1747.54-1748.98] SPEAKER_00: а вы
-[1748.98-1749.71] SPEAKER_00: 
-[1761.32-1762.75] SPEAKER_00: ну да
-[1765.20-1770.00] SPEAKER_00: ну короче и я такая ну я как бы и не спрашивала
-[1770.23-1772.53] SPEAKER_00: я такая я даже не буду
-[1772.53-1774.61] SPEAKER_00: 
-[1775.71-1776.79] SPEAKER_00: когда
-[1777.22-1779.26] SPEAKER_00: 
-[1781.10-1785.00] SPEAKER_00: и сегодня она нам там такой подарок
-[1785.26-1790.00] SPEAKER_00: короче понимаешь она какая то 
-[1790.78-1792.98] SPEAKER_00: 
-[1793.02-1794.26] SPEAKER_00: чертник
-[1794.26-1795.00] SPEAKER_00: короче
-[1795.10-1796.89] SPEAKER_00: 
-[1796.89-1798.17] SPEAKER_00: поиграешь
-[1799.10-1800.00] SPEAKER_00: ну она куда
-[1811.19-1812.34] SPEAKER_00: короче
-[1815.42-1817.46] SPEAKER_00: надо поменьше
-[1818.02-1819.13] SPEAKER_00: 
-[1822.47-1823.62] SPEAKER_00: сказали
-[1829.42-1830.00] SPEAKER_00: да
-[1830.00-1831.31] SPEAKER_00: только да
-[1833.78-1835.00] SPEAKER_00: короче просто
-[1835.00-1840.00] SPEAKER_00: ну как по работе она сейчас со мной отработает два дня да по моему и все
-[1845.33-1847.67] SPEAKER_01: о природе о погоде короче все
-[1847.67-1848.80] SPEAKER_00: какой
-[1851.96-1855.00] SPEAKER_00: нормально
-[1855.94-1859.99] SPEAKER_00: на следующий день вся как устала вся перекошенная
-[1860.00-1865.00] SPEAKER_00: я ее загнала по камню не искупалась потом она начала в человека превращаться
-[1865.07-1870.00] SPEAKER_00: а на следующий день я уже без нее пошла домой гулять домой пришла первого числа
-[1870.00-1873.36] 
-[1873.36-1875.00] SPEAKER_00: пьяная блять вообще пиздец думала
-[1873.36-1875.00] SPEAKER_00: вообще не ста
-[1877.02-1880.00] SPEAKER_00: ну вот тут и все нормально а потом мы поехали в ев
-[1881.80-1885.00] SPEAKER_00: я уже вообще я пришла домой беру авто
-[1885.10-1886.34] SPEAKER_00: ладно
-[1886.48-1888.87] SPEAKER_00: единственная
-[1888.87-1890.00] SPEAKER_00: что
-[1893.24-1895.00] SPEAKER_00: ничего не хочу
-[1895.07-1896.70] SPEAKER_00: 
-[1896.74-1900.00] SPEAKER_00: к восьми вечера я уже все нормально`
+    console.log("База пуста. Начинаю первичную загрузку из файлов...");
+    const dataDir = path.join(__dirname, 'data');
+    
+    if (!fs.existsSync(dataDir)) {
+        console.log("Папка data не найдена.");
+        return;
+    }
+
+    const pharmacyFolders = fs.readdirSync(dataDir); 
+
+    for (const phId of pharmacyFolders) {
+        const phPath = path.join(dataDir, phId);
+        if (!fs.lstatSync(phPath).isDirectory()) continue;
+
+        const [record] = await Record.findOrCreate({
+            where: { address: phId === "1" ? "Тестовая аптека" : `Аптека №${phId}` },
+            defaults: { city: "Анапа" }
+        });
+
+        let dialogCounter = 1;
+        let dialogsBatch = [];
+
+        const groupFolders = fs.readdirSync(phPath).sort(); 
+
+        for (const groupFolder of groupFolders) {
+            const groupPath = path.join(phPath, groupFolder);
+            if (!fs.lstatSync(groupPath).isDirectory()) continue;
+
+            const outFolders = fs.readdirSync(groupPath);
+            for (const outFolder of outFolders) {
+                const outPath = path.join(groupPath, outFolder);
+                if (!fs.lstatSync(outPath).isDirectory()) continue;
+
+                const folderParts = outFolder.split('_');
+                if (folderParts.length < 3) continue;
+
+                const dateRaw = folderParts[1]; 
+                const timeRaw = folderParts[2]; 
+                const [dd, mm, yyyy] = dateRaw.split('-');
+                const dbDate = `${yyyy}-${mm}-${dd}`;
+                const baseHour = timeRaw.split('-')[0];
+
+                const dialogFolders = fs.readdirSync(outPath);
+                for (const dFolder of dialogFolders) {
+                    const dPath = path.join(outPath, dFolder);
+                    if (!fs.lstatSync(dPath).isDirectory()) continue;
+                    
+                    const files = fs.readdirSync(dPath);
+                    const txtFile = files.find(f => f.toLowerCase().endsWith('.txt'));
+                    const jsonFile = files.find(f => f.toLowerCase().endsWith('.json'));
+
+                    if (txtFile && jsonFile) {
+                        const txtContent = fs.readFileSync(path.join(dPath, txtFile), 'utf-8');
+                        const jsonData = JSON.parse(fs.readFileSync(path.join(dPath, jsonFile), 'utf-8'));
+                        const dParts = dFolder.split('_');
+                        let finalTime = `${baseHour}:00`; 
+                        if (dParts.length > 1) {
+                            finalTime = `${baseHour}:${dParts[1].substring(2, 4)}`;
+                        }
+                        
+                        let status = 'refusals'; 
+                        if (dFolder.toLowerCase().includes('_bad_')) status = 'unknown'; 
+                        else if (jsonData.metrics && jsonData.metrics.sale_occurred === true) status = 'sales'; 
+
+                        dialogsBatch.push({
+                            title: `Диалог ${dialogCounter}`, 
+                            number: dialogCounter,
+                            status: status,
+                            text: txtContent,
+                            summary: `Качество: ${jsonData.quality}. Реплик: ${jsonData.num_turns}.`,
+                            startTime: finalTime,
+                            date: dbDate,
+                            RecordId: record.id,
+                            note: ""
+                        });
+                        dialogCounter++;
+                    }
+                }
+            }
         }
-    ];
-
-    for (const pharmacy of pharmacies) {
-        for (const d of dialogsData) {
-            await Dialog.create({
-                ...d,
-                RecordId: pharmacy.id
-            });
+        if (dialogsBatch.length > 0) {
+            await Dialog.bulkCreate(dialogsBatch);
+            console.log(`Загружено ${dialogsBatch.length} диалогов для ${record.address}`);
         }
     }
+    console.log(`Первичная загрузка завершена! Заняло: ${(Date.now() - start) / 1000} сек.`);
 }
 
 module.exports = { Record, Dialog, Op, initDB };

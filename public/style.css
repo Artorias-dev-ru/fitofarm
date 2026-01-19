@@ -400,7 +400,7 @@ body {
 
 .details-grid {
     display: grid;
-    grid-template-columns: 140px 1fr 320px;
+    grid-template-columns: 170px 1fr 320px;
     gap: 1.5vw;
     height: 72vh;
 }
@@ -422,6 +422,7 @@ body {
     cursor: pointer;
     font-size: 0.85vw;
     transition: 0.2s;
+    text-wrap: nowrap;
 }
 .download-ico{
     width: 15px;
@@ -463,7 +464,6 @@ body {
 .actions-sidebar {
     display: flex;
     flex-direction: column;
-    gap: 1.5vh;
 }
 
 .audio-card {
@@ -496,7 +496,6 @@ body {
     background: white;
     padding: 1.5vw;
     border-radius: 0.6vw;
-    flex-grow: 1;
     font-size: 0.85vw;
     line-height: 1.6;
     overflow-y: auto;
@@ -554,3 +553,560 @@ body {
 .dropdown.active .input-capsule {
     background-color: #e9eaec;
 }
+/* =========================================
+   СТИЛИ ДЛЯ КАЛЕНДАРЯ (FLATPICKR) - ФИНАЛЬНЫЕ
+   ========================================= */
+
+/* 1. Стилизация самого поля ввода */
+#date-range-picker,
+#date-picker,
+.flatpickr-input {
+    border: none !important;        /* Убираем рамку */
+    outline: none !important;       /* Убираем обводку при клике */
+    background: transparent !important; /* Прозрачный фон */
+    box-shadow: none !important;    /* Убираем любые тени */
+    
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    font-size: 1vw;                 /* Размер шрифта подстраиваем под соседей */
+    font-weight: 500;
+    color: var(--text-dark);
+    
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    
+    /* Отступ слева для иконки + отступ текста */
+    padding: 0 0 0 28px;
+    
+    /* Добавляем красивую иконку календаря */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left center; /* Иконка всегда слева по центру */
+    background-size: 1.1vw; /* Размер иконки масштабируется */
+}
+
+/* Цвет плейсхолдера (подсказки) */
+.flatpickr-input::placeholder {
+    color: #b2b2b2;
+    opacity: 1;
+}
+
+/* Убираем стандартную обводку в некоторых браузерах */
+.flatpickr-input:focus-visible {
+    outline: none;
+}
+
+/* 2. Стилизация выпадающего окна календаря */
+.flatpickr-calendar {
+    font-family: 'Segoe UI', Roboto, sans-serif !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
+    border-radius: 0.8vw !important;
+    margin-top: 8px !important;
+    background: white !important;
+    width: 320px !important; /* Фиксированная ширина для аккуратности */
+}
+
+/* Стрелочка сверху календаря */
+.flatpickr-calendar::before,
+.flatpickr-calendar::after {
+    display: none !important; /* Убираем треугольник, он часто выглядит устаревшим */
+}
+
+/* Шапка календаря (Месяц Год) */
+.flatpickr-months {
+    background: transparent !important;
+    padding-top: 10px !important;
+    margin-bottom: 10px !important;
+}
+.flatpickr-months .flatpickr-month {
+    color: var(--text-dark) !important;
+    fill: var(--text-dark) !important;
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+    font-weight: 600 !important;
+}
+
+/* Дни недели */
+.flatpickr-weekdays {
+    margin-bottom: 5px !important;
+}
+span.flatpickr-weekday {
+    color: #999 !important;
+    font-size: 0.9em !important;
+}
+
+/* Сетка дней */
+.flatpickr-day {
+    border-radius: 6px !important;
+    border: 1px solid transparent !important;
+    color: var(--text-dark) !important;
+    font-weight: 500 !important;
+}
+
+/* Выбранный диапазон (ЗЕЛЕНЫЙ БРЕНДОВЫЙ) */
+.flatpickr-day.selected, 
+.flatpickr-day.startRange, 
+.flatpickr-day.endRange {
+    background: var(--green-accent) !important;
+    border-color: var(--green-accent) !important;
+    color: white !important;
+}
+
+/* Промежуток (светло-зеленый) */
+.flatpickr-day.inRange {
+    background: #e8f5e9 !important; /* Очень светлый зеленый */
+    box-shadow: -5px 0 0 #e8f5e9, 5px 0 0 #e8f5e9 !important;
+    border-color: transparent !important;
+    color: var(--text-dark) !important;
+}
+
+/* Эффект наведения */
+.flatpickr-day:hover {
+    background: #f5f5f5 !important;
+    border-color: #f5f5f5 !important;
+}
+/* =========================================
+   ФИНАЛЬНЫЕ СТИЛИ ДЛЯ ИНПУТА ДАТЫ
+   ========================================= */
+
+/* 1. Сбрасываем все стандартные стили браузера для инпута внутри капсулы */
+.input-capsule input,
+.input-capsule .flatpickr-input,
+#date-range-picker,
+#date-picker {
+    /* Самое важное: убираем рамки и фон */
+    border: 0 !important;
+    border-color: transparent !important;
+    outline: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    
+    /* Убираем нативные стили браузеров (черные рамки, выпуклости) */
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    
+    /* Типографика */
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    font-size: 1.1vw; /* Размер текста как у соседей */
+    font-weight: 500;
+    color: var(--text-dark);
+    
+    /* Размеры и отступы */
+    width: 100%;
+    height: 100%;
+    padding: 0 0 0 28px; /* Отступ слева, чтобы текст не наезжал на иконку */
+    margin: 0;
+    
+    /* Иконка календаря */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left center;
+    background-size: 1.1vw;
+    cursor: pointer;
+}
+
+/* Цвет подсказки (placeholder) */
+.input-capsule input::placeholder {
+    color: #b0b0b0;
+    opacity: 1;
+}
+
+/* 2. Стили самого выпадающего календаря */
+.flatpickr-calendar {
+    font-family: 'Segoe UI', Roboto, sans-serif !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+    border-radius: 0.8vw !important;
+    margin-top: 8px !important;
+    background: white !important;
+}
+
+/* Убираем стрелочку над календарем */
+.flatpickr-calendar::before,
+.flatpickr-calendar::after {
+    display: none !important;
+}
+
+/* Дни и выделение (Зеленый бренд) */
+.flatpickr-day.selected, 
+.flatpickr-day.startRange, 
+.flatpickr-day.endRange {
+    background: var(--green-accent) !important;
+    border-color: var(--green-accent) !important;
+    color: white !important;
+}
+
+.flatpickr-day.inRange {
+    background: #e8f5e9 !important;
+    border-color: transparent !important;
+    color: var(--text-dark) !important;
+    box-shadow: -5px 0 0 #e8f5e9, 5px 0 0 #e8f5e9 !important;
+}
+
+/* Ховер эффект */
+.flatpickr-day:hover {
+    background: #f0f0f0 !important;
+    border-color: #f0f0f0 !important;
+}
+.dialog-nav-btn.active-dialog {
+    background: #e9eaec;
+    font-weight: bold;
+    border-left: 4px solid #333;
+}
+/* Стили для вкладок */
+.tab-content { display: none; height: 100%; }
+.tab-content.active { display: block; }
+
+/* Стили для текстового поля заметок */
+#note-textarea {
+    width: 100%;
+    height: 85%;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: inherit;
+    font-size: 0.9vw;
+    color: #333;
+    background: transparent;
+    padding: 5px;
+}
+/* Кнопка сохранить */
+.save-btn {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 0.5vh 1vw;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8vw;
+    float: right;
+    transition: background 0.2s;
+}
+.save-btn:hover { background: #555; }
+
+:root {
+    --bg-main: #f4f6f8;
+    --bg-card: #ffffff;
+    --text-dark: #333333;
+    --text-light: #888888;
+    --green-accent: #27ae60;
+    --green-bg: #e8f5e9;
+    --red-accent: #c0392b;
+    --red-bg: #f9ebea;
+    --grey-bg: #e0e0e0;
+    --border-radius: 8px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-main);
+    color: var(--text-dark);
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif; /* Шрифт Inter как на макете */
+    font-size: 14px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- HEADER --- */
+.header-section {
+    background: transparent;
+    padding: 15px 30px;
+}
+
+/* --- DETAILS LAYOUT --- */
+.details-container {
+    padding: 0 30px 20px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: calc(100vh - 80px);
+}
+
+/* --- OBJECT HEADER (Address + Stats) --- */
+.object-header {
+    background: #e9eaec; /* Серый фон хедера как на макете */
+    border-radius: 12px;
+    padding: 20px 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* Адрес | Статы | Дата */
+    align-items: center;
+    gap: 40px;
+}
+
+.object-title-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.object-label {
+    color: #999;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.object-city {
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.object-address {
+    font-size: 24px;
+    font-weight: 700;
+    color: #222;
+}
+
+/* --- STATS BADGES (Плашки статистики) --- */
+.header-stats {
+    display: flex;
+    gap: 45px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80px;
+    min-width: 100px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 50px;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    padding: 5px 20px;
+    text-wrap: nowrap;
+    border: 1px solid transparent;
+}
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Заголовки над плашками (как "Продажа", "Отказы") */
+.stats-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+.stats-label {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Цвета плашек */
+.stat-card.sales {
+    background-color: #dbfadd; /* Светло-зеленый */
+    color: #219653;
+}
+.stat-card.sales:hover {
+    border: 1px solid #7dd27e;
+}
+.stat-card.refusals {
+    background-color: #fce8e8; /* Светло-красный */
+    color: #eb5757;
+}
+.stat-card.refusals:hover {
+    border: 1px solid #f5a9a9;
+}
+.stat-card.unknown {
+    background-color: #e0e0e0; /* Серый */
+    color: #828282;
+}
+.stat-card.unknown:hover {
+    border: 1px solid #b0b0b0;
+}
+.stat-card.total:hover {
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.stat-card.total {
+    background-color: white;
+    color: #333;
+
+}
+
+/* --- DATE PICKER BUTTON --- */
+.date-picker-wrapper {
+    background: transparent;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 16px;
+    background: white;
+    cursor: pointer;
+    min-width: 180px;
+}
+
+/* --- MAIN GRID --- */
+.details-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr 380px; /* Левая | Центр | Правая */
+    gap: 20px;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* --- LEFT SIDEBAR (Dialog List) --- */
+.dialog-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.dialog-card {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    color: #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dialog-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+
+.dialog-card.active {
+    border-left: 4px solid #333;
+    background: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    font-weight: 700;
+    color: #000;
+}
+
+.dialog-card span { font-size: 14px; }
+.download-icon { width: 14px; opacity: 0.3; }
+
+/* --- CENTER (Transcript) --- */
+.transcript-area {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    position: relative;
+}
+
+/* --- RIGHT SIDEBAR --- */
+.actions-sidebar {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Аудио плеер (заглушка) */
+.audio-player-mock {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.player-controls { display: flex; align-items: center; gap: 10px; }
+.play-btn { width: 30px; height: 30px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer;}
+.progress-bar { flex: 1; height: 4px; background: #ddd; border-radius: 2px; position: relative; }
+.progress-bar::after { content: ''; position: absolute; left: 0; width: 30%; height: 100%; background: #333; border-radius: 2px; }
+
+/* Tabs (Сегментированный контрол) */
+.tabs-container {
+    background: #e9eaec;
+    border-radius: 8px;
+    padding: 4px;
+    display: flex;
+    gap: 0;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    background: white;
+    color: #000;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.report-body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Input styles for Datepicker */
+.input-capsule input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Заметки */
+#note-textarea {
+    width: 100%;
+    height: 150px;
+    border: none;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    color: #333;
+    background: transparent;
+}
+.save-btn {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    float: right;
+}
+.save-btn:hover { opacity: 0.9; }
+
+/* Скроллбары */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #bbb; }

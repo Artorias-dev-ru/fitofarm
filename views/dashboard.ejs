@@ -2,17 +2,18 @@
 <html>
 
 <head>
+    <title>Дашборд аптек</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
-        #date-range-picker {
-            border: none;
-            outline: none;
-            background: transparent;
-            font-family: inherit;
-            font-size: inherit;
-            width: 100%;
+        /* Добавляем курсор-указатель для пилюль, чтобы было понятно, что они кликабельны */
+        .pill {
             cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+        .pill:hover {
+            transform: scale(1.05); /* Легкое увеличение при наведении */
         }
     </style>
 </head>
@@ -21,10 +22,10 @@
     <div class="header-container">
         <div class="logo-row">
             <a href="/">
-            <div class="logo-box">
-                <img src="/logo.svg" alt="ФИТОФАРМ" style="height: 6vh;">
-            </div>
-        </a>
+                <div class="logo-box">
+                    <img src="/logo.svg" alt="ФИТОФАРМ" style="height: 6vh;">
+                </div>
+            </a>
         </div>
 
         <div class="filter-row">
@@ -49,56 +50,69 @@
             </div>
             
             <div class="input-capsule">
-                <input type="text" id="date-range-picker" placeholder="с 1.01 по 1.01" value="<%= typeof currentRange !== 'undefined' ? currentRange : '' %>">
+                <input type="text" id="date-range-picker" placeholder="Выбрать период">
             </div>
+            
             <div class="input-capsule" style="color: #ccc;">Город</div>
             <div class="input-capsule" style="color: #ccc;">Адрес</div>
-            <div class="input-capsule" style="margin-left: auto;">≡ Фильтр</div>
+            <div class="dropdown" style="margin-left: auto;">
+                <div class="input-capsule">
+                    ≡ <%= (activeSort === 'sales') ? 'Больше продаж' : 
+                          (activeSort === 'refusals') ? 'Больше отказов' : 
+                          (activeSort === 'unknown') ? 'Больше нераспознан' : 'По алфавиту' %> ▾
+                </div>
+                <div class="dropdown-content" style="right: 0; left: auto; min-width: 180px;">
+                    <a href="#" onclick="applySort('alphabet')">По алфавиту</a>
+                    <a href="#" onclick="applySort('sales')">Больше продаж</a>
+                    <a href="#" onclick="applySort('refusals')">Больше отказов</a>
+                    <a href="#" onclick="applySort('unknown')">Больше нераспознан</a>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="main-layout">
 
         <div class="grid-system data-row-container">
-
-            <div class="data-main-card table_header" >
+            <div class="data-main-card table_header">
                 <div class="data-main-card_border table_header">
                     <div class="address-cell">
-                        <p class="address-cell-adress" style="color: rgb(29, 29, 27);">
-                            Анапа
-                        </p>
+                        <p class="address-cell-adress" style="color: rgb(29, 29, 27);">Анапа</p>
                     </div>
-
                     <p>Продажа</p>
                     <p>Отказ</p>
                     <p>Нераспознанный</p>
                 </div>
             </div>
-
             <div class="total-card" style="background-color: rgb(223, 225, 229); border-radius: 5px; font-size: 1.3vw; color: rgb(178, 178, 178); font-weight: 400;">
                 Итог
             </div>
-
         </div>
 
-        <% data.forEach(item=> { %>
+        <% data.forEach(item => { %>
             <div class="grid-system data-row-container">
 
-                <div class="data-main-card" onclick="window.location.href='/details/<%= item.id %>'">
+                <div class="data-main-card" onclick="window.location.href='/details/<%= item.id %>' + window.location.search">
                     <div class="data-main-card_border">
-                    <div class="address-cell">
-                        <b style="font-size: 0.9vw;">
-                            <%= item.address %>
-                        </b>
-                    </div>
+                        <div class="address-cell">
+                            <b style="font-size: 0.9vw;">
+                                <%= item.address %>
+                            </b>
+                        </div>
 
-                    <div class="pill green">✓ <%= item.sales %>
+                        <div class="pill green" onclick="event.stopPropagation(); window.location.href='/details/<%= item.id %>?type=sales' + window.location.search.replace('?', '&')">
+                            ✓ <%= item.sales %>
+                        </div>
+                        
+                        <div class="pill red" onclick="event.stopPropagation(); window.location.href='/details/<%= item.id %>?type=refusals' + window.location.search.replace('?', '&')">
+                            × <%= item.refusals %>
+                        </div>
+                        
+                        <div class="pill grey" onclick="event.stopPropagation(); window.location.href='/details/<%= item.id %>?type=unknown' + window.location.search.replace('?', '&')">
+                            ① <%= item.unknown %>
+                        </div>
+
                     </div>
-                    <div class="pill red">× <%= item.refusals %>
-                    </div>
-                    <div class="pill grey">① <%= item.unknown %>
-                    </div>
-                </div>
                 </div>
 
                 <div class="total-card">
@@ -106,39 +120,85 @@
                 </div>
 
             </div>
-            <% }) %>
+        <% }) %>
 
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script> <script>
-        flatpickr("#date-range-picker", {
-            mode: "range",
-            dateFormat: "Y-m-d",
-            locale: "ru",
-            onClose: function(selectedDates, dateStr, instance) {
-                if (selectedDates.length === 2) {
-                    const start = instance.formatDate(selectedDates[0], "Y-m-d");
-                    const end = instance.formatDate(selectedDates[1], "Y-m-d");
-                    window.location.href = `/?startDate=${start}&endDate=${end}`;
-                }
-            }
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const dropdown = document.querySelector('.dropdown');
-            const trigger = dropdown.querySelector('.input-capsule');
-            trigger.addEventListener('click', function(event) {
-                event.stopPropagation();
-                dropdown.classList.toggle('active');
-            });
-            document.addEventListener('click', function(event) {
-                if (!dropdown.contains(event.target)) {
-                    dropdown.classList.remove('active');
+        document.addEventListener("DOMContentLoaded", function() {
+            // --- 1. Логика календаря ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const startParam = urlParams.get('startDate');
+            const endParam = urlParams.get('endDate');
+
+            let defaultDates = [];
+            if (startParam && endParam) {
+                defaultDates = [startParam, endParam];
+            }
+
+            flatpickr("#date-range-picker", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d.m.Y",
+                locale: "ru",
+                defaultDate: defaultDates,
+                onClose: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 2) {
+                        const start = instance.formatDate(selectedDates[0], "Y-m-d");
+                        const end = instance.formatDate(selectedDates[1], "Y-m-d");
+                        const currentUrl = new URL(window.location.href);
+                        
+                        currentUrl.searchParams.set('startDate', start);
+                        currentUrl.searchParams.set('endDate', end);
+                        currentUrl.searchParams.delete('period');
+                        
+                        window.location.href = currentUrl.toString();
+                    }
                 }
             });
+
+            // --- 2. Логика выпадающих списков (ТЕПЕРЬ ДЛЯ ВСЕХ) ---
+            const dropdowns = document.querySelectorAll('.dropdown');
+
+            dropdowns.forEach(dropdown => {
+                const trigger = dropdown.querySelector('.input-capsule');
+                
+                trigger.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    
+                    // Закрываем другие открытые списки
+                    dropdowns.forEach(d => {
+                        if (d !== dropdown) d.classList.remove('active');
+                    });
+
+                    dropdown.classList.toggle('active');
+                });
+            });
+            
+            // Закрытие при клике вне
+            document.addEventListener('click', function(event) {
+                dropdowns.forEach(dropdown => {
+                    if (!dropdown.contains(event.target)) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+            });
         });
+
+        // --- 3. Функция сортировки с сохранением дат ---
+        function applySort(sortType) {
+            const currentUrl = new URL(window.location.href);
+            
+            // Устанавливаем сортировку
+            currentUrl.searchParams.set('sortType', sortType);
+            
+            // Даты и период остаются в URL автоматически, так как мы берем window.location.href
+            // Перезагружаем страницу
+            window.location.href = currentUrl.toString();
+        }
     </script>
 </body>
-
 </html>

@@ -1,0 +1,14 @@
+﻿version: '3.8'
+services:
+  app:
+    build: .
+    container_name: fitopharm_local
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./data:/app/data
+    command: npm run dev
+    environment:
+      - CHOKIDAR_USEPOLLING=true

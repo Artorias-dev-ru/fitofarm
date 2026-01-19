@@ -1,0 +1,41 @@
+{
+  "dialog_id": 1,
+  "start_time": 0.712,
+  "end_time": 360.0,
+  "duration": 359.288,
+  "quality": "medium",
+  "avg_confidence": 0.5828783050660165,
+  "num_turns": 31,
+  "speakers": [
+    "SPEAKER_00"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.2,
+    "service_quality_stage2": 0.3,
+    "service_quality_stage3": 0.2,
+    "service_quality_stage4": 0.1,
+    "service_quality_stage5": 0.2,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": 1.0,
+    "politeness": 0.3,
+    "friendliness": 0.4,
+    "manipulativeness": 0.5,
+    "rudeness_detected": 0.6,
+    "query_type_counts": {},
+    "dialog_conversion": 0.0,
+    "sale_occurred": false,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.2,
+    "overall_sales_effectiveness": 0.1,
+    "overall_manipulation_risk": 0.5,
+    "overall_customer_satisfaction": 0.3
+  }
+}
