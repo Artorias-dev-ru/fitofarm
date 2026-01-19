@@ -1,0 +1,42 @@
+{
+  "dialog_id": 4,
+  "start_time": 743.688,
+  "end_time": 887.368,
+  "duration": 143.68000000000006,
+  "quality": "good",
+  "avg_confidence": 0.864255021015803,
+  "num_turns": 12,
+  "speakers": [
+    "SPEAKER_00"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0,
+    "service_quality_stage2": 0,
+    "service_quality_stage3": 0,
+    "service_quality_stage4": 0,
+    "service_quality_stage5": 0,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": 1,
+    "politeness": 0.2,
+    "friendliness": 0.3,
+    "manipulativeness": 0.4,
+    "rudeness_detected": true,
+    "query_type_counts": {},
+    "dialog_conversion": 0,
+    "sale_occurred": false,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.1,
+    "overall_sales_effectiveness": 0,
+    "overall_manipulation_risk": 0.2,
+    "overall_customer_satisfaction": 0.1,
+    "summary": "Диалог не содержит общения оператора и клиента, скорее всего это фрагмент разговора между двумя клиентами или внутри колл-центра. Диалог неструктурированный и отсутствуют элементы профессионального обслуживания."
+  }
+}

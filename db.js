@@ -43,17 +43,17 @@ async function initDB() {
         console.log("data folder not found");
         return;
     }
-    const pharmacyFolders = fs.readdirSync(dataDir); 
+    const pharmacyFolders = fs.readdirSync(dataDir);
     for (const phId of pharmacyFolders) {
         const phPath = path.join(dataDir, phId);
         if (!fs.lstatSync(phPath).isDirectory()) continue;
         const [record] = await Record.findOrCreate({
-            where: { address: phId === "1" ? "тестовая аптека" : `аптека № ${phId}` },
+            where: { address: phId === "1" ? "Владимирская 114" : `аптека № ${phId}` },
             defaults: { city: "Анапа" }
         });
         let dialogCounter = 1;
         let dialogsBatch = [];
-        const groupFolders = fs.readdirSync(phPath).sort(); 
+        const groupFolders = fs.readdirSync(phPath).sort();
         for (const groupFolder of groupFolders) {
             const groupPath = path.join(phPath, groupFolder);
             if (!fs.lstatSync(groupPath).isDirectory()) continue;
@@ -63,8 +63,8 @@ async function initDB() {
                 if (!fs.lstatSync(outPath).isDirectory()) continue;
                 const folderParts = outFolder.split('_');
                 if (folderParts.length < 3) continue;
-                const dateRaw = folderParts[1]; 
-                const timeRaw = folderParts[2]; 
+                const dateRaw = folderParts[1];
+                const timeRaw = folderParts[2];
                 const [dd, mm, yyyy] = dateRaw.split('-');
                 const dbDate = `${yyyy}-${mm}-${dd}`;
                 const baseHour = timeRaw.split('-')[0];
@@ -76,28 +76,38 @@ async function initDB() {
                     const txtFile = files.find(f => f.toLowerCase().endsWith('.txt'));
                     const jsonFile = files.find(f => f.toLowerCase().endsWith('.json'));
                     if (txtFile && jsonFile) {
-                        const txtContent = fs.readFileSync(path.join(dPath, txtFile), 'utf-8');
-                        const jsonData = JSON.parse(fs.readFileSync(path.join(dPath, jsonFile), 'utf-8'));
-                        const dParts = dFolder.split('_');
-                        let finalTime = `${baseHour}:00`; 
-                        if (dParts.length > 1) {
-                            finalTime = `${baseHour}:${dParts[1].substring(2, 4)}`;
+                        try {
+                            const txtContent = fs.readFileSync(path.join(dPath, txtFile), 'utf-8');
+                            const jsonData = JSON.parse(fs.readFileSync(path.join(dPath, jsonFile), 'utf-8'));
+                            const dParts = dFolder.split('_');
+                            let finalTime = `${baseHour}:00`;
+                            if (dParts.length > 1 && dParts[1].length >= 4) {
+                                finalTime = `${baseHour}:${dParts[1].substring(2, 4)}`;
+                            }
+                            let status = 'refusals';
+                            if (dFolder.toLowerCase().includes('bad')) status = 'unknown';
+                            else if (jsonData.metrics && jsonData.metrics.sale_occurred === true) status = 'sales';
+                            let summaryText = "";
+                            if (jsonData.metrics && jsonData.metrics.summary) {
+                                summaryText = jsonData.metrics.summary;
+                            } else if (jsonData.summary) {
+                                summaryText = jsonData.summary;
+                            }
+                            dialogsBatch.push({
+                                title: `dialog ${dialogCounter}`,
+                                number: dialogCounter,
+                                status: status,
+                                text: txtContent,
+                                summary: summaryText,
+                                startTime: finalTime,
+                                date: dbDate,
+                                RecordId: record.id,
+                                note: ""
+                            });
+                            dialogCounter++;
+                        } catch (err) {
+                            console.log(`error parsing dialog ${dFolder} ${err.message}`);
                         }
-                        let status = 'refusals'; 
-                        if (dFolder.toLowerCase().includes('_bad_')) status = 'unknown'; 
-                        else if (jsonData.metrics && jsonData.metrics.sale_occurred === true) status = 'sales'; 
-                        dialogsBatch.push({
-                            title: `dialog ${dialogCounter}`, 
-                            number: dialogCounter,
-                            status: status,
-                            text: txtContent,
-                            summary: `Качество: ${jsonData.quality} Фраз: ${jsonData.num_turns}`,
-                            startTime: finalTime,
-                            date: dbDate,
-                            RecordId: record.id,
-                            note: ""
-                        });
-                        dialogCounter++;
                     }
                 }
             }
@@ -105,6 +115,8 @@ async function initDB() {
         if (dialogsBatch.length > 0) {
             await Dialog.bulkCreate(dialogsBatch);
             console.log(`loaded ${dialogsBatch.length} dialogs for ${record.address}`);
+        } else {
+            console.log(`no dialogs found for ${record.address} folder ${phId}`);
         }
     }
     console.log(`initial load completed took ${(Date.now() - start) / 1000} seconds`);

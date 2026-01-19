@@ -1,0 +1,42 @@
+{
+  "dialog_id": 5,
+  "start_time": 1892.2469375,
+  "end_time": 1995.0,
+  "duration": 102.75306249999994,
+  "quality": "good",
+  "avg_confidence": 0.8001202079984877,
+  "num_turns": 27,
+  "speakers": [
+    "SPEAKER_00"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.2,
+    "service_quality_stage2": 0.3,
+    "service_quality_stage3": 0.4,
+    "service_quality_stage4": 0.5,
+    "service_quality_stage5": 0.6,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": 0.2,
+    "politeness": 0.7,
+    "friendliness": 0.5,
+    "manipulativeness": 0.3,
+    "rudeness_detected": false,
+    "query_type_counts": {},
+    "dialog_conversion": 0.1,
+    "sale_occurred": false,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.4,
+    "overall_sales_effectiveness": 0.2,
+    "overall_manipulation_risk": 0.3,
+    "overall_customer_satisfaction": 0.5,
+    "summary": "Диалог состоит из фрагментов, которые не связаны между собой и кажутся невнятными. Оператор пытается найти информацию по клиенту через номер телефона и другие данные, но продажа не была совершена."
+  }
+}

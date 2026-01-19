@@ -1,0 +1,43 @@
+{
+  "dialog_id": 1,
+  "start_time": 80.0,
+  "end_time": 587.016,
+  "duration": 507.01599999999996,
+  "quality": "medium",
+  "avg_confidence": 0.6585580290488477,
+  "num_turns": 53,
+  "speakers": [
+    "SPEAKER_00",
+    "SPEAKER_01"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.6,
+    "service_quality_stage2": 0.5,
+    "service_quality_stage3": 0.7,
+    "service_quality_stage4": 0.8,
+    "service_quality_stage5": 0.9,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": false,
+    "politeness": 0.9,
+    "friendliness": 0.8,
+    "manipulativeness": 0.1,
+    "rudeness_detected": false,
+    "query_type_counts": {},
+    "dialog_conversion": 1.0,
+    "sale_occurred": true,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.75,
+    "overall_sales_effectiveness": 0.8,
+    "overall_manipulation_risk": 0.2,
+    "overall_customer_satisfaction": 0.85,
+    "summary": "Клиент запросил препарат для профилактики укачивания в дороге. Оператор предложил товар 'Жалина' и рассказал о его использовании. Произошла продажа, клиент оплатил картой. Клиент сообщил об успешном опыте использования продукта ранее."
+  }
+}

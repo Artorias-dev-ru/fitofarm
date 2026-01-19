@@ -1,0 +1,43 @@
+{
+  "dialog_id": 4,
+  "start_time": 2826.7029375,
+  "end_time": 2970.0,
+  "duration": 143.2970624999998,
+  "quality": "medium",
+  "avg_confidence": 0.7264595063109147,
+  "num_turns": 19,
+  "speakers": [
+    "SPEAKER_00",
+    "SPEAKER_01"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.3,
+    "service_quality_stage2": 0.4,
+    "service_quality_stage3": 0.5,
+    "service_quality_stage4": 0.6,
+    "service_quality_stage5": 0.7,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": 0.1,
+    "politeness": 0.8,
+    "friendliness": 0.6,
+    "manipulativeness": 0.3,
+    "rudeness_detected": false,
+    "query_type_counts": {},
+    "dialog_conversion": 0.7,
+    "sale_occurred": true,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.5,
+    "overall_sales_effectiveness": 0.6,
+    "overall_manipulation_risk": 0.2,
+    "overall_customer_satisfaction": 0.5,
+    "summary": "Клиент запрашивает ножку, оператор предполагает потребность в таблетках и предлагает альтернативные варианты. Диалог завершился продажей товара, но процесс был немного путанным."
+  }
+}

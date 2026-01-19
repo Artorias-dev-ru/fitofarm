@@ -1,0 +1,43 @@
+{
+  "dialog_id": 1,
+  "start_time": 6.4469375,
+  "end_time": 431.056,
+  "duration": 424.6090625,
+  "quality": "medium",
+  "avg_confidence": 0.7128524509591794,
+  "num_turns": 109,
+  "speakers": [
+    "SPEAKER_00",
+    "SPEAKER_01"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.2,
+    "service_quality_stage2": 0.3,
+    "service_quality_stage3": 0.4,
+    "service_quality_stage4": 0.5,
+    "service_quality_stage5": 0.6,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": true,
+    "politeness": 0.3,
+    "friendliness": 0.4,
+    "manipulativeness": 0.7,
+    "rudeness_detected": false,
+    "query_type_counts": {},
+    "dialog_conversion": 0.5,
+    "sale_occurred": true,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.4,
+    "overall_sales_effectiveness": 0.6,
+    "overall_manipulation_risk": 0.6,
+    "overall_customer_satisfaction": 0.3,
+    "summary": "Диалог между клиентом и оператором был неразборчивым и неструктурированным, что затрудняло понимание контекста запроса клиента. Несмотря на это, произошла продажа товара, но качество обслуживания было недостаточным из-за сложностей в общении."
+  }
+}

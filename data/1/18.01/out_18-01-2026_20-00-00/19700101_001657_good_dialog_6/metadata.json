@@ -1,0 +1,43 @@
+{
+  "dialog_id": 6,
+  "start_time": 1017.5029375,
+  "end_time": 1462.176,
+  "duration": 444.6730624999999,
+  "quality": "good",
+  "avg_confidence": 0.8648766161397446,
+  "num_turns": 86,
+  "speakers": [
+    "SPEAKER_00",
+    "SPEAKER_01"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.2,
+    "service_quality_stage2": 0.3,
+    "service_quality_stage3": 0.4,
+    "service_quality_stage4": 0.5,
+    "service_quality_stage5": 0.6,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": true,
+    "politeness": 0.7,
+    "friendliness": 0.8,
+    "manipulativeness": 0.4,
+    "rudeness_detected": false,
+    "query_type_counts": {},
+    "dialog_conversion": 0.5,
+    "sale_occurred": false,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.4,
+    "overall_sales_effectiveness": 0.3,
+    "overall_manipulation_risk": 0.5,
+    "overall_customer_satisfaction": 0.6,
+    "summary": "Покупатель и оператор обсуждают оплату за товар, но из-за проблем с системой платежей транзакция не завершена успешно. Оператор предлагает покупателю различные способы решения проблемы, включая использование наличных денег для урегулирования разницы. Продажа не была выполнена из-за технических проблем."
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "dialog_id": 8,
+  "start_time": 2930.0,
+  "end_time": 3176.632,
+  "duration": 246.63200000000006,
+  "quality": "medium",
+  "avg_confidence": 0.6297060239071749,
+  "num_turns": 49,
+  "speakers": [
+    "SPEAKER_00"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.3,
+    "service_quality_stage2": 0.4,
+    "service_quality_stage3": 0.5,
+    "service_quality_stage4": 0.6,
+    "service_quality_stage5": 0.7,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": 0.1,
+    "politeness": 0.8,
+    "friendliness": 0.6,
+    "manipulativeness": 0.3,
+    "rudeness_detected": false,
+    "query_type_counts": {},
+    "dialog_conversion": 1.0,
+    "sale_occurred": true,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.5,
+    "overall_sales_effectiveness": 0.7,
+    "overall_manipulation_risk": 0.2,
+    "overall_customer_satisfaction": 0.6,
+    "summary": "Клиент обратился с вопросом о медицинских препаратах для лечения горла и кишечника, а также температуры тела. Оператор предложил несколько вариантов препаратов и оформил заказ на сумму в 1555 рублей."
+  }
+}

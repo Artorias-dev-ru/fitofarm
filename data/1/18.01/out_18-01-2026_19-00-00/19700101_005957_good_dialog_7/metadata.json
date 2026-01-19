@@ -1,0 +1,42 @@
+{
+  "dialog_id": 7,
+  "start_time": 3597.0229375,
+  "end_time": 3598.4549375,
+  "duration": 1.4320000000002437,
+  "quality": "good",
+  "avg_confidence": 0.8242811560630798,
+  "num_turns": 1,
+  "speakers": [
+    "SPEAKER_00"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.1,
+    "service_quality_stage2": 0.1,
+    "service_quality_stage3": 0.1,
+    "service_quality_stage4": 0.1,
+    "service_quality_stage5": 0.1,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": false,
+    "politeness": 0.9,
+    "friendliness": 0.8,
+    "manipulativeness": 0.2,
+    "rudeness_detected": false,
+    "query_type_counts": {},
+    "dialog_conversion": 0.0,
+    "sale_occurred": false,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.1,
+    "overall_sales_effectiveness": 0.0,
+    "overall_manipulation_risk": 0.05,
+    "overall_customer_satisfaction": 0.75,
+    "summary": "Диалог состоит только из приветствия оператора, не содержится информации о дальнейшем общении, продажах или работе с клиентом."
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "dialog_id": 8,
+  "start_time": 2677.888,
+  "end_time": 3590.0,
+  "duration": 912.1120000000001,
+  "quality": "medium",
+  "avg_confidence": 0.7476489406944525,
+  "num_turns": 198,
+  "speakers": [
+    "SPEAKER_00",
+    "SPEAKER_01"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.2,
+    "service_quality_stage2": 0.3,
+    "service_quality_stage3": 0.4,
+    "service_quality_stage4": 0.5,
+    "service_quality_stage5": 0.6,
+    "loyalty_card_handling": true,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": false,
+    "politeness": 0.7,
+    "friendliness": 0.6,
+    "manipulativeness": 0.3,
+    "rudeness_detected": false,
+    "query_type_counts": {},
+    "dialog_conversion": 1.0,
+    "sale_occurred": true,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.5,
+    "overall_sales_effectiveness": 0.6,
+    "overall_manipulation_risk": 0.4,
+    "overall_customer_satisfaction": 0.7,
+    "summary": "Клиент и оператор обсуждали заказ медикаментов, включая их дозировку и цену. Было использовано бонусное картой для оплаты. Диалог был несколько запутанным из-за сложности информации о препаратах, но конечный результат – успешная продажа."
+  }
+}

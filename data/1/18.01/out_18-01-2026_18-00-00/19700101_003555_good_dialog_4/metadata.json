@@ -1,0 +1,43 @@
+{
+  "dialog_id": 4,
+  "start_time": 2155.0,
+  "end_time": 2429.1020625,
+  "duration": 274.1020625000001,
+  "quality": "good",
+  "avg_confidence": 0.8481637008336126,
+  "num_turns": 49,
+  "speakers": [
+    "SPEAKER_00",
+    "SPEAKER_01"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.3,
+    "service_quality_stage2": 0.4,
+    "service_quality_stage3": 0.5,
+    "service_quality_stage4": 0.6,
+    "service_quality_stage5": 0.4,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": 0,
+    "politeness": 0.7,
+    "friendliness": 0.6,
+    "manipulativeness": 0.2,
+    "rudeness_detected": false,
+    "query_type_counts": {},
+    "dialog_conversion": 0,
+    "sale_occurred": false,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.5,
+    "overall_sales_effectiveness": 0.4,
+    "overall_manipulation_risk": 0.1,
+    "overall_customer_satisfaction": 0.5,
+    "summary": "Оператор предоставляет информацию о расположении аптек и доступности товара, но не происходит продажи или конверсии диалога в продажу."
+  }
+}

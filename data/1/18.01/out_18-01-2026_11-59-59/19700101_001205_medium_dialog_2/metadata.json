@@ -1,0 +1,43 @@
+{
+  "dialog_id": 2,
+  "start_time": 725.0,
+  "end_time": 1485.0,
+  "duration": 760.0,
+  "quality": "medium",
+  "avg_confidence": 0.6604982468546653,
+  "num_turns": 98,
+  "speakers": [
+    "SPEAKER_00",
+    "SPEAKER_01"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.3,
+    "service_quality_stage2": 0.4,
+    "service_quality_stage3": 0.5,
+    "service_quality_stage4": 0.6,
+    "service_quality_stage5": 0.7,
+    "loyalty_card_handling": 0.8,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": false,
+    "politeness": 0.9,
+    "friendliness": 0.6,
+    "manipulativeness": 0.1,
+    "rudeness_detected": false,
+    "query_type_counts": {},
+    "dialog_conversion": 0.5,
+    "sale_occurred": true,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.5,
+    "overall_sales_effectiveness": 0.4,
+    "overall_manipulation_risk": 0.1,
+    "overall_customer_satisfaction": 0.6,
+    "summary": "Покупатель искал определенные медицинские препараты для носа и ушей. Оператор помог найти альтернативные варианты, обрабатывал карту лояльности покупателя, но не продвигал приложение или сайт. Диалог был вежливым и дружелюбным, хотя покупатель выглядел немного непонятно ориентированным. Продажа была успешной."
+  }
+}

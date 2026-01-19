@@ -1,0 +1,43 @@
+{
+  "dialog_id": 2,
+  "start_time": 570.584,
+  "end_time": 647.784,
+  "duration": 77.20000000000005,
+  "quality": "good",
+  "avg_confidence": 0.8540145436922709,
+  "num_turns": 15,
+  "speakers": [
+    "SPEAKER_00",
+    "SPEAKER_01"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.3,
+    "service_quality_stage2": 0.4,
+    "service_quality_stage3": 0.5,
+    "service_quality_stage4": 0.6,
+    "service_quality_stage5": 0.7,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": false,
+    "politeness": 0.1,
+    "friendliness": 0.2,
+    "manipulativeness": 0.3,
+    "rudeness_detected": true,
+    "query_type_counts": {},
+    "dialog_conversion": 0.0,
+    "sale_occurred": false,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.45,
+    "overall_sales_effectiveness": 0.1,
+    "overall_manipulation_risk": 0.2,
+    "overall_customer_satisfaction": 0.35,
+    "summary": "Клиент произносит различные фразы, не связанные с контекстом диалога или вопросами оператора, что указывает на возможные проблемы в коммуникации или конфуз. Оператор демонстрирует недостаточную вежливость и дружелюбие, а также нет данных о продаже или работе с лояльностью клиента."
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "dialog_id": 3,
+  "start_time": 1901.416,
+  "end_time": 3084.64,
+  "duration": 1183.224,
+  "quality": "medium",
+  "avg_confidence": 0.676373007771087,
+  "num_turns": 219,
+  "speakers": [
+    "SPEAKER_00",
+    "SPEAKER_01"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.2,
+    "service_quality_stage2": 0.3,
+    "service_quality_stage3": 0.4,
+    "service_quality_stage4": 0.1,
+    "service_quality_stage5": 0.2,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": true,
+    "politeness": 0.3,
+    "friendliness": 0.4,
+    "manipulativeness": 0.5,
+    "rudeness_detected": true,
+    "query_type_counts": {},
+    "dialog_conversion": 0.1,
+    "sale_occurred": false,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.2,
+    "overall_sales_effectiveness": 0.1,
+    "overall_manipulation_risk": 0.6,
+    "overall_customer_satisfaction": 0.2,
+    "summary": "Диалог неструктурирован и состоит в основном из реплик SPEAKER_00, которые мало связаны с покупкой товаров или услуг. Оператор (SPEAKER_01) минимально взаимодействует. Диалог показывает высокий риск манипулятивного поведения со стороны клиента и недостаточную реакцию оператора."
+  }
+}

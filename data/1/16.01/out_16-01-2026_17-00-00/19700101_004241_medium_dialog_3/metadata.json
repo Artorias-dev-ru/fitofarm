@@ -1,0 +1,43 @@
+{
+  "dialog_id": 3,
+  "start_time": 2561.0949375,
+  "end_time": 3596.9789375,
+  "duration": 1035.884,
+  "quality": "medium",
+  "avg_confidence": 0.7085432345802719,
+  "num_turns": 222,
+  "speakers": [
+    "SPEAKER_00",
+    "SPEAKER_01"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.7,
+    "service_quality_stage2": 0.6,
+    "service_quality_stage3": 0.8,
+    "service_quality_stage4": 0.5,
+    "service_quality_stage5": 0.7,
+    "loyalty_card_handling": true,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": false,
+    "politeness": 0.9,
+    "friendliness": 0.8,
+    "manipulativeness": 0.1,
+    "rudeness_detected": false,
+    "query_type_counts": {},
+    "dialog_conversion": 1.0,
+    "sale_occurred": true,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.7,
+    "overall_sales_effectiveness": 0.8,
+    "overall_manipulation_risk": 0.2,
+    "overall_customer_satisfaction": 0.85,
+    "summary": "Клиент запросил препарат Алакен Альфа и две упаковки другого препарата, которые были предоставлены после проверки наличия в системе. Обсуждалась возможность использования бонусной карты клиента для скидок. В целом, обслуживание было вежливым и профессиональным."
+  }
+}
