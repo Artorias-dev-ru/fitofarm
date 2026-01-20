@@ -31,7 +31,6 @@
             width: 100px;
         }
 
-        /* Общие стили для ползунков */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
@@ -39,6 +38,9 @@
             cursor: pointer;
             height: 14px;
             margin: 0;
+            background-size: 100% 4px;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
         input[type=range]:focus { outline: none; }
@@ -47,7 +49,7 @@
             width: 100%;
             height: 4px;
             cursor: pointer;
-            background: #e0e0e0;
+            background: transparent;
             border-radius: 2px;
         }
         
@@ -191,7 +193,7 @@
                         </div>
                         
                         <div class="volume-control">
-                            <img src="data:image/png;base64,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" style="width: 16px; opacity: 0.7;">
+                            <img src="/icons/volume.svg" style="width: 16px; opacity: 0.7;">
                             <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
                         </div>
                     </div>
@@ -229,8 +231,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
     <script>
@@ -296,12 +296,22 @@
                 updateSliderBackground(volumeSlider);
             });
             
+            // Инициализация фона при загрузке
             updateSliderBackground(volumeSlider);
+            updateSliderBackground(seekSlider);
         }
 
         function updateSliderBackground(slider) {
-            const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
-            slider.style.background = ``;
+            const min = slider.min ? parseFloat(slider.min) : 0;
+            const max = slider.max ? parseFloat(slider.max) : 100;
+            const val = slider.value ? parseFloat(slider.value) : 0;
+            
+            const percentage = (val - min) / (max - min) * 100;
+            
+            slider.style.background = `linear-gradient(to right, #333 0%, #333 ${percentage}%, #e0e0e0 ${percentage}%, #e0e0e0 100%)`;
+            slider.style.backgroundSize = '100% 4px';
+            slider.style.backgroundRepeat = 'no-repeat';
+            slider.style.backgroundPosition = 'center';
         }
 
         function toggleAudio() {
