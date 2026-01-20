@@ -1069,3 +1069,73 @@ span.flatpickr-weekday {
     color: var(--red-accent);
     font-size: 0.9vw;
 }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.2s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.stat-icon {
+    width: 14px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.player-controls .play-btn {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.player-controls .play-btn:hover { opacity: 0.8; }
+.player-disabled { opacity: 0.5; pointer-events: none; }
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    width: 100px;
+}
+
+input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+    cursor: pointer;
+    height: 14px;
+    margin: 0;
+    background-size: 100% 4px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+input[type=range]:focus { outline: none; }
+
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    cursor: pointer;
+    background: transparent;
+    border-radius: 2px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: #333;
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -4px;
+    transition: transform 0.1s;
+}
+
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+#seek-slider { margin-top: 10px; }
+#volume-slider { width: 70px; }
+
+.pill {
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+.pill:hover {
+    transform: scale(1.05);
+}
