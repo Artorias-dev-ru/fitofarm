@@ -162,12 +162,12 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-    const { password } = req.body;
-    if (password === 'admin') {
+    const { username, password } = req.body;
+    if (username === 'admin' && password === 'admin') {
         req.session.isAuthenticated = true;
         res.redirect('/');
     } else {
-        res.render('login', { error: 'Неверный пароль' });
+        res.render('login', { error: 'Неверный логин или пароль' });
     }
 });
 

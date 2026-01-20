@@ -231,6 +231,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
     <script>
         const audio = document.getElementById('main-audio');
         const playIcon = document.getElementById('play-icon');
@@ -238,6 +240,8 @@
         const volumeSlider = document.getElementById('volume-slider');
         const currentTimeEl = document.getElementById('current-time');
         const durationEl = document.getElementById('duration');
+        
+        let isDragging = false;
 
         if (audio) {
             audio.addEventListener('loadedmetadata', () => {
@@ -246,25 +250,45 @@
             });
 
             audio.addEventListener('timeupdate', () => {
-                seekSlider.value = Math.floor(audio.currentTime);
-                currentTimeEl.innerText = formatTime(audio.currentTime);
-                updateSliderBackground(seekSlider);
+                if (!isDragging) {
+                    seekSlider.value = Math.floor(audio.currentTime);
+                    currentTimeEl.innerText = formatTime(audio.currentTime);
+                    updateSliderBackground(seekSlider);
+                }
             });
 
             audio.addEventListener('ended', () => {
                 playIcon.src = "/icons/play.svg";
-                // Возвращаем слайдер в начало
                 seekSlider.value = 0;
                 updateSliderBackground(seekSlider);
             });
 
+            seekSlider.addEventListener('mousedown', () => {
+                isDragging = true;
+            });
+
+            seekSlider.addEventListener('touchstart', () => {
+                isDragging = true;
+            });
+
             seekSlider.addEventListener('input', () => {
+                isDragging = true;
                 currentTimeEl.innerText = formatTime(seekSlider.value);
                 updateSliderBackground(seekSlider);
+                audio.currentTime = seekSlider.value;
             });
 
             seekSlider.addEventListener('change', () => {
                 audio.currentTime = seekSlider.value;
+                isDragging = false;
+            });
+
+            seekSlider.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            seekSlider.addEventListener('touchend', () => {
+                isDragging = false;
             });
 
             volumeSlider.addEventListener('input', (e) => {
@@ -284,7 +308,6 @@
             if (!audio) return;
             if (audio.paused) {
                 audio.play();
-                // playIcon.src = "/icons/pause.svg"; // Если добавите иконку паузы
             } else {
                 audio.pause();
                 playIcon.src = "/icons/play.svg";
@@ -292,6 +315,7 @@
         }
 
         function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return "0:00";
             const m = Math.floor(seconds / 60);
             const s = Math.floor(seconds % 60);
             return `${m}:${s < 10 ? '0' : ''}${s}`;
@@ -300,6 +324,7 @@
         function openTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
             document.getElementById('tab-' + tabName).classList.add('active');
             const btnIndex = tabName === 'summary' ? 0 : 1;
             document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
@@ -320,13 +345,16 @@
             const text = document.getElementById('note-textarea').value;
             const btn = document.querySelector('.save-btn');
             const originalText = btn.innerText;
+            
             btn.innerText = "Сохранение...";
+            
             try {
                 const response = await fetch('/api/save-note', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ dialogId: dialogId, note: text })
                 });
+                
                 if (response.ok) {
                     btn.innerText = "Сохранено!";
                     setTimeout(() => btn.innerText = originalText, 2000);
@@ -340,15 +368,13 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
-            // --- ЛОГИКА АВТОПРОКРУТКИ К АКТИВНОМУ ДИАЛОГУ ---
             const activeCard = document.querySelector('.dialog-card.active');
             if (activeCard) {
                 activeCard.scrollIntoView({
-                    behavior: 'auto', // Прокручиваем мгновенно при загрузке
-                    block: 'center'   // Ставим по центру списка
+                    behavior: 'auto',
+                    block: 'center'
                 });
             }
-            // ------------------------------------------------
 
             const urlParams = new URLSearchParams(window.location.search);
             const startParam = urlParams.get('startDate');

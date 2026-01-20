@@ -9,7 +9,8 @@
         <img src="/logo.svg" alt="ФИТОФАРМ">
         <% if(error) { %> <p><%= error %></p> <% } %>
         <form action="/login" method="POST" class="flex-col" style="gap:1vh;">
-            <input type="password" name="password" placeholder="Введите пароль (admin)">
+            <input type="text" name="username" placeholder="Логин" required>
+            <input type="password" name="password" placeholder="Пароль" required>
             <button type="submit">Войти</button>
         </form>
     </div>

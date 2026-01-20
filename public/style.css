@@ -48,6 +48,7 @@ body {
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     border: 2px solid rgb(23, 173, 23);
     border-top: none;
+    height: 9vh;
 }
 
 .filter-row {
@@ -759,7 +760,7 @@ span.flatpickr-weekday {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 11vh);
 }
 
 .object-header {
