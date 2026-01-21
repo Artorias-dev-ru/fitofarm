@@ -3,16 +3,16 @@
 <head>
     <title>Детали адреса</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="<%= baseUrl %>/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 </head>
 <body>
     <div class="header-container">
     <div class="logo-row">
-        <a href="/">
+        <a href="<%= baseUrl %>/">
             <div class="logo-box">
-                <img src="/logo.svg" alt="ФИТОФАРМ" style="height: 6vh;">
+                <img src="<%= baseUrl %>/logo.svg" alt="ФИТОФАРМ" style="height: 6vh;">
             </div>
         </a>
     </div>
@@ -30,31 +30,31 @@
             <div class="header-stats">
                 <div class="stats-group">
                     <span class="stats-label">Продажа</span>
-                    <a href="/details/<%= item.id %>?type=sales" class="stat-card sales">
-                        <img src="/icons/sale.svg" class="stat-icon" style="width: 25px; margin-right: 10px;" alt="Sales">
+                    <a href="<%= baseUrl %>/details/<%= item.id %>?type=sales" class="stat-card sales">
+                        <img src="<%= baseUrl %>/icons/sale.svg" class="stat-icon" style="width: 25px; margin-right: 10px;" alt="Sales">
                         <%= item.sales %>
                     </a>
                 </div>
 
                 <div class="stats-group">
                     <span class="stats-label">Отказы</span>
-                    <a href="/details/<%= item.id %>?type=refusals" class="stat-card refusals">
-                        <img src="/icons/refuse.svg" class="stat-icon" style="width: 25px; margin-right: 10px;" alt="Refusals">
+                    <a href="<%= baseUrl %>/details/<%= item.id %>?type=refusals" class="stat-card refusals">
+                        <img src="<%= baseUrl %>/icons/refuse.svg" class="stat-icon" style="width: 25px; margin-right: 10px;" alt="Refusals">
                         <%= item.refusals %>
                     </a>
                 </div>
 
                 <div class="stats-group">
                     <span class="stats-label">Нераспозн</span>
-                    <a href="/details/<%= item.id %>?type=unknown" class="stat-card unknown">
-                        <img src="/icons/warning.svg" class="stat-icon" style="width: 35px; margin-right: 10px;" alt="Unknown" style="opacity: 0.6;">
+                    <a href="<%= baseUrl %>/details/<%= item.id %>?type=unknown" class="stat-card unknown">
+                        <img src="<%= baseUrl %>/icons/warning.svg" class="stat-icon" style="width: 35px; margin-right: 10px;" alt="Unknown" style="opacity: 0.6;">
                         <%= item.unknown %>
                     </a>
                 </div>
 
                 <div class="stats-group">
                     <span class="stats-label">Итого</span>
-                    <a href="/details/<%= item.id %>" class="stat-card total">
+                    <a href="<%= baseUrl %>/details/<%= item.id %>" class="stat-card total">
                         <%= item.sales + item.refusals + item.unknown %>
                     </a>
                 </div>
@@ -74,11 +74,11 @@
                     <div style="color: #999; text-align: center; margin-top: 20px;">Нет диалогов</div>
                 <% } %>
                 <% dialogues.forEach(dialog => { %>
-                    <a href="/details/<%= item.id %>?type=<%= activeType %>&dialogId=<%= dialog.id %>&tab=<%= activeTab %>" 
+                    <a href="<%= baseUrl %>/details/<%= item.id %>?type=<%= activeType %>&dialogId=<%= dialog.id %>&tab=<%= activeTab %>" 
                        class="dialog-card <%= (activeDialog && activeDialog.id === dialog.id) ? 'active' : '' %>"
                        style="text-decoration: none;">
                         <span>Диалог <%= dialog.number %></span>
-                        <img src="/icons/download.svg" class="download-icon" style="width: 16px; opacity: 0.5;"> 
+                        <img src="<%= baseUrl %>/icons/download.svg" class="download-icon" style="width: 16px; opacity: 0.5;"> 
                     </a>
                 <% }) %>
             </div>
@@ -94,12 +94,12 @@
                         </div>
                         <div style="display: flex; gap: 10px; opacity: 0.5;">
                             <div style="display: flex; gap: 10px; opacity: 0.5;">
-                                <img src="/icons/copy.svg" 
+                                <img src="<%= baseUrl %>/icons/copy.svg" 
                                      style="width: 18px; height: 18px; cursor: pointer;" 
                                      alt="Копировать"
                                      title="Копировать текст">
     
-                                <img src="/icons/download.svg" 
+                                <img src="<%= baseUrl %>/icons/download.svg" 
                                      style="width: 18px; height: 18px; cursor: pointer;" 
                                      alt="Скачать"
                                      title="Скачать транскрипцию">
@@ -118,12 +118,12 @@
 
                 <div class="audio-player-mock <%= (!activeDialog || !activeDialog.audioUrl) ? 'player-disabled' : '' %>">
                     <% if (activeDialog && activeDialog.audioUrl) { %>
-                        <audio id="main-audio" src="<%= activeDialog.audioUrl %>"></audio>
+                        <audio id="main-audio" src="<%= activeDialog.audioUrl ? baseUrl + activeDialog.audioUrl : '' %>"></audio>
                     <% } %>
                     
                     <div class="player-controls">
                         <div class="play-btn" onclick="toggleAudio()">
-                            <img id="play-icon" src="/icons/play.svg" style="width: 25px; filter: invert(1);">
+                            <img id="play-icon" src="<%= baseUrl %>/icons/play.svg" style="width: 25px; filter: invert(1);">
                         </div>
                         <div style="font-size: 12px; font-weight: 600; min-width: 80px;">
                             <span id="current-time">0:00</span> / <span id="duration">0:00</span>
@@ -195,7 +195,7 @@
             });
 
             audio.addEventListener('ended', () => {
-                playIcon.src = "/icons/play.svg";
+                playIcon.src = "<%= baseUrl %>/icons/play.svg";
                 seekSlider.value = 0;
                 updateSliderBackground(seekSlider);
             });
@@ -233,7 +233,6 @@
                 updateSliderBackground(volumeSlider);
             });
             
-            // Инициализация фона при загрузке
             updateSliderBackground(volumeSlider);
             updateSliderBackground(seekSlider);
         }
@@ -257,7 +256,7 @@
                 audio.play();
             } else {
                 audio.pause();
-                playIcon.src = "/icons/play.svg";
+                playIcon.src = "<%= baseUrl %>/icons/play.svg";
             }
         }
 
@@ -296,7 +295,7 @@
             btn.innerText = "Сохранение...";
             
             try {
-                const response = await fetch('/api/save-note', {
+                const response = await fetch('<%= baseUrl %>/api/save-note', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ dialogId: dialogId, note: text })

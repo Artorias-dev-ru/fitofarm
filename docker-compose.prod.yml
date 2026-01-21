@@ -1,14 +1,42 @@
-version: '3.8'
-
 services:
-  app:
+  # Основной проект (Фитофарм)
+  fitofarm:
+    container_name: fitofarm_app
     build: .
-    container_name: fitopharm_prod
-    ports:
-      - "80:3000"
-    volumes:
-      - ./database.sqlite:/usr/src/app/database.sqlite
-      - ./data:/usr/src/app/data
     restart: always
+    # В проде запускаем node server.js (без nodemon)
+    command: npm start
     environment:
       - NODE_ENV=production
+      - BASE_URL=
+      - DB_FILE=database_fitofarm.sqlite
+      - DATA_FOLDER=data/fitofarm
+    volumes:
+      # Монтируем ТОЛЬКО данные. Код берется из образа.
+      - ./data:/app/data
+      - ./database_fitofarm.sqlite:/app/database_fitofarm.sqlite
+
+  # Второй проект (Колцентр)
+  callcenter:
+    container_name: callcenter_app
+    build: .
+    restart: always
+    command: npm start
+    environment:
+      - NODE_ENV=production
+      - BASE_URL=/callcenter
+      - DB_FILE=database_callcenter.sqlite
+      - DATA_FOLDER=data/callcenter
+    volumes:
+      - ./data:/app/data
+      - ./database_callcenter.sqlite:/app/database_callcenter.sqlite
+  nginx:
+    image: nginx:alpine
+    container_name: fitofarm_gateway
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - fitofarm
+      - callcenter

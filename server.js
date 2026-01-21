@@ -7,8 +7,15 @@ const { Record, Dialog, Op, initDB } = require('./db');
 
 const app = express();
 
+const BASE_URL = process.env.BASE_URL || '';
+const DATA_FOLDER = process.env.DATA_FOLDER || 'data';
+
+app.use(BASE_URL, express.static(path.join(__dirname, 'public')));
+app.use(BASE_URL + '/public', express.static(path.join(__dirname, 'public')));
+
+app.use(BASE_URL + '/data', express.static(path.join(__dirname, DATA_FOLDER)));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/data', express.static(path.join(__dirname, 'data')));
+
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -16,14 +23,20 @@ app.use(bodyParser.json());
 app.use(session({
     secret: 'fitopharm_secret_key',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: { path: BASE_URL || '/' }
 }));
+
+app.use((req, res, next) => {
+    res.locals.baseUrl = BASE_URL;
+    next();
+});
 
 function checkAuth(req, res, next) {
     if (req.session.isAuthenticated) {
         next();
     } else {
-        res.redirect('/login');
+        res.redirect(BASE_URL + '/login');
     }
 }
 
@@ -42,18 +55,18 @@ function getDateWhere(period, startDate, endDate) {
     return { [Op.not]: null }; 
 }
 
-app.post('/api/save-note', checkAuth, async (req, res) => {
+app.post(BASE_URL + '/api/save-note', checkAuth, async (req, res) => {
     try {
         const { dialogId, note } = req.body;
         await Dialog.update({ note: note }, { where: { id: dialogId } });
         res.json({ success: true });
     } catch (err) {
-        console.error("Ошибка сохранения заметки:", err);
+        console.error("Error saving note:", err);
         res.status(500).json({ success: false });
     }
 });
 
-app.get('/', checkAuth, async (req, res) => {
+app.get(BASE_URL + '/', checkAuth, async (req, res) => {
     const { period, sortType, startDate, endDate } = req.query;
     const activePeriod = period || (startDate ? '' : 'year');
     const dateWhere = getDateWhere(activePeriod, startDate, endDate);
@@ -96,11 +109,11 @@ app.get('/', checkAuth, async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).send("Ошибка сервера: " + err.message);
+        res.status(500).send("Server Error: " + err.message);
     }
 });
 
-app.get('/details/:id', checkAuth, async (req, res) => {
+app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
     try {
         const { startDate, endDate, type, dialogId, period, tab } = req.query;
         const recordId = req.params.id;
@@ -109,7 +122,7 @@ app.get('/details/:id', checkAuth, async (req, res) => {
         const dateWhere = getDateWhere(activePeriod, startDate, endDate);
 
         const itemRaw = await Record.findByPk(recordId);
-        if (!itemRaw) return res.redirect('/');
+        if (!itemRaw) return res.redirect(BASE_URL + '/');
         
         const allDialogs = await Dialog.findAll({ 
             where: { RecordId: recordId, date: dateWhere } 
@@ -153,29 +166,29 @@ app.get('/details/:id', checkAuth, async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).send("Ошибка при загрузке деталей");
+        res.status(500).send("Error loading details");
     }
 });
 
-app.get('/login', (req, res) => {
+app.get(BASE_URL + '/login', (req, res) => {
     res.render('login', { error: null });
 });
 
-app.post('/login', (req, res) => {
+app.post(BASE_URL + '/login', (req, res) => {
     const { username, password } = req.body;
     if (username === 'admin' && password === 'admin') {
         req.session.isAuthenticated = true;
-        res.redirect('/');
+        res.redirect(BASE_URL + '/');
     } else {
-        res.render('login', { error: 'Неверный логин или пароль' });
+        res.render('login', { error: 'Invalid login or password' });
     }
 });
 
-console.log("Ждем загрузки данных...");
+console.log("Waiting for data load...");
 initDB().then(() => {
     app.listen(3000, () => {
         console.log('Server started on port 3000 (Data fully loaded)');
     });
 }).catch(err => {
-    console.error("Ошибка инициализации БД:", err);
+    console.error("DB Initialization Error:", err);
 });

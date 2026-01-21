@@ -4,16 +4,16 @@
 <head>
     <title>Дашборд аптек</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="<%= baseUrl %>/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 
 <body>
     <div class="header-container">
         <div class="logo-row">
-            <a href="/">
+            <a href="<%= baseUrl %>/">
                 <div class="logo-box">
-                    <img src="/logo.svg" alt="ФИТОФАРМ" style="height: 6vh;">
+                    <img src="<%= baseUrl %>/logo.svg" alt="ФИТОФАРМ" style="height: 6vh;">
                 </div>
             </a>
         </div>
@@ -79,7 +79,7 @@
         <% data.forEach(item => { %>
             <div class="grid-system data-row-container">
 
-                <div class="data-main-card" onclick="window.location.href='/details/<%= item.id %>' + window.location.search">
+                <div class="data-main-card" onclick="window.location.href='<%= baseUrl %>/details/<%= item.id %>' + window.location.search">
                     <div class="data-main-card_border">
                         <div class="address-cell">
                             <b style="font-size: 0.9vw;">
@@ -88,15 +88,15 @@
                         </div>
 
                         <div class="pill green">
-                            <img src="/icons/sale.svg" style="width: 15px; margin-right: 5px;"> <%= item.sales %>
+                            <img src="<%= baseUrl %>/icons/sale.svg" style="width: 15px; margin-right: 5px;"> <%= item.sales %>
                         </div>
                         
                         <div class="pill red">
-                            <img src="/icons/refuse.svg" style="width: 15px; margin-right: 5px;"> <%= item.refusals %>
+                            <img src="<%= baseUrl %>/icons/refuse.svg" style="width: 15px; margin-right: 5px;"> <%= item.refusals %>
                         </div>
                         
                         <div class="pill grey">
-                            <img src="/icons/warning.svg" style="width: 20px; margin-right: 5px;"> <%= item.unknown %>
+                            <img src="<%= baseUrl %>/icons/warning.svg" style="width: 20px; margin-right: 5px;"> <%= item.unknown %>
                         </div>
 
                     </div>

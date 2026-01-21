@@ -2,13 +2,13 @@
 <html>
 <head>
     <title>Вход</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="<%= baseUrl %>/style.css">
 </head>
 <body class="center">
     <div class="login-box">
-        <img src="/logo.svg" alt="ФИТОФАРМ">
+        <img src="<%= baseUrl %>/logo.svg" alt="ФИТОФАРМ">
         <% if(error) { %> <p><%= error %></p> <% } %>
-        <form action="/login" method="POST" class="flex-col" style="gap:1vh;">
+        <form action="<%= baseUrl %>/login" method="POST" class="flex-col" style="gap:1vh;">
             <input type="text" name="username" placeholder="Логин" required>
             <input type="password" name="password" placeholder="Пароль" required>
             <button type="submit">Войти</button>

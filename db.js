@@ -2,9 +2,13 @@ const { Sequelize, DataTypes, Op } = require('sequelize');
 const path = require('path');
 const fs = require('fs');
 
+const DB_FILE = process.env.DB_FILE || 'database.sqlite';
+const DATA_FOLDER = process.env.DATA_FOLDER || 'data';
+const BASE_URL = process.env.BASE_URL || '';
+
 const sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: path.join(__dirname, 'database.sqlite'),
+    storage: path.join(__dirname, DB_FILE),
     logging: false
 });
 
@@ -23,25 +27,35 @@ const Dialog = sequelize.define('Dialog', {
     endTime: DataTypes.STRING,
     number: { type: DataTypes.INTEGER, allowNull: false },
     note: { type: DataTypes.TEXT },
-    audioUrl: { type: DataTypes.STRING }
+    audioUrl: { type: DataTypes.STRING },
+    folderPath: { type: DataTypes.STRING, unique: true } 
 });
 
 Record.hasMany(Dialog);
 Dialog.belongsTo(Record);
 
 async function initDB() {
-    console.log("checking database");
+    console.log("Checking database...");
     const start = Date.now();
-    await sequelize.sync({ force: true });
-    console.log("database cleared starting fresh load from files");
 
-    const dataDir = path.join(__dirname, 'data');
+    await sequelize.sync({ alter: true });
+    
+    console.log("Database synced. Starting incremental load...");
+
+    const dataDir = path.join(__dirname, DATA_FOLDER);
     if (!fs.existsSync(dataDir)) {
-        console.log("data folder not found");
+        console.log("Data folder not found");
         return;
     }
 
+    const allExistingDialogs = await Dialog.findAll({
+        attributes: ['folderPath']
+    });
+    const existingPaths = new Set(allExistingDialogs.map(d => d.folderPath).filter(Boolean));
+    console.log(`Found ${existingPaths.size} existing dialogs in DB. Checking for new ones...`);
+
     const pharmacyFolders = fs.readdirSync(dataDir);
+    
     for (const phId of pharmacyFolders) {
         const phPath = path.join(dataDir, phId);
         if (!fs.lstatSync(phPath).isDirectory()) continue;
@@ -52,7 +66,9 @@ async function initDB() {
         });
 
         let dialogCounter = 1;
+        let newDialogsCount = 0;
         let dialogsBatch = [];
+        
         const groupFolders = fs.readdirSync(phPath).sort();
 
         for (const groupFolder of groupFolders) {
@@ -75,22 +91,28 @@ async function initDB() {
                 const baseHour = timeRaw.split('-')[0];
 
                 const outFiles = fs.readdirSync(outPath);
-                const audioFile = outFiles.find(f => ['.mp3', '.wav', '.ogg', '.m4a'].some(ext => f.toLowerCase().endsWith(ext)));
-                let audioWebPath = null;
-
-                if (audioFile) {
-                    audioWebPath = `/data/${phId}/${groupFolder}/${outFolder}/${audioFile}`;
-                }
-
                 const dialogFolders = outFiles.filter(f => fs.lstatSync(path.join(outPath, f)).isDirectory());
 
                 for (const dFolder of dialogFolders) {
                     const dPath = path.join(outPath, dFolder);
 
+                    const uniquePathKey = path.relative(dataDir, dPath);
+
+                    if (existingPaths.has(uniquePathKey)) {
+                        dialogCounter++; 
+                        continue; 
+                    }
+
                     const files = fs.readdirSync(dPath);
                     const txtFile = files.find(f => f.toLowerCase().endsWith('.txt'));
                     const jsonFile = files.find(f => f.toLowerCase().endsWith('.json'));
 
+                    const audioFile = files.find(f => ['.mp3', '.wav', '.ogg', '.m4a'].some(ext => f.toLowerCase().endsWith(ext)));
+                    let audioWebPath = null;
+
+                    if (audioFile) {
+                        audioWebPath = `${BASE_URL}/data/${phId}/${groupFolder}/${outFolder}/${dFolder}/${audioFile}`;
+                    }
                     if (txtFile && jsonFile) {
                         try {
                             const rawTxtContent = fs.readFileSync(path.join(dPath, txtFile), 'utf-8');
@@ -129,12 +151,15 @@ async function initDB() {
                                 date: dbDate,
                                 RecordId: record.id,
                                 note: "",
-                                audioUrl: audioWebPath
+                                audioUrl: audioWebPath,
+                                folderPath: uniquePathKey
                             });
+                            
                             dialogCounter++;
+                            newDialogsCount++;
 
                         } catch (err) {
-                            console.log(`error parsing dialog ${dFolder} ${err.message}`);
+                            console.log(`Error parsing new dialog ${dFolder}: ${err.message}`);
                         }
                     }
                 }
@@ -142,13 +167,11 @@ async function initDB() {
         }
 
         if (dialogsBatch.length > 0) {
-            await Dialog.bulkCreate(dialogsBatch);
-            console.log(`loaded ${dialogsBatch.length} dialogs for ${record.address}`);
-        } else {
-            console.log(`no dialogs found for ${record.address}`);
+            await Dialog.bulkCreate(dialogsBatch, { ignoreDuplicates: true });
+            console.log(`Added ${newDialogsCount} NEW dialogs for ${record.address}`);
         }
     }
-    console.log(`initial load completed took ${(Date.now() - start) / 1000} seconds`);
+    console.log(`Incremental load completed took ${(Date.now() - start) / 1000} seconds`);
 }
 
 module.exports = { Record, Dialog, Op, initDB };
