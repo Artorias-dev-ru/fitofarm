@@ -93,21 +93,31 @@
                             </span>
                         </div>
                         <div style="display: flex; gap: 10px; opacity: 0.5;">
-                            <div style="display: flex; gap: 10px; opacity: 0.5;">
-                                <img src="<%= baseUrl %>/icons/copy.svg" 
-                                     style="width: 18px; height: 18px; cursor: pointer;" 
-                                     alt="Копировать"
-                                     title="Копировать текст">
-    
-                                <img src="<%= baseUrl %>/icons/download.svg" 
-                                     style="width: 18px; height: 18px; cursor: pointer;" 
-                                     alt="Скачать"
-                                     title="Скачать транскрипцию">
-                            </div>
+                            <img src="<%= baseUrl %>/icons/copy.svg" style="width: 18px; height: 18px; cursor: pointer;" alt="Копировать" title="Копировать текст">
+                            <img src="<%= baseUrl %>/icons/download.svg" style="width: 18px; height: 18px; cursor: pointer;" alt="Скачать" title="Скачать транскрипцию">
                         </div>
                     </div>
-                    <div style="overflow-y: auto;height: 90%;"><pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px;"><%= activeDialog.text %></pre></div>
-                <% } else { %>
+
+                    <% if (activeDialog.transcribedText) { %>
+                        <div style="display: flex; height: 90%; gap: 20px;">
+                            <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid #eee; padding-right: 10px;">
+                                <div style="overflow-y: auto; flex: 1;">
+                                    <pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px;"><%= activeDialog.text %></pre>
+                                </div>
+                            </div>
+                            
+                            <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+                                <div style="overflow-y: auto; flex: 1;">
+                                    <pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px;"><%= activeDialog.transcribedText %></pre>
+                                </div>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <div style="overflow-y: auto; height: 90%;">
+                            <pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px;"><%= activeDialog.text %></pre>
+                        </div>
+                    <% } %>
+                    <% } else { %>
                     <div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #999;">
                         Выберите диалог из списка слева
                     </div>
@@ -180,11 +190,47 @@
         
         let isDragging = false;
 
-        if (audio) {
-            audio.addEventListener('loadedmetadata', () => {
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return "0:00";
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function updateSliderBackground(slider) {
+            const min = slider.min ? parseFloat(slider.min) : 0;
+            const max = slider.max ? parseFloat(slider.max) : 100;
+            const val = slider.value ? parseFloat(slider.value) : 0;
+            
+            // Защита от деления на ноль
+            let percentage = 0;
+            if (max > min) {
+                percentage = (val - min) / (max - min) * 100;
+            }
+            
+            slider.style.background = `linear-gradient(to right, #333 0%, #333 ${percentage}%, #e0e0e0 ${percentage}%, #e0e0e0 100%)`;
+            slider.style.backgroundSize = '100% 4px';
+            slider.style.backgroundRepeat = 'no-repeat';
+            slider.style.backgroundPosition = 'center';
+        }
+
+        // Функция обновления метаданных (вынесли отдельно)
+        function initAudioMetadata() {
+            if (!isNaN(audio.duration) && audio.duration !== Infinity) {
                 durationEl.innerText = formatTime(audio.duration);
                 seekSlider.max = Math.floor(audio.duration);
-            });
+            }
+            updateSliderBackground(seekSlider);
+        }
+
+        if (audio) {
+            // 1. Слушаем событие загрузки (для новых треков)
+            audio.addEventListener('loadedmetadata', initAudioMetadata);
+
+            // 2. ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверяем, не загрузилось ли аудио уже (для кэша)
+            if (audio.readyState >= 1) {
+                initAudioMetadata();
+            }
 
             audio.addEventListener('timeupdate', () => {
                 if (!isDragging) {
@@ -200,80 +246,64 @@
                 updateSliderBackground(seekSlider);
             });
 
-            seekSlider.addEventListener('mousedown', () => {
-                isDragging = true;
-            });
-
-            seekSlider.addEventListener('touchstart', () => {
-                isDragging = true;
-            });
+            // Логика перетаскивания (исправлена дерготня)
+            seekSlider.addEventListener('mousedown', () => isDragging = true);
+            seekSlider.addEventListener('touchstart', () => isDragging = true);
 
             seekSlider.addEventListener('input', () => {
                 isDragging = true;
                 currentTimeEl.innerText = formatTime(seekSlider.value);
                 updateSliderBackground(seekSlider);
-                audio.currentTime = seekSlider.value;
+                // При перетаскивании меняем время плавно, но с осторожностью
+                // audio.currentTime = seekSlider.value; <--- Это можно убрать если лагает
             });
 
             seekSlider.addEventListener('change', () => {
+                // Применяем время только когда отпустили ползунок (change)
                 audio.currentTime = seekSlider.value;
                 isDragging = false;
             });
 
-            seekSlider.addEventListener('mouseup', () => {
-                isDragging = false;
-            });
-
-            seekSlider.addEventListener('touchend', () => {
-                isDragging = false;
-            });
+            seekSlider.addEventListener('mouseup', () => isDragging = false);
+            seekSlider.addEventListener('touchend', () => isDragging = false);
 
             volumeSlider.addEventListener('input', (e) => {
                 audio.volume = e.target.value;
                 updateSliderBackground(volumeSlider);
             });
-            
+
+            // Инициализация фона при загрузке
             updateSliderBackground(volumeSlider);
             updateSliderBackground(seekSlider);
         }
 
-        function updateSliderBackground(slider) {
-            const min = slider.min ? parseFloat(slider.min) : 0;
-            const max = slider.max ? parseFloat(slider.max) : 100;
-            const val = slider.value ? parseFloat(slider.value) : 0;
-            
-            const percentage = (val - min) / (max - min) * 100;
-            
-            slider.style.background = `linear-gradient(to right, #333 0%, #333 ${percentage}%, #e0e0e0 ${percentage}%, #e0e0e0 100%)`;
-            slider.style.backgroundSize = '100% 4px';
-            slider.style.backgroundRepeat = 'no-repeat';
-            slider.style.backgroundPosition = 'center';
-        }
-
         function toggleAudio() {
             if (!audio) return;
+            
             if (audio.paused) {
-                audio.play();
+                audio.play()
+                    .then(() => {
+                        playIcon.src = "<%= baseUrl %>/icons/pause.svg";
+                    })
+                    .catch(e => console.error("Ошибка воспроизведения:", e));
             } else {
                 audio.pause();
                 playIcon.src = "<%= baseUrl %>/icons/play.svg";
             }
         }
 
-        function formatTime(seconds) {
-            if (!seconds || isNaN(seconds)) return "0:00";
-            const m = Math.floor(seconds / 60);
-            const s = Math.floor(seconds % 60);
-            return `${m}:${s < 10 ? '0' : ''}${s}`;
-        }
+        // --- Остальные функции (табы, заметки, календарь) ---
 
         function openTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             
             document.getElementById('tab-' + tabName).classList.add('active');
+            // Индекс кнопки: summary = 0, notes = 1
             const btnIndex = tabName === 'summary' ? 0 : 1;
-            document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+            if(document.querySelectorAll('.tab-btn')[btnIndex]) {
+                document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+            }
 
             const currentUrl = new URL(window.location.href);
             currentUrl.searchParams.set('tab', tabName);
@@ -293,14 +323,13 @@
             const originalText = btn.innerText;
             
             btn.innerText = "Сохранение...";
-            
             try {
                 const response = await fetch('<%= baseUrl %>/api/save-note', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ dialogId: dialogId, note: text })
                 });
-                
+
                 if (response.ok) {
                     btn.innerText = "Сохранено!";
                     setTimeout(() => btn.innerText = originalText, 2000);

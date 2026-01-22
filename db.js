@@ -28,7 +28,9 @@ const Dialog = sequelize.define('Dialog', {
     number: { type: DataTypes.INTEGER, allowNull: false },
     note: { type: DataTypes.TEXT },
     audioUrl: { type: DataTypes.STRING },
-    folderPath: { type: DataTypes.STRING, unique: true } 
+    folderPath: { type: DataTypes.STRING, unique: true },
+    // Новое поле для второго текста (сравнение)
+    transcribedText: { type: DataTypes.TEXT }
 });
 
 Record.hasMany(Dialog);
@@ -38,7 +40,9 @@ async function initDB() {
     console.log("Checking database...");
     const start = Date.now();
     
-    await sequelize.sync({ alter: true });
+    // ИЗМЕНЕНИЕ: Убрали { alter: true }. Теперь просто подключаемся.
+    // Это предотвращает ошибки "SQLITE_ERROR" при рестарте.
+    await sequelize.sync();
     
     console.log(`Database synced. Starting load from: ${DATA_FOLDER}`);
 
@@ -51,6 +55,7 @@ async function initDB() {
     const allExistingDialogs = await Dialog.findAll({
         attributes: ['folderPath']
     });
+    // Используем Set для быстрой проверки дубликатов
     const existingPaths = new Set(allExistingDialogs.map(d => d.folderPath).filter(Boolean));
     console.log(`Found ${existingPaths.size} existing dialogs. Checking for new ones...`);
 
@@ -62,6 +67,7 @@ async function initDB() {
         
         const outputDir = path.join(dataDir, 'output');
         const ishodDir = path.join(dataDir, 'ishod');
+        const mp3OutputDir = path.join(dataDir, 'output-mp3'); // Папка со вторыми текстами
 
         if (!fs.existsSync(outputDir)) {
             console.log("Folder 'output' not found inside callcenter data.");
@@ -81,11 +87,13 @@ async function initDB() {
         for (const txtFile of files) {
             const uniquePathKey = txtFile;
 
+            // Если файл уже есть в базе — пропускаем (экономим время и нервы)
             if (existingPaths.has(uniquePathKey)) {
                 continue;
             }
 
             try {
+                // Парсинг имени файла: in-s-8900...
                 const parts = txtFile.split('-');
                 if (parts.length < 5) continue;
 
@@ -99,6 +107,7 @@ async function initDB() {
                 const txtPath = path.join(outputDir, txtFile);
                 const txtContent = fs.readFileSync(txtPath, 'utf-8');
 
+                // Аудио
                 const audioName = txtFile.replace('.txt', '.mp3');
                 const audioFullPath = path.join(ishodDir, audioName);
                 let audioWebPath = null;
@@ -107,12 +116,48 @@ async function initDB() {
                     audioWebPath = `/data/ishod/${audioName}`;
                 }
 
+                // --- НОВАЯ ЛОГИКА: Поиск второго текста и JSON summary ---
+                let transcribedText = "";
+                let summaryText = `Тел: ${phone}`;
+
+                const folderName = txtFile.replace('.txt', ''); // Имя папки в output-mp3
+                const specificMp3OutputDir = path.join(mp3OutputDir, folderName);
+
+                if (fs.existsSync(specificMp3OutputDir) && fs.lstatSync(specificMp3OutputDir).isDirectory()) {
+                    // Внутри лежит папка с непонятным именем (например 1970...), берем первую попавшуюся
+                    const subfolders = fs.readdirSync(specificMp3OutputDir);
+                    if (subfolders.length > 0) {
+                        const innerPath = path.join(specificMp3OutputDir, subfolders[0]);
+                        
+                        // 1. Второй текст (dialog.txt)
+                        const compareTxtPath = path.join(innerPath, 'dialog.txt');
+                        if (fs.existsSync(compareTxtPath)) {
+                            transcribedText = fs.readFileSync(compareTxtPath, 'utf-8');
+                        }
+
+                        // 2. Summary из metadata.json
+                        const metadataPath = path.join(innerPath, 'metadata.json');
+                        if (fs.existsSync(metadataPath)) {
+                            try {
+                                const meta = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+                                if (meta.metrics && meta.metrics.summary) {
+                                    summaryText += `\n\nСводка:\n${meta.metrics.summary}`;
+                                }
+                            } catch (e) {
+                                console.log("Error reading metadata.json", e.message);
+                            }
+                        }
+                    }
+                }
+                // ---------------------------------------------------------
+
                 dialogsBatch.push({
                     title: `call ${dialogCounter}`,
                     number: dialogCounter,
                     status: 'unknown',
-                    text: txtContent,
-                    summary: phone,
+                    text: txtContent,       // Оригинал
+                    transcribedText: transcribedText, // LLM текст
+                    summary: summaryText,   // Телефон + Сводка
                     startTime: startTime,
                     date: dbDate,
                     RecordId: record.id,
@@ -136,7 +181,7 @@ async function initDB() {
 
     } 
     // =========================================================
-    // ЛОГИКА ДЛЯ FITOFARM
+    // ЛОГИКА ДЛЯ FITOFARM (БЕЗ ИЗМЕНЕНИЙ)
     // =========================================================
     else {
         console.log("Detected FITOFARM mode.");
@@ -197,7 +242,6 @@ async function initDB() {
                         let audioWebPath = null;
 
                         if (audioFile) {
-                            // ИСПРАВЛЕНИЕ: Убираем BASE_URL отсюда тоже
                             audioWebPath = `/data/${phId}/${groupFolder}/${outFolder}/${dFolder}/${audioFile}`;
                         }
 
