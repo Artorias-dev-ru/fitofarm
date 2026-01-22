@@ -1,35 +1,27 @@
 services:
-  # Основной проект (Фитофарм)
   fitofarm:
     container_name: fitofarm_app
     build: .
     restart: always
-    # В проде запускаем node server.js (без nodemon)
-    command: npm start
     environment:
-      - NODE_ENV=production
       - BASE_URL=
       - DB_FILE=database_fitofarm.sqlite
       - DATA_FOLDER=data/fitofarm
     volumes:
-      # Монтируем ТОЛЬКО данные. Код берется из образа.
       - ./data:/app/data
       - ./database_fitofarm.sqlite:/app/database_fitofarm.sqlite
-
-  # Второй проект (Колцентр)
   callcenter:
     container_name: callcenter_app
     build: .
     restart: always
-    command: npm start
     environment:
-      - NODE_ENV=production
       - BASE_URL=/callcenter
       - DB_FILE=database_callcenter.sqlite
       - DATA_FOLDER=data/callcenter
     volumes:
       - ./data:/app/data
       - ./database_callcenter.sqlite:/app/database_callcenter.sqlite
+
   nginx:
     image: nginx:alpine
     container_name: fitofarm_gateway
