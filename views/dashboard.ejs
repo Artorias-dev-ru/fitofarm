@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Дашборд аптек</title>
+    <title>Дашборд</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<%= baseUrl %>/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -11,11 +11,13 @@
 <body>
     <div class="header-container">
         <div class="logo-row">
-            <a href="<%= baseUrl %>/">
-                <div class="logo-box">
-                    <img src="<%= baseUrl %>/logo.svg" alt="ФИТОФАРМ" style="height: 6vh;">
-                </div>
-            </a>
+            <% if (baseUrl !== '/callcenter') { %>
+                <a href="<%= baseUrl %>/">
+                    <div class="logo-box">
+                        <img src="<%= baseUrl %>/logo.svg" alt="ФИТОФАРМ" style="height: 6vh;">
+                    </div>
+                </a>
+            <% } %>
         </div>
 
         <div class="filter-row">
@@ -29,10 +31,12 @@
                         (activePeriod === '6months') ? '6 месяцев' : 'Год' %> ▾
                 </div>
                 <div class="dropdown-content">
-                    <a href="/?period=week">Неделя</a>
-                    <a href="/?period=month">Месяц</a>
-                    <a href="/?period=6months">6 месяцев</a>
-                    <a href="/?period=year">Год</a>
+                    <a href="<%= baseUrl %>/?period=today">Сегодня</a>
+                    <a href="<%= baseUrl %>/?period=yesterday">Вчера</a>
+                    <a href="<%= baseUrl %>/?period=week">Неделя</a>
+                    <a href="<%= baseUrl %>/?period=month">Месяц</a>
+                    <a href="<%= baseUrl %>/?period=6months">6 месяцев</a>
+                    <a href="<%= baseUrl %>/?period=year">Год</a>
                 </div>
             </div>
             

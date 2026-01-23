@@ -29,7 +29,6 @@ const Dialog = sequelize.define('Dialog', {
     note: { type: DataTypes.TEXT },
     audioUrl: { type: DataTypes.STRING },
     folderPath: { type: DataTypes.STRING, unique: true },
-    // Новое поле для второго текста (сравнение)
     transcribedText: { type: DataTypes.TEXT }
 });
 
@@ -40,8 +39,6 @@ async function initDB() {
     console.log("Checking database...");
     const start = Date.now();
     
-    // ИЗМЕНЕНИЕ: Убрали { alter: true }. Теперь просто подключаемся.
-    // Это предотвращает ошибки "SQLITE_ERROR" при рестарте.
     await sequelize.sync();
     
     console.log(`Database synced. Starting load from: ${DATA_FOLDER}`);
@@ -55,7 +52,6 @@ async function initDB() {
     const allExistingDialogs = await Dialog.findAll({
         attributes: ['folderPath']
     });
-    // Используем Set для быстрой проверки дубликатов
     const existingPaths = new Set(allExistingDialogs.map(d => d.folderPath).filter(Boolean));
     console.log(`Found ${existingPaths.size} existing dialogs. Checking for new ones...`);
 
@@ -67,7 +63,7 @@ async function initDB() {
         
         const outputDir = path.join(dataDir, 'output');
         const ishodDir = path.join(dataDir, 'ishod');
-        const mp3OutputDir = path.join(dataDir, 'output-mp3'); // Папка со вторыми текстами
+        const mp3OutputDir = path.join(dataDir, 'output-mp3');
 
         if (!fs.existsSync(outputDir)) {
             console.log("Folder 'output' not found inside callcenter data.");
@@ -87,13 +83,12 @@ async function initDB() {
         for (const txtFile of files) {
             const uniquePathKey = txtFile;
 
-            // Если файл уже есть в базе — пропускаем (экономим время и нервы)
             if (existingPaths.has(uniquePathKey)) {
                 continue;
             }
 
             try {
-                // Парсинг имени файла: in-s-8900...
+
                 const parts = txtFile.split('-');
                 if (parts.length < 5) continue;
 
@@ -107,7 +102,6 @@ async function initDB() {
                 const txtPath = path.join(outputDir, txtFile);
                 const txtContent = fs.readFileSync(txtPath, 'utf-8');
 
-                // Аудио
                 const audioName = txtFile.replace('.txt', '.mp3');
                 const audioFullPath = path.join(ishodDir, audioName);
                 let audioWebPath = null;
@@ -116,26 +110,23 @@ async function initDB() {
                     audioWebPath = `/data/ishod/${audioName}`;
                 }
 
-                // --- НОВАЯ ЛОГИКА: Поиск второго текста и JSON summary ---
+
                 let transcribedText = "";
                 let summaryText = `Тел: ${phone}`;
 
-                const folderName = txtFile.replace('.txt', ''); // Имя папки в output-mp3
+                const folderName = txtFile.replace('.txt', '');
                 const specificMp3OutputDir = path.join(mp3OutputDir, folderName);
 
                 if (fs.existsSync(specificMp3OutputDir) && fs.lstatSync(specificMp3OutputDir).isDirectory()) {
-                    // Внутри лежит папка с непонятным именем (например 1970...), берем первую попавшуюся
                     const subfolders = fs.readdirSync(specificMp3OutputDir);
                     if (subfolders.length > 0) {
                         const innerPath = path.join(specificMp3OutputDir, subfolders[0]);
-                        
-                        // 1. Второй текст (dialog.txt)
+
                         const compareTxtPath = path.join(innerPath, 'dialog.txt');
                         if (fs.existsSync(compareTxtPath)) {
                             transcribedText = fs.readFileSync(compareTxtPath, 'utf-8');
                         }
 
-                        // 2. Summary из metadata.json
                         const metadataPath = path.join(innerPath, 'metadata.json');
                         if (fs.existsSync(metadataPath)) {
                             try {
@@ -149,15 +140,15 @@ async function initDB() {
                         }
                     }
                 }
-                // ---------------------------------------------------------
+
 
                 dialogsBatch.push({
                     title: `call ${dialogCounter}`,
                     number: dialogCounter,
                     status: 'unknown',
-                    text: txtContent,       // Оригинал
-                    transcribedText: transcribedText, // LLM текст
-                    summary: summaryText,   // Телефон + Сводка
+                    text: txtContent,
+                    transcribedText: transcribedText,
+                    summary: summaryText,
                     startTime: startTime,
                     date: dbDate,
                     RecordId: record.id,
