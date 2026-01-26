@@ -15,6 +15,19 @@
                         <img src="<%= baseUrl %>/logo.svg" alt="ФИТОФАРМ" style="height: 6vh;">
                     </div>
                 </a>
+            <% } else { %>
+                <a href="<%= baseUrl %>/" style="text-decoration: none;">
+                    <div class="logo-box" style="
+                        height: 6vh; 
+                        display: flex; 
+                        align-items: center; 
+                        font-size: 24px; 
+                        font-weight: 700; 
+                        color: #333; 
+                        font-family: 'Inter', sans-serif;">
+                        Колл-центр
+                    </div>
+                </a>
             <% } %>
         </div>
     </div>
@@ -74,11 +87,45 @@
                 <% if(dialogues.length === 0) { %>
                     <div style="color: #999; text-align: center; margin-top: 20px;">Нет диалогов</div>
                 <% } %>
+
+                <% 
+                   let lastDate = null; 
+                   function formatDate(dateStr) {
+                       if (!dateStr) return '';
+                       const parts = dateStr.split('-');
+                       if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
+                       return dateStr;
+                   }
+                %>
+
                 <% dialogues.forEach(dialog => { %>
+                    
+                    <% if (dialog.date !== lastDate) { %>
+                        <div class="date-separator" style="
+                            padding: 5px 15px 5px 20px;
+                            font-size: 18px;
+                            font-weight: 600;
+                            background: #fff;
+                            position: sticky;
+                            top: 0;
+                            border-bottom: 1px solid black;
+                            z-index: 10;
+                            border-bottom: 1px solid #f0f0f0;
+                        ">
+                            <%= formatDate(dialog.date) %>
+                        </div>
+                        <% lastDate = dialog.date; %>
+                    <% } %>
+
                     <a href="<%= baseUrl %>/details/<%= item.id %>?type=<%= activeType %>&dialogId=<%= dialog.id %>&tab=<%= activeTab %>" 
                        class="dialog-card <%= (activeDialog && activeDialog.id === dialog.id) ? 'active' : '' %>"
                        style="text-decoration: none;">
                         <span>Диалог <%= dialog.number %></span>
+                        <% if (dialog.startTime && dialog.startTime !== '00:00') { %>
+                             <span style="font-size: 11px; color: #999; margin-left: auto; margin-right: 5px;">
+                                <%= dialog.startTime %>
+                             </span>
+                        <% } %>
                         <img src="<%= baseUrl %>/icons/download.svg" class="download-icon" style="width: 16px; opacity: 0.5;"> 
                     </a>
                 <% }) %>
@@ -94,8 +141,8 @@
                             </span>
                         </div>
                         <div style="display: flex; gap: 10px; opacity: 0.5;">
-                            <img src="<%= baseUrl %>/icons/copy.svg" style="width: 18px; height: 18px; cursor: pointer;" alt="Копировать" title="Копировать текст">
-                            <img src="<%= baseUrl %>/icons/download.svg" style="width: 18px; height: 18px; cursor: pointer;" alt="Скачать" title="Скачать транскрипцию">
+                            <img src="<%= baseUrl %>/icons/copy.svg" style="width: 18px; height: 18px; cursor: pointer;" alt="Копировать">
+                            <img src="<%= baseUrl %>/icons/download.svg" style="width: 18px; height: 18px; cursor: pointer;" alt="Скачать">
                         </div>
                     </div>
 

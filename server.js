@@ -12,7 +12,6 @@ const DATA_FOLDER = process.env.DATA_FOLDER || 'data';
 
 app.use(BASE_URL, express.static(path.join(__dirname, 'public')));
 app.use(BASE_URL + '/public', express.static(path.join(__dirname, 'public')));
-
 app.use(BASE_URL + '/data', express.static(path.join(__dirname, DATA_FOLDER)));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -76,7 +75,7 @@ app.get(BASE_URL + '/', checkAuth, async (req, res) => {
             include: [{
                 model: Dialog,
                 where: { date: dateWhere },
-                required: true 
+                required: false 
             }]
         });
 
@@ -121,11 +120,17 @@ app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
         const activePeriod = period || (startDate ? '' : 'year');
         const dateWhere = getDateWhere(activePeriod, startDate, endDate);
 
+        let listWhere = { RecordId: recordId, date: dateWhere };
+        if (type) {
+            listWhere.status = type;
+        }
+
         const itemRaw = await Record.findByPk(recordId);
         if (!itemRaw) return res.redirect(BASE_URL + '/');
         
-        const allDialogs = await Dialog.findAll({ 
-            where: { RecordId: recordId, date: dateWhere } 
+        const allDialogs = await Dialog.findAll({
+            where: { RecordId: recordId, date: dateWhere },
+            order: [['date', 'ASC'], ['id', 'ASC']] 
         });
 
         const item = itemRaw.get({ plain: true });
@@ -133,14 +138,9 @@ app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
         item.refusals = allDialogs.filter(d => d.status === 'refusals').length;
         item.unknown = allDialogs.filter(d => d.status === 'unknown').length;
 
-        let listWhere = { RecordId: recordId, date: dateWhere };
-        if (type) {
-            listWhere.status = type;
-        }
-
         const dialogues = await Dialog.findAll({
             where: listWhere,
-            order: [['id', 'ASC']] 
+            order: [['date', 'ASC'], ['startTime', 'ASC'], ['id', 'ASC']] 
         });
 
         let activeDialog = null;
@@ -166,7 +166,7 @@ app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
 
     } catch (err) {
         console.error(err);
-        res.status(500).send("Error loading details");
+        res.status(500).send("Error loading details: " + err.message);
     }
 });
 
@@ -191,4 +191,7 @@ initDB().then(() => {
     });
 }).catch(err => {
     console.error("DB Initialization Error:", err);
+    app.listen(3000, () => {
+        console.log('Server started on port 3000 (With DB Errors)');
+    });
 });
