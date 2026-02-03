@@ -5,11 +5,20 @@ const fs = require('fs');
 const DB_FILE = process.env.DB_FILE || 'database.sqlite';
 const DATA_FOLDER = process.env.DATA_FOLDER || 'data';
 const BASE_URL = process.env.BASE_URL || '';
+const DB_STORAGE_DIR = path.join(__dirname, 'db_store');
+
+if (!fs.existsSync(DB_STORAGE_DIR)) {
+    fs.mkdirSync(DB_STORAGE_DIR, { recursive: true });
+}
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: path.join(__dirname, DB_FILE),
-    logging: false
+    storage: path.join(DB_STORAGE_DIR, DB_FILE),
+    logging: false,
+    retry: {
+        match: [/SQLITE_BUSY/],
+        max: 5
+    }
 });
 
 const Record = sequelize.define('Record', {
@@ -36,38 +45,24 @@ Record.hasMany(Dialog);
 Dialog.belongsTo(Record);
 
 async function initDB() {
-    console.log("Checking database connection...");
-    
     try {
         const start = Date.now();
-        await sequelize.sync({ alter: true });
+        await sequelize.sync();
         
-        console.log(`Database synced. Mode: ${DATA_FOLDER.includes('callcenter') ? 'CALLCENTER' : 'FITOFARM'}`);
-
         const dataDir = path.join(__dirname, DATA_FOLDER);
-        if (!fs.existsSync(dataDir)) {
-            console.log(`WARNING: Data folder not found at ${dataDir}`);
-            return;
-        }
+        if (!fs.existsSync(dataDir)) return;
 
         const allExistingDialogs = await Dialog.findAll({
             attributes: ['folderPath']
         });
         const existingPaths = new Set(allExistingDialogs.map(d => d.folderPath).filter(Boolean));
-        console.log(`DB contains ${existingPaths.size} records. Scanning for NEW data...`);
 
-        // =========================================================
-        // ЛОГИКА ДЛЯ CALLCENTER
-        // =========================================================
         if (DATA_FOLDER.includes('callcenter')) {
             const outputDir = path.join(dataDir, 'output');
             const ishodDir = path.join(dataDir, 'ishod');
             const mp3OutputDir = path.join(dataDir, 'output-mp3');
 
-            if (!fs.existsSync(outputDir)) {
-                console.log("Folder 'output' missing in callcenter.");
-                return;
-            }
+            if (!fs.existsSync(outputDir)) return;
 
             const [record] = await Record.findOrCreate({
                 where: { address: "Основная линия" },
@@ -75,21 +70,31 @@ async function initDB() {
             });
 
             const files = fs.readdirSync(outputDir).filter(f => f.endsWith('.txt'));
-            let newDialogsCount = 0;
+
+            const sortedFiles = files.map(file => {
+                try {
+                    const parts = file.split('-');
+                    if (parts.length < 5) return null;
+                    const sortKey = parseInt(parts[3] + parts[4]); 
+                    return { file, sortKey };
+                } catch (e) {
+                    return null;
+                }
+            })
+            .filter(item => item !== null)
+            .sort((a, b) => a.sortKey - b.sortKey);
+
             let dialogsBatch = [];
             let dialogCounter = existingPaths.size + 1;
 
-            for (const txtFile of files) {
+            for (const fileObj of sortedFiles) {
+                const txtFile = fileObj.file;
                 const uniquePathKey = txtFile;
 
-                if (existingPaths.has(uniquePathKey)) {
-                    continue;
-                }
+                if (existingPaths.has(uniquePathKey)) continue;
 
                 try {
                     const parts = txtFile.split('-');
-                    if (parts.length < 5) continue;
-
                     const phone = parts[2];
                     const dateRaw = parts[3]; 
                     const timeRaw = parts[4]; 
@@ -118,12 +123,10 @@ async function initDB() {
                         const subfolders = fs.readdirSync(specificMp3OutputDir);
                         if (subfolders.length > 0) {
                             const innerPath = path.join(specificMp3OutputDir, subfolders[0]);
-                            
                             const compareTxtPath = path.join(innerPath, 'dialog.txt');
                             if (fs.existsSync(compareTxtPath)) {
                                 transcribedText = fs.readFileSync(compareTxtPath, 'utf-8');
                             }
-
                             const metadataPath = path.join(innerPath, 'metadata.json');
                             if (fs.existsSync(metadataPath)) {
                                 try {
@@ -152,28 +155,14 @@ async function initDB() {
                     });
 
                     dialogCounter++;
-                    newDialogsCount++;
-
-                } catch (err) {
-                    console.log(`Error parsing file ${txtFile}: ${err.message}`);
-                }
+                } catch (err) {}
             }
 
             if (dialogsBatch.length > 0) {
                 await Dialog.bulkCreate(dialogsBatch, { ignoreDuplicates: true });
-                console.log(`[CallCenter] Added ${newDialogsCount} NEW calls.`);
-            } else {
-                console.log("[CallCenter] No new calls found.");
             }
-
-        } 
-        // =========================================================
-        // ЛОГИКА ДЛЯ FITOFARM
-        // =========================================================
-        else {
+        } else {
             const pharmacyFolders = fs.readdirSync(dataDir);
-            let totalNew = 0;
-        
             for (const phId of pharmacyFolders) {
                 const phPath = path.join(dataDir, phId);
                 if (!fs.lstatSync(phPath).isDirectory()) continue;
@@ -184,9 +173,7 @@ async function initDB() {
                 });
 
                 let dialogCounter = 1;
-                let newDialogsCount = 0;
                 let dialogsBatch = [];
-                
                 const groupFolders = fs.readdirSync(phPath).sort();
 
                 for (const groupFolder of groupFolders) {
@@ -222,8 +209,8 @@ async function initDB() {
                             const files = fs.readdirSync(dPath);
                             const txtFile = files.find(f => f.toLowerCase().endsWith('.txt'));
                             const jsonFile = files.find(f => f.toLowerCase().endsWith('.json'));
-                            
                             const audioFile = files.find(f => ['.mp3', '.wav', '.ogg', '.m4a'].some(ext => f.toLowerCase().endsWith(ext)));
+                            
                             let audioWebPath = null;
                             if (audioFile) {
                                 audioWebPath = `/data/${phId}/${groupFolder}/${outFolder}/${dFolder}/${audioFile}`;
@@ -234,12 +221,10 @@ async function initDB() {
                                     const rawTxtContent = fs.readFileSync(path.join(dPath, txtFile), 'utf-8');
                                     const txtContent = rawTxtContent.split('\n').filter(line => {
                                         const trimmed = line.trim();
-                                        const emptyPhraseRegex = /^\[.*?\] SPEAKER_\d+:\s*$/;
-                                        return !emptyPhraseRegex.test(trimmed) && trimmed.length > 0;
+                                        return !(/^\[.*?\] SPEAKER_\d+:\s*$/.test(trimmed)) && trimmed.length > 0;
                                     }).join('\n');
 
                                     const jsonData = JSON.parse(fs.readFileSync(path.join(dPath, jsonFile), 'utf-8'));
-
                                     const dParts = dFolder.split('_');
                                     let finalTime = `${baseHour}:00`;
                                     if (dParts.length > 1 && dParts[1].length >= 4) {
@@ -250,12 +235,7 @@ async function initDB() {
                                     if (dFolder.toLowerCase().includes('bad')) status = 'unknown';
                                     else if (jsonData.metrics && jsonData.metrics.sale_occurred === true) status = 'sales';
 
-                                    let summaryText = "";
-                                    if (jsonData.metrics && jsonData.metrics.summary) {
-                                        summaryText = jsonData.metrics.summary;
-                                    } else if (jsonData.summary) {
-                                        summaryText = jsonData.summary;
-                                    }
+                                    let summaryText = jsonData.metrics?.summary || jsonData.summary || "";
 
                                     dialogsBatch.push({
                                         title: `dialog ${dialogCounter}`,
@@ -270,32 +250,18 @@ async function initDB() {
                                         audioUrl: audioWebPath,
                                         folderPath: uniquePathKey
                                     });
-                                    
                                     dialogCounter++;
-                                    newDialogsCount++;
-
-                                } catch (err) {
-                                    console.log(`Error parsing fitofarm dialog ${dFolder}: ${err.message}`);
-                                }
+                                } catch (err) {}
                             }
                         }
                     }
                 }
-
                 if (dialogsBatch.length > 0) {
                     await Dialog.bulkCreate(dialogsBatch, { ignoreDuplicates: true });
-                    console.log(`[Fitofarm] Added ${newDialogsCount} NEW dialogs for ${record.address}`);
-                    totalNew += newDialogsCount;
                 }
             }
-            if (totalNew === 0) console.log("[Fitofarm] No new dialogs found.");
         }
-        
-        console.log(`Load process completed in ${(Date.now() - start) / 1000} seconds`);
-
-    } catch (globalErr) {
-        console.error("CRITICAL DB INIT ERROR:", globalErr);
-    }
+    } catch (globalErr) {}
 }
 
 module.exports = { Record, Dialog, Op, initDB };

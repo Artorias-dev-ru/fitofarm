@@ -1,0 +1,48 @@
+{
+  "dialog_id": 4,
+  "start_time": 1110.528,
+  "end_time": 1265.0,
+  "duration": 154.47199999999998,
+  "quality": "good",
+  "avg_confidence": 0.7713290793555123,
+  "num_turns": 21,
+  "speakers": [
+    "SPEAKER_00"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.8,
+    "service_quality_stage2": 0.7,
+    "service_quality_stage3": 0.9,
+    "service_quality_stage4": 0.6,
+    "service_quality_stage5": 0.7,
+    "loyalty_card_handling": false,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": false,
+    "politeness": 0.9,
+    "friendliness": 0.8,
+    "manipulativeness": 0.2,
+    "rudeness_detected": false,
+    "query_type_counts": {
+      "direct_purchase": 1,
+      "prescription_purchase": 1,
+      "consultation": 2,
+      "availability_price": 2,
+      "other": 0
+    },
+    "dialog_conversion": 0.5,
+    "sale_occurred": true,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.75,
+    "overall_sales_effectiveness": 0.6,
+    "overall_manipulation_risk": 0.1,
+    "overall_customer_satisfaction": 0.8,
+    "summary": "Покупатель спросил о наличии товара, оператор предложил альтернативу и провёл успешную продажу."
+  }
+}

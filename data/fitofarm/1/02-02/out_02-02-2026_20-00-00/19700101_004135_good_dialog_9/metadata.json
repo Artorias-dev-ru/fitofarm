@@ -1,0 +1,48 @@
+{
+  "dialog_id": 9,
+  "start_time": 2495.56,
+  "end_time": 2714.048,
+  "duration": 218.48799999999983,
+  "quality": "good",
+  "avg_confidence": 0.7973005719806837,
+  "num_turns": 23,
+  "speakers": [
+    "SPEAKER_00"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.7,
+    "service_quality_stage2": 0.6,
+    "service_quality_stage3": 0.8,
+    "service_quality_stage4": 0.5,
+    "service_quality_stage5": 0.6,
+    "loyalty_card_handling": 0.8,
+    "app_site_promotion": false,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": 0.1,
+    "politeness": 0.8,
+    "friendliness": 0.7,
+    "manipulativeness": 0.3,
+    "rudeness_detected": 0.2,
+    "query_type_counts": {
+      "direct_purchase": 0,
+      "prescription_purchase": 1,
+      "consultation": 4,
+      "availability_price": 0,
+      "other": 6
+    },
+    "dialog_conversion": 0.0,
+    "sale_occurred": false,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.65,
+    "overall_sales_effectiveness": 0.5,
+    "overall_manipulation_risk": 0.4,
+    "overall_customer_satisfaction": 0.6,
+    "summary": "Клиент задавал вопросы о товаре для лечения гриппа, оператор отвечал на вопросы, но не смог выполнить продажу."
+  }
+}

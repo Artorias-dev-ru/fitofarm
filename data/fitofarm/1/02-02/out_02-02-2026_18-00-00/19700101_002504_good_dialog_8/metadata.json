@@ -1,0 +1,49 @@
+{
+  "dialog_id": 8,
+  "start_time": 1504.048,
+  "end_time": 1616.328,
+  "duration": 112.27999999999997,
+  "quality": "good",
+  "avg_confidence": 0.7569473948743608,
+  "num_turns": 18,
+  "speakers": [
+    "SPEAKER_00",
+    "SPEAKER_01"
+  ],
+  "metrics": {
+    "service_quality_stage1": 0.7,
+    "service_quality_stage2": 0.8,
+    "service_quality_stage3": 0.9,
+    "service_quality_stage4": 0.6,
+    "service_quality_stage5": 0.7,
+    "loyalty_card_handling": false,
+    "app_site_promotion": true,
+    "rejection_price": 0.0,
+    "rejection_availability": 0.0,
+    "rejection_detected_suspicious": false,
+    "politeness": 0.9,
+    "friendliness": 0.8,
+    "manipulativeness": 0.1,
+    "rudeness_detected": false,
+    "query_type_counts": {
+      "direct_purchase": 1,
+      "prescription_purchase": 1,
+      "consultation": 2,
+      "availability_price": 2,
+      "other": 0
+    },
+    "dialog_conversion": 0.5,
+    "sale_occurred": false,
+    "alternatives_offered_rate": 0.0,
+    "alternatives_pushiness": 0.0,
+    "alternatives_detail": {},
+    "suggested_drugs": {},
+    "requested_drugs": {},
+    "symptom_matrix": {},
+    "overall_service_quality": 0.73,
+    "overall_sales_effectiveness": 0.4,
+    "overall_manipulation_risk": 0.1,
+    "overall_customer_satisfaction": 0.7,
+    "summary": "Клиент спросил о товаре, оператор предложил альтернативу и обсудил цену"
+  }
+}

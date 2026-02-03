@@ -74,7 +74,144 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <div class="stats-dashboard">
+        <div class="chart-box">
+            <div class="chart-title">Доли статусов</div>
+            <div class="canvas-container">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box">
+            <div class="chart-title">Всего за период</div>
+            <div class="canvas-container">
+                <canvas id="totalBarChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-box wide">
+            <div class="chart-title">Динамика по дням</div>
+            <div class="canvas-container">
+                <canvas id="dynamicsLineChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dashboardData = <%- JSON.stringify(data) %>;
+            
+            let totalSales = 0;
+            let totalRefusals = 0;
+            let totalUnknown = 0;
+            const dailyData = {};
+    
+            dashboardData.forEach(record => {
+                if (record.Dialogs) {
+                    record.Dialogs.forEach(dialog => {
+                        if (dialog.status === 'sales') totalSales++;
+                        else if (dialog.status === 'refusals') totalRefusals++;
+                        else totalUnknown++;
+    
+                        const date = dialog.date;
+                        if (date) {
+                            if (!dailyData[date]) {
+                                dailyData[date] = { sales: 0, refusals: 0, unknown: 0 };
+                            }
+                            if (dialog.status === 'sales') dailyData[date].sales++;
+                            else if (dialog.status === 'refusals') dailyData[date].refusals++;
+                            else dailyData[date].unknown++;
+                        }
+                    });
+                }
+            });
+    
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            };
+    
+            new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Продажи', 'Отказы', 'Прочее'],
+                    datasets: [{
+                        data: [totalSales, totalRefusals, totalUnknown],
+                        backgroundColor: ['#27ae60', '#c0392b', '#999999'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    plugins: {
+                        legend: { 
+                            display: true,
+                            position: 'bottom',
+                            labels: { boxWidth: 10, font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+    
+            new Chart(document.getElementById('totalBarChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Продажи', 'Отказы', 'Прочее'],
+                    datasets: [{
+                        data: [totalSales, totalRefusals, totalUnknown],
+                        backgroundColor: ['#27ae60', '#c0392b', '#999999'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+    
+            const sortedDates = Object.keys(dailyData).sort();
+            new Chart(document.getElementById('dynamicsLineChart'), {
+                type: 'line',
+                data: {
+                    labels: sortedDates.map(d => d.split('-').reverse().slice(0, 2).join('.')),
+                    datasets: [
+                        {
+                            label: 'Продажи',
+                            data: sortedDates.map(d => dailyData[d].sales),
+                            borderColor: '#27ae60',
+                            backgroundColor: '#27ae60',
+                            tension: 0.3,
+                            pointRadius: 2
+                        },
+                        {
+                            label: 'Отказы',
+                            data: sortedDates.map(d => dailyData[d].refusals),
+                            borderColor: '#c0392b',
+                            backgroundColor: '#c0392b',
+                            tension: 0.3,
+                            pointRadius: 2
+                        }
+                    ]
+                },
+                options: {
+                    ...commonOptions,
+                    plugins: {
+                        legend: { display: true, position: 'top', align: 'end' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        });
+    </script>
     <div class="main-layout">
 
         <div class="grid-system data-row-container">

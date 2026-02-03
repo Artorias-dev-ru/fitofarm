@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const moment = require('moment');
 const { Record, Dialog, Op, initDB } = require('./db');
+const { runSync } = require('./sync');
 
 const app = express();
 
@@ -60,7 +61,6 @@ app.post(BASE_URL + '/api/save-note', checkAuth, async (req, res) => {
         await Dialog.update({ note: note }, { where: { id: dialogId } });
         res.json({ success: true });
     } catch (err) {
-        console.error("Error saving note:", err);
         res.status(500).json({ success: false });
     }
 });
@@ -107,7 +107,6 @@ app.get(BASE_URL + '/', checkAuth, async (req, res) => {
             currentRange: currentRange
         });
     } catch (err) {
-        console.error(err);
         res.status(500).send("Server Error: " + err.message);
     }
 });
@@ -165,7 +164,6 @@ app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err);
         res.status(500).send("Error loading details: " + err.message);
     }
 });
@@ -184,14 +182,15 @@ app.post(BASE_URL + '/login', (req, res) => {
     }
 });
 
-console.log("Waiting for data load...");
-initDB().then(() => {
-    app.listen(3000, () => {
-        console.log('Server started on port 3000 (Data fully loaded)');
+initDB()
+    .then(() => {
+        return runSync();
+    })
+    .then(() => {
+        app.listen(3000, () => {
+            console.log('Server started on port 3000');
+        });
+    })
+    .catch(err => {
+        console.error("Startup Error:", err);
     });
-}).catch(err => {
-    console.error("DB Initialization Error:", err);
-    app.listen(3000, () => {
-        console.log('Server started on port 3000 (With DB Errors)');
-    });
-});

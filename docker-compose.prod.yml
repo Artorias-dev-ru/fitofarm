@@ -9,7 +9,7 @@ services:
       - DATA_FOLDER=data/fitofarm
     volumes:
       - ./data:/app/data
-      - ./database_fitofarm.sqlite:/app/database_fitofarm.sqlite
+      - ./db_store:/app/db_store
   callcenter:
     container_name: callcenter_app
     build: .
@@ -20,7 +20,7 @@ services:
       - DATA_FOLDER=data/callcenter
     volumes:
       - ./data:/app/data
-      - ./database_callcenter.sqlite:/app/database_callcenter.sqlite
+      - ./db_store:/app/db_store
 
   nginx:
     image: nginx:alpine
