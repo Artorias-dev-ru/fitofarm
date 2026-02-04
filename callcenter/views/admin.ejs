@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Админ панель</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<%= baseUrl %>/style.css">
+</head>
+<body>
+    <%- include('sidebar') %>
+    <div class="content-wrapper" id="contentWrapper">
+        <div class="header-container" style="padding-top: 20px;">
+            <h2>Управление администраторами</h2>
+        </div>
+        <div class="main-layout">
+            <div class="chart-box" style="margin-bottom: 20px;">
+                <h3 class="chart-title" style="text-align: left; margin-bottom: 15px;">Создать нового администратора</h3>
+                <form action="<%= baseUrl %>/admin/create-user" method="POST" style="display: flex; gap: 10px;">
+                    <input type="text" name="fullName" required placeholder="ФИО" style="flex: 1;">
+                    <input type="text" name="email" required placeholder="Логин" style="flex: 1;">
+                    <input type="password" name="password" required placeholder="Пароль" style="flex: 1;">
+                    <button type="submit" style="background: #2f80ed; color: white; border: none; padding: 0 20px; border-radius: 4px; cursor: pointer;">Создать</button>
+                </form>
+            </div>
+            <% users.forEach(u => { %>
+                <div class="grid-system data-row-container" style="grid-template-columns: 1fr;">
+                    <div class="data-main-card">
+                        <div class="data-main-card_border" style="grid-template-columns: 2fr 2fr 1fr;">
+                            <div style="font-weight: 600; padding-left: 10px;"><%= u.fullName %></div>
+                            <div style="color: #555;"><%= u.username %></div>
+                            <div class="pill grey" style="font-size: 12px;">Администратор</div>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+</body>
+</html>

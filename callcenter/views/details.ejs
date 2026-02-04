@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Детали звонка</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<%= baseUrl %>/style.css">
+</head>
+<body>
+    
+    <%- include('sidebar') %>
+
+    <div class="content-wrapper" id="contentWrapper">
+        <div class="header-container">
+            <div class="logo-row">
+                <a href="<%= baseUrl %>/" style="text-decoration: none; color: #333; font-weight: 500; font-size: 16px; display: flex; align-items: center;">
+                   <span style="font-size: 20px; margin-right: 5px;">←</span> Назад к списку
+                </a>
+            </div>
+        </div>
+
+        <div class="details-container">
+            <div class="object-header">
+                <div class="object-title-box">
+                    <div class="object-label">Телефон</div>
+                    <div class="object-address" style="font-size: 24px;"><%= call.phoneNumber %></div>
+                    <div class="object-city"><%= call.date %> <%= call.time %></div>
+                </div>
+                
+                <div class="header-stats" style="margin-left: auto;">
+                    <div class="stats-group">
+                        <span class="stats-label">Длительность</span>
+                        <span style="font-size: 18px; font-weight: 600;"><%= Math.round(call.duration) %> сек</span>
+                    </div>
+                    <div class="stats-group" style="margin-left: 20px;">
+                        <span class="stats-label">Тип</span>
+                        <span style="font-size: 18px; font-weight: 600;">
+                            <%= call.direction === 'incoming' ? 'Входящий' : 'Исходящий' %>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="details-grid" style="grid-template-columns: 1fr 300px;">
+                
+                <div class="transcript-area" style="height: calc(100vh - 200px);">
+                    <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                        <span style="font-weight: 700; font-size: 16px;">Расшифровка звонка</span>
+                    </div>
+                    
+                    <div style="overflow-y: auto; height: 90%;">
+                        <pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px; line-height: 1.6;"><%= call.text %></pre>
+                    </div>
+                </div>
+
+                <div class="actions-sidebar">
+                    <div class="audio-player-mock <%= (!call.audioUrl) ? 'player-disabled' : '' %>">
+                        <% if (call.audioUrl) { %>
+                            <audio id="main-audio" src="<%= baseUrl %>/api/audio/<%= call.id %>"></audio>
+                        <% } %>
+                        <div class="player-controls">
+                            <div class="play-btn" onclick="toggleAudio()">
+                                <img id="play-icon" src="<%= baseUrl %>/icons/play.svg" style="width: 25px; filter: invert(1);">
+                            </div>
+                            <div style="font-size: 12px; font-weight: 600; min-width: 80px;">
+                                <span id="current-time">0:00</span> / <span id="duration">0:00</span>
+                            </div>
+                            <div class="volume-control">
+                                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
+                            </div>
+                        </div>
+                        <input type="range" id="seek-slider" max="100" value="0">
+                    </div>
+
+                    <div class="report-body" style="margin-top: 20px;">
+                        <div style="margin-bottom: 10px; font-weight: 600;">Краткое содержание:</div>
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; font-size: 13px; color: #555; margin-bottom: 20px;">
+                            <%= call.summary || 'Нет описания' %>
+                        </div>
+
+                        <div style="margin-bottom: 10px; font-weight: 600;">Заметка:</div>
+                        <textarea id="note-textarea" placeholder="Напишите заметку..." style="width: 100%; height: 100px; border: 1px solid #ddd; border-radius: 8px; padding: 10px;"><%= call.note || '' %></textarea>
+                        <button class="save-btn" onclick="saveNote(<%= call.id %>)" style="width: 100%; margin-top: 10px;">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const audio = document.getElementById('main-audio');
+        const playIcon = document.getElementById('play-icon');
+        const seekSlider = document.getElementById('seek-slider');
+        const volumeSlider = document.getElementById('volume-slider');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+        let isDragging = false;
+
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return "0:00";
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        if (audio) {
+            audio.addEventListener('loadedmetadata', () => {
+                durationEl.innerText = formatTime(audio.duration);
+                seekSlider.max = Math.floor(audio.duration);
+            });
+            audio.addEventListener('timeupdate', () => {
+                if (!isDragging) {
+                    seekSlider.value = Math.floor(audio.currentTime);
+                    currentTimeEl.innerText = formatTime(audio.currentTime);
+                }
+            });
+            audio.addEventListener('ended', () => {
+                playIcon.src = "<%= baseUrl %>/icons/play.svg";
+                seekSlider.value = 0;
+            });
+            seekSlider.addEventListener('input', () => {
+                isDragging = true;
+                currentTimeEl.innerText = formatTime(seekSlider.value);
+            });
+            seekSlider.addEventListener('change', () => {
+                audio.currentTime = seekSlider.value;
+                isDragging = false;
+            });
+            volumeSlider.addEventListener('input', (e) => {
+                audio.volume = e.target.value;
+            });
+        }
+
+        function toggleAudio() {
+            if (!audio) return;
+            if (audio.paused) {
+                audio.play().then(() => playIcon.src = "<%= baseUrl %>/icons/pause.svg").catch(e => console.error(e));
+            } else {
+                audio.pause();
+                playIcon.src = "<%= baseUrl %>/icons/play.svg";
+            }
+        }
+
+        async function saveNote(callId) {
+            const text = document.getElementById('note-textarea').value;
+            const btn = document.querySelector('.save-btn');
+            btn.innerText = "Сохранение...";
+            try {
+                const response = await fetch('<%= baseUrl %>/api/save-note', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ callId: callId, note: text })
+                });
+                if (response.ok) {
+                    btn.innerText = "Сохранено!";
+                    setTimeout(() => btn.innerText = "Сохранить", 2000);
+                } else btn.innerText = "Ошибка";
+            } catch (e) { btn.innerText = "Ошибка сети"; }
+        }
+    </script>
+</body>
+</html>

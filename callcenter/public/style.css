@@ -1554,3 +1554,103 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 .status-unknown {
     color: #95a5a6;
 }
+.logo-container {
+    display: block;
+    text-decoration: none;
+    margin-bottom: 30px;
+    padding-left: 5px;
+}
+
+.sidebar-logo-full {
+    height: 40px;
+    object-fit: contain;
+    transition: opacity 0.2s;
+    display: block;
+}
+
+/* Квадратная иконка для свернутого состояния */
+.sidebar-logo-small {
+    height: 32px;
+    width: 32px;
+    object-fit: contain;
+    display: none; /* По умолчанию скрыта */
+    margin: 0 auto;
+    /* SVG иконка "F" (Fitopharm) */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none'%3E%3Crect width='40' height='40' rx='8' fill='%2327ae60'/%3E%3Cpath d='M12 10H28V14H16V18H26V22H16V30H12V10Z' fill='white'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+}
+
+/* Когда сайдбар свернут */
+.sidebar.collapsed .sidebar-logo-full {
+    display: none !important;
+}
+
+.sidebar.collapsed .sidebar-logo-small {
+    display: block !important;
+}
+
+/* Скрываем название "Фитофарм" текстом, так как оно теперь часть логотипа */
+.sidebar-title {
+    display: none; 
+}
+.sidebar-logo-full {
+    max-width: 100%;
+    height: auto;
+    max-height: 50px;
+}
+
+.sidebar.collapsed .user-initials {
+    display: block; /* Показать инициалы */
+    font-size: 16px;
+    font-weight: 700;
+    color: #5d6d7e;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar.collapsed .user-name {
+    display: none;
+}
+/* Стили индикатора загрузки */
+.sync-indicator {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    background: #e8f5e9;
+    border-radius: 8px;
+    color: #27ae60;
+    font-size: 13px;
+    font-weight: 500;
+    overflow: hidden;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #27ae60;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Скрываем текст при сворачивании */
+.sidebar.collapsed .sync-text {
+    display: none;
+}
+
+.sidebar.collapsed .sync-indicator {
+    justify-content: center;
+    padding: 10px;
+    background: transparent;
+}
+
+.sidebar.collapsed .spinner {
+    margin-right: 0;
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Звонки</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<%= baseUrl %>/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+    
+    <%- include('sidebar') %>
+
+    <div class="content-wrapper" id="contentWrapper">
+        <div class="header-container">
+            <h2 style="margin: 0; font-size: 24px; font-weight: 700;">Список звонков</h2>
+        </div>
+        
+        <div class="main-layout">
+            <div class="grid-system data-row-container" style="grid-template-columns: 1fr 1fr 2fr 1fr 1fr 1fr;">
+                <div class="data-main-card table_header">
+                    <div class="data-main-card_border table_header" style="grid-template-columns: 1fr 1fr 2fr 1fr 1fr 1fr;">
+                        <p>Дата</p>
+                        <p>Время</p>
+                        <p>Телефон</p>
+                        <p>Тип</p>
+                        <p>Длит.</p>
+                        <p>Качество</p>
+                    </div>
+                </div>
+            </div>
+
+            <% calls.forEach(call => { %>
+                <div class="grid-system data-row-container" style="grid-template-columns: 1fr;">
+                    <div class="data-main-card" onclick="window.location.href='<%= baseUrl %>/details/<%= call.id %>'">
+                        <div class="data-main-card_border" style="grid-template-columns: 1fr 1fr 2fr 1fr 1fr 1fr;">
+                            <div style="color: #555;"><%= call.date %></div>
+                            <div style="color: #555;"><%= call.time %></div>
+                            <div style="font-weight: 600;"><%= call.phoneNumber %></div>
+                            <div>
+                                <% if(call.direction === 'incoming') { %>
+                                    <span style="color: #27ae60;">Входящий</span>
+                                <% } else if(call.direction === 'outgoing') { %>
+                                    <span style="color: #2f80ed;">Исходящий</span>
+                                <% } else { %>
+                                    <span style="color: #999;">Н/Д</span>
+                                <% } %>
+                            </div>
+                            <div><%= Math.round(call.duration) %> сек</div>
+                            <div>
+                                <% if(call.quality === 'good') { %>
+                                    <div class="pill green">Хорошо</div>
+                                <% } else if(call.quality === 'medium') { %>
+                                    <div class="pill grey">Средне</div>
+                                <% } else { %>
+                                    <div class="pill red">Плохо</div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const contentWrapper = document.getElementById('contentWrapper');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebarState = localStorage.getItem('sidebarState');
+
+            if (sidebarState === 'collapsed') {
+                sidebar.classList.add('collapsed');
+                contentWrapper.classList.add('expanded');
+            }
+
+            if(toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('collapsed');
+                    contentWrapper.classList.toggle('expanded');
+                    localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

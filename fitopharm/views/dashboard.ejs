@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Дашборд</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<%= baseUrl %>/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
-
 <body>
     
     <%- include('sidebar') %>
@@ -16,7 +14,7 @@
         
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        <div class="stats-dashboard" style="padding-top: 20px;">
+        <div class="stats-dashboard">
             <div class="chart-box">
                 <div class="chart-title">Доли статусов</div>
                 <div class="canvas-container">
@@ -36,24 +34,20 @@
                 </div>
             </div>
         </div>
-
         <div class="header-container">
             <div class="filter-row">
                 <div class="dropdown">
                     <div class="input-capsule">
                         <%= (activePeriod === 'today') ? 'Сегодня' : 
                             (activePeriod === 'yesterday') ? 'Вчера' :
-                            (activePeriod === '2days') ? '2 дня' :
                             (activePeriod === 'week') ? 'Неделя' :
-                            (activePeriod === 'month') ? 'Месяц' :
-                            (activePeriod === '6months') ? '6 месяцев' : 'Год' %> ▾
+                            (activePeriod === 'month') ? 'Месяц' : 'Год' %> ▾
                     </div>
                     <div class="dropdown-content">
                         <a href="<%= baseUrl %>/?period=today">Сегодня</a>
                         <a href="<%= baseUrl %>/?period=yesterday">Вчера</a>
                         <a href="<%= baseUrl %>/?period=week">Неделя</a>
                         <a href="<%= baseUrl %>/?period=month">Месяц</a>
-                        <a href="<%= baseUrl %>/?period=6months">6 месяцев</a>
                         <a href="<%= baseUrl %>/?period=year">Год</a>
                     </div>
                 </div>
@@ -64,22 +58,20 @@
                 
                 <div class="input-capsule" style="color: #ccc;">Город</div>
                 <div class="input-capsule" style="color: #ccc;">Адрес</div>
+
                 <div class="dropdown" style="margin-left: auto;">
                     <div class="input-capsule">
                         ≡ <%= (activeSort === 'sales') ? 'Больше продаж' : 
-                              (activeSort === 'refusals') ? 'Больше отказов' : 
-                              (activeSort === 'unknown') ? 'Больше нераспознан' : 'По алфавиту' %> ▾
+                              (activeSort === 'refusals') ? 'Больше отказов' : 'По алфавиту' %> ▾
                     </div>
                     <div class="dropdown-content" style="right: 0; left: auto; min-width: 180px;">
                         <a href="#" onclick="applySort('alphabet')">По алфавиту</a>
                         <a href="#" onclick="applySort('sales')">Больше продаж</a>
                         <a href="#" onclick="applySort('refusals')">Больше отказов</a>
-                        <a href="#" onclick="applySort('unknown')">Больше нераспознан</a>
                     </div>
                 </div>
             </div>
         </div>
-        
         <div class="main-layout">
             <div class="grid-system data-row-container">
                 <div class="data-main-card table_header">
@@ -89,7 +81,7 @@
                         </div>
                         <p>Продажа</p>
                         <p>Отказ</p>
-                        <p>Нераспознанный</p>
+                        <p>Прочее</p>
                     </div>
                 </div>
                 <div class="total-card" style="background-color: rgb(223, 225, 229); border-radius: 5px; font-size: 1.3vw; color: rgb(178, 178, 178); font-weight: 400;">
@@ -102,9 +94,7 @@
                     <div class="data-main-card" onclick="window.location.href='<%= baseUrl %>/details/<%= item.id %>' + window.location.search">
                         <div class="data-main-card_border">
                             <div class="address-cell">
-                                <b style="font-size: 0.9vw;">
-                                    <%= item.address %>
-                                </b>
+                                <b style="font-size: 0.9vw;"><%= item.address %></b>
                             </div>
                             <div class="pill green">
                                 <img src="<%= baseUrl %>/icons/sale.svg" style="width: 15px; margin-right: 5px;"> <%= item.sales %>
@@ -129,22 +119,6 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const contentWrapper = document.getElementById('contentWrapper');
-            const toggleBtn = document.getElementById('sidebarToggle');
-            const sidebarState = localStorage.getItem('sidebarState');
-
-            if (sidebarState === 'collapsed') {
-                sidebar.classList.add('collapsed');
-                contentWrapper.classList.add('expanded');
-            }
-
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                contentWrapper.classList.toggle('expanded');
-                localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
-            });
-
             const dashboardData = <%- JSON.stringify(data) %>;
             let totalSales = 0;
             let totalRefusals = 0;
@@ -174,9 +148,7 @@
             const commonOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                }
+                plugins: { legend: { display: false } }
             };
     
             new Chart(document.getElementById('statusChart'), {
@@ -192,11 +164,7 @@
                 options: {
                     ...commonOptions,
                     plugins: {
-                        legend: { 
-                            display: true,
-                            position: 'bottom',
-                            labels: { boxWidth: 10, font: { size: 10 } }
-                        }
+                        legend: { display: true, position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
                     }
                 }
             });
@@ -271,9 +239,7 @@
             const endParam = urlParams.get('endDate');
 
             let defaultDates = [];
-            if (startParam && endParam) {
-                defaultDates = [startParam, endParam];
-            }
+            if (startParam && endParam) defaultDates = [startParam, endParam];
 
             flatpickr("#date-range-picker", {
                 mode: "range",
@@ -287,36 +253,25 @@
                         const start = instance.formatDate(selectedDates[0], "Y-m-d");
                         const end = instance.formatDate(selectedDates[1], "Y-m-d");
                         const currentUrl = new URL(window.location.href);
-                        
                         currentUrl.searchParams.set('startDate', start);
                         currentUrl.searchParams.set('endDate', end);
                         currentUrl.searchParams.delete('period');
-                        
                         window.location.href = currentUrl.toString();
                     }
                 }
             });
 
             const dropdowns = document.querySelectorAll('.dropdown');
-
             dropdowns.forEach(dropdown => {
                 const trigger = dropdown.querySelector('.input-capsule');
-                
                 trigger.addEventListener('click', function(event) {
                     event.stopPropagation();
-                    dropdowns.forEach(d => {
-                        if (d !== dropdown) d.classList.remove('active');
-                    });
+                    dropdowns.forEach(d => { if (d !== dropdown) d.classList.remove('active'); });
                     dropdown.classList.toggle('active');
                 });
             });
-
             document.addEventListener('click', function(event) {
-                dropdowns.forEach(dropdown => {
-                    if (!dropdown.contains(event.target)) {
-                        dropdown.classList.remove('active');
-                    }
-                });
+                dropdowns.forEach(dropdown => { if (!dropdown.contains(event.target)) dropdown.classList.remove('active'); });
             });
         });
 

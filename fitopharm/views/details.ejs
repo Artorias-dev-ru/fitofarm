@@ -7,14 +7,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
-
+    
     <%- include('sidebar') %>
 
     <div class="content-wrapper" id="contentWrapper">
         <div class="header-container">
             <div class="logo-row">
-                <a href="<%= baseUrl %>/" style="text-decoration: none; color: #333; font-weight: 500;">
-                   ← Назад к дашборду
+                <a href="<%= baseUrl %>/" style="text-decoration: none; color: #333; font-weight: 500; font-size: 16px; display: flex; align-items: center;">
+                   <span style="font-size: 20px; margin-right: 5px;">←</span> Назад к дашборду
                 </a>
             </div>
         </div>
@@ -62,7 +62,7 @@
 
                 <div style="margin-left: auto;">
                     <div class="input-capsule date-picker-wrapper" style="background: transparent;">
-                        <input type="text" id="details-date-picker" placeholder="с 12.01 по 20.01">
+                        <input type="text" id="details-date-picker" placeholder="Выбрать период">
                     </div>
                 </div>
             </div>
@@ -84,7 +84,7 @@
                     }
                     %>
 
-                    <% dialogues.forEach(dialog => { %>
+                    <% dialogues.forEach((dialog, index) => { %>
                         
                         <% if (dialog.date !== lastDate) { %>
                             <div class="date-separator" style="
@@ -105,7 +105,7 @@
                         <a href="<%= baseUrl %>/details/<%= item.id %>?type=<%= activeType %>&dialogId=<%= dialog.id %>&tab=<%= activeTab %>" 
                         class="dialog-card <%= (activeDialog && activeDialog.id === dialog.id) ? 'active' : '' %>"
                         style="text-decoration: none;">
-                            <span>Диалог <%= dialog.number %></span>
+                            <span>Диалог <%= index + 1 %></span>
                             <% if (dialog.startTime && dialog.startTime !== '00:00') { %>
                                 <span style="font-size: 11px; color: #999; margin-left: auto; margin-right: 5px;">
                                     <%= dialog.startTime %>
@@ -120,7 +120,9 @@
                     <% if (activeDialog) { %>
                         <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <span style="font-weight: 700; font-size: 16px;">Диалог <%= activeDialog.number %></span>
+                                <span style="font-weight: 700; font-size: 16px;">
+                                    Диалог <%= dialogues.findIndex(d => d.id === activeDialog.id) + 1 %>
+                                </span>
                                 <span style="color: #999; font-size: 13px; margin-left: 10px;">
                                     (<%= activeDialog.status === 'sales' ? 'Продажа' : activeDialog.status === 'refusals' ? 'Отказ' : 'Нераспознан' %>)
                                 </span>
@@ -162,7 +164,7 @@
                 <div class="actions-sidebar">
                     <div class="audio-player-mock <%= (!activeDialog || !activeDialog.audioUrl) ? 'player-disabled' : '' %>">
                         <% if (activeDialog && activeDialog.audioUrl) { %>
-                            <audio id="main-audio" src="<%= activeDialog.audioUrl ? baseUrl + activeDialog.audioUrl : '' %>"></audio>
+                            <audio id="main-audio" src="<%= baseUrl %>/api/audio/<%= activeDialog.id %>"></audio>
                         <% } %>
                         <div class="player-controls">
                             <div class="play-btn" onclick="toggleAudio()">
@@ -221,11 +223,13 @@
                 contentWrapper.classList.add('expanded');
             }
 
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-                contentWrapper.classList.toggle('expanded');
-                localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
-            });
+            if(toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('collapsed');
+                    contentWrapper.classList.toggle('expanded');
+                    localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+                });
+            }
 
             const activeCard = document.querySelector('.dialog-card.active');
             if (activeCard) {
