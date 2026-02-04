@@ -1199,3 +1199,358 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
         height: 220px;
     }
 }
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 250px;
+    background-color: #e9eaec;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 15px;
+    transition: width 0.3s ease;
+    z-index: 1000;
+    border-right: 1px solid #dcdcdc;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+    padding: 20px 10px;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 40px;
+    height: 50px;
+}
+
+.sidebar-logo {
+    height: 40px;
+    min-width: 40px;
+    object-fit: contain;
+}
+
+.sidebar-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #27ae60;
+    font-family: 'Inter', sans-serif;
+    transition: opacity 0.2s;
+}
+
+.sidebar.collapsed .sidebar-title {
+    opacity: 0;
+    pointer-events: none;
+    display: none;
+}
+
+.user-profile {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+    padding-left: 5px;
+}
+
+.user-name {
+    font-size: 18px;
+    color: #5d6d7e;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.user-initials {
+    display: none;
+    font-size: 18px;
+    color: #5d6d7e;
+    font-weight: 700;
+    text-align: center;
+    width: 100%;
+}
+
+.sidebar.collapsed .user-name {
+    display: none;
+}
+
+.sidebar.collapsed .user-initials {
+    display: block;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.sidebar-menu li {
+    margin-bottom: 15px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #5d6d7e;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.sidebar-link:hover {
+    background-color: #d6dbdf;
+    color: #333;
+}
+
+.sidebar-icon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    margin-right: 15px;
+    filter: opacity(0.6);
+}
+
+.sidebar-link:hover .sidebar-icon {
+    filter: opacity(1);
+}
+
+.sidebar-text {
+    transition: opacity 0.2s;
+}
+
+.sidebar.collapsed .sidebar-text {
+    opacity: 0;
+    display: none;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: #5d6d7e;
+    font-size: 16px;
+    padding: 10px;
+}
+
+.sidebar-toggle-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 15px;
+    transition: transform 0.3s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%235d6d7e'%3E%3Cpath d='M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.sidebar.collapsed .sidebar-toggle-icon {
+    transform: rotate(180deg);
+    margin-right: 0;
+}
+
+.content-wrapper {
+    margin-left: 250px;
+    transition: margin-left 0.3s ease;
+    width: calc(100% - 250px);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-wrapper.expanded {
+    margin-left: 70px;
+    width: calc(100% - 70px);
+}
+
+
+.logo-box {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+    .content-wrapper {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+.notes-container {
+    padding: 20px 30px;
+    background-color: #f4f6f8;
+    min-height: 100vh;
+}
+
+.notes-header-row {
+    display: grid;
+    grid-template-columns: 140px 200px 140px 80px 1fr;
+    gap: 15px;
+    margin-bottom: 10px;
+    align-items: end;
+}
+
+.filter-box {
+    background-color: #bdc3c7;
+    border-radius: 6px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 40px;
+    position: relative;
+}
+
+.filter-box.label-only {
+    align-items: center;
+    font-weight: 500;
+    color: #333;
+    font-size: 13px;
+}
+
+.filter-input-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.filter-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    color: #333;
+    font-family: 'Inter', sans-serif;
+    padding: 0;
+    cursor: pointer;
+    text-align: center;
+}
+
+.filter-input::placeholder {
+    color: #555;
+    opacity: 0.8;
+}
+
+.search-icon-sm {
+    width: 12px;
+    height: 12px;
+    opacity: 0.5;
+    position: absolute;
+    right: 10px;
+    pointer-events: none;
+}
+
+.dropdown-arrow {
+    width: 0; 
+    height: 0; 
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #555;
+    margin-left: 5px;
+    pointer-events: none;
+}
+
+.notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.note-row {
+    display: grid;
+    grid-template-columns: 140px 200px 140px 80px 1fr;
+    gap: 15px;
+    padding: 15px 10px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+    transition: background 0.1s;
+}
+
+.note-row:last-child {
+    border-bottom: none;
+}
+
+.note-row:hover {
+    background-color: #fafafa;
+}
+
+.cell-date {
+    text-align: center;
+    font-weight: 600;
+    font-size: 13px;
+    color: #333;
+}
+
+.cell-address {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.cell-address strong {
+    font-weight: 600;
+    color: #333;
+}
+
+.cell-address span {
+    color: #333;
+}
+
+.cell-status {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.status-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.cell-note {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    padding-right: 10px;
+}
+
+.flatpickr-input {
+    text-align: center !important;
+}
+
+.status-sales {
+    color: #27ae60;
+}
+
+.status-refusals {
+    color: #c0392b;
+}
+
+.status-unknown {
+    color: #95a5a6;
+}

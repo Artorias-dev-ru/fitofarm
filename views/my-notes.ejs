@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Мои заметки</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<%= baseUrl %>/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+
+    <%- include('sidebar') %>
+
+    <div class="content-wrapper" id="contentWrapper" style="background-color: #f4f6f8;">
+        <div class="header-container" style="padding-top: 20px; padding-bottom: 0;">
+            <h2 style="font-family: 'Inter', sans-serif; margin-bottom: 20px; font-size: 20px;">Мои заметки</h2>
+        </div>
+
+        <div class="notes-container" style="padding-top: 0;">
+            
+            <div class="notes-header-row">
+                <div class="filter-box">
+                    <div class="filter-input-wrapper">
+                        <input type="text" id="filter-date-dialog" class="filter-input" placeholder="Дата диалога">
+                        <div class="dropdown-arrow"></div>
+                    </div>
+                </div>
+
+                <div class="filter-box">
+                    <div class="filter-input-wrapper">
+                        <input type="text" id="filter-address" class="filter-input" placeholder="Адрес аптеки" style="text-align: left; padding-left: 5px;">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E" class="search-icon-sm">
+                    </div>
+                </div>
+
+                <div class="filter-box">
+                    <div class="filter-input-wrapper">
+                        <input type="text" id="filter-date-note" class="filter-input" placeholder="Дата заметки">
+                        <div class="dropdown-arrow"></div>
+                    </div>
+                </div>
+
+                <div class="filter-box label-only">
+                    Статус диалога
+                </div>
+
+                <div class="filter-box label-only">
+                    Заметка
+                </div>
+            </div>
+
+            <div class="notes-list" id="notesList">
+                <% 
+                function formatDate(dateString) {
+                    if (!dateString) return '';
+                    const d = new Date(dateString);
+                    const day = ('0' + d.getDate()).slice(-2);
+                    const month = ('0' + (d.getMonth() + 1)).slice(-2);
+                    const year = d.getFullYear().toString().slice(-2);
+                    return `${day}.${month}.${year}`;
+                }
+
+                function formatNoteDate(dateObj) {
+                    if (!dateObj) return '';
+                    const d = new Date(dateObj);
+                    const day = ('0' + d.getDate()).slice(-2);
+                    const month = ('0' + (d.getMonth() + 1)).slice(-2);
+                    const year = d.getFullYear().toString().slice(-2);
+                    return `${day}.${month}.${year}`;
+                }
+                %>
+
+                <% notes.forEach(note => { 
+                    let statusIcon = '';
+                    let statusClass = '';
+                    if (note.Dialog.status === 'sales') {
+                        statusClass = 'status-sales';
+                        statusIcon = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                    } else if (note.Dialog.status === 'refusals') {
+                        statusClass = 'status-refusals';
+                        statusIcon = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+                    } else {
+                        statusClass = 'status-unknown';
+                        statusIcon = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+                    }
+                    
+                    const dialogDate = note.Dialog.date; 
+                    const noteDateRaw = note.updatedAt;
+                    const addressFull = note.Dialog.Record ? note.Dialog.Record.address : 'Неизвестно';
+                    const city = note.Dialog.Record ? note.Dialog.Record.city : '';
+                %>
+                <div class="note-row" 
+                     data-dialog-date="<%= dialogDate %>" 
+                     data-note-date="<%= noteDateRaw %>"
+                     data-address="<%= (city + ' ' + addressFull).toLowerCase() %>"
+                     onclick="window.location.href='<%= baseUrl %>/details/<%= note.Dialog.RecordId %>?dialogId=<%= note.Dialog.id %>&tab=notes'"
+                     style="cursor: pointer;">
+                    
+                    <div class="cell-date">
+                        <%= formatDate(dialogDate) %>
+                    </div>
+
+                    <div class="cell-address">
+                        <strong><%= city %></strong>
+                        <span><%= addressFull %></span>
+                    </div>
+
+                    <div class="cell-date">
+                        <%= formatNoteDate(noteDateRaw) %>
+                    </div>
+
+                    <div class="cell-status <%= statusClass %>">
+                        <%- statusIcon %>
+                    </div>
+
+                    <div class="cell-note">
+                        <%= note.content %>
+                    </div>
+
+                </div>
+                <% }) %>
+                
+                <% if(notes.length === 0) { %>
+                    <div style="padding: 20px; text-align: center; color: #999;">Нет заметок</div>
+                <% } %>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const contentWrapper = document.getElementById('contentWrapper');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebarState = localStorage.getItem('sidebarState');
+
+            if (sidebarState === 'collapsed') {
+                sidebar.classList.add('collapsed');
+                contentWrapper.classList.add('expanded');
+            }
+
+            if(toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('collapsed');
+                    contentWrapper.classList.toggle('expanded');
+                    localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+                });
+            }
+
+            const rows = document.querySelectorAll('.note-row');
+            const addressInput = document.getElementById('filter-address');
+            
+            let dateDialogRange = [];
+            let dateNoteRange = [];
+
+            function applyFilters() {
+                const addressVal = addressInput.value.toLowerCase();
+                
+                rows.forEach(row => {
+                    let visible = true;
+
+                    const rowAddress = row.getAttribute('data-address');
+                    if (addressVal && !rowAddress.includes(addressVal)) {
+                        visible = false;
+                    }
+
+                    if (visible && dateDialogRange.length === 2) {
+                        const rowDateStr = row.getAttribute('data-dialog-date');
+                        const rowDate = new Date(rowDateStr).setHours(0,0,0,0);
+                        const start = dateDialogRange[0].setHours(0,0,0,0);
+                        const end = dateDialogRange[1].setHours(0,0,0,0);
+                        
+                        if (rowDate < start || rowDate > end) visible = false;
+                    }
+
+                    if (visible && dateNoteRange.length === 2) {
+                        const rowDateStr = row.getAttribute('data-note-date');
+                        const rowDate = new Date(rowDateStr).setHours(0,0,0,0);
+                        const start = dateNoteRange[0].setHours(0,0,0,0);
+                        const end = dateNoteRange[1].setHours(0,0,0,0);
+                        
+                        if (rowDate < start || rowDate > end) visible = false;
+                    }
+
+                    row.style.display = visible ? 'grid' : 'none';
+                });
+            }
+
+            addressInput.addEventListener('input', applyFilters);
+
+            flatpickr("#filter-date-dialog", {
+                mode: "range",
+                dateFormat: "d.m.y",
+                locale: "ru",
+                onChange: function(selectedDates) {
+                    dateDialogRange = selectedDates;
+                    applyFilters();
+                }
+            });
+
+            flatpickr("#filter-date-note", {
+                mode: "range",
+                dateFormat: "d.m.y",
+                locale: "ru",
+                onChange: function(selectedDates) {
+                    dateNoteRange = selectedDates;
+                    applyFilters();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

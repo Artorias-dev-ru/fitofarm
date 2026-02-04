@@ -4,7 +4,6 @@ const fs = require('fs');
 
 const DB_FILE = process.env.DB_FILE || 'database.sqlite';
 const DATA_FOLDER = process.env.DATA_FOLDER || 'data';
-const BASE_URL = process.env.BASE_URL || '';
 const DB_STORAGE_DIR = path.join(__dirname, 'db_store');
 
 if (!fs.existsSync(DB_STORAGE_DIR)) {
@@ -35,20 +34,47 @@ const Dialog = sequelize.define('Dialog', {
     date: { type: DataTypes.DATEONLY, allowNull: false },
     endTime: DataTypes.STRING,
     number: { type: DataTypes.INTEGER, allowNull: false },
-    note: { type: DataTypes.TEXT },
+    note: { type: DataTypes.TEXT }, 
     audioUrl: { type: DataTypes.STRING },
     folderPath: { type: DataTypes.STRING, unique: true },
     transcribedText: { type: DataTypes.TEXT }
 });
 
+const User = sequelize.define('User', {
+    fullName: { type: DataTypes.STRING },
+    email: { type: DataTypes.STRING, unique: true },
+    username: { type: DataTypes.STRING, unique: true },
+    password: { type: DataTypes.STRING, allowNull: false },
+    role: { type: DataTypes.STRING, defaultValue: 'user' } 
+});
+
+const Note = sequelize.define('Note', {
+    content: { type: DataTypes.TEXT, allowNull: false }
+});
+
 Record.hasMany(Dialog);
 Dialog.belongsTo(Record);
 
+User.hasMany(Note);
+Note.belongsTo(User);
+
+Dialog.hasMany(Note);
+Note.belongsTo(Dialog);
+
 async function initDB() {
     try {
-        const start = Date.now();
-        await sequelize.sync();
+        await sequelize.sync(); 
         
+        const adminExists = await User.findOne({ where: { username: 'admin' } });
+        if (!adminExists) {
+            await User.create({
+                fullName: 'Главный Администратор',
+                username: 'admin',
+                password: '12wq!@WQ', 
+                role: 'superadmin'
+            });
+        }
+
         const dataDir = path.join(__dirname, DATA_FOLDER);
         if (!fs.existsSync(dataDir)) return;
 
@@ -264,4 +290,4 @@ async function initDB() {
     } catch (globalErr) {}
 }
 
-module.exports = { Record, Dialog, Op, initDB };
+module.exports = { Record, Dialog, User, Note, Op, initDB };
