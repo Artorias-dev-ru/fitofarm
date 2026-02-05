@@ -21,7 +21,6 @@
     .sidebar.collapsed .sidebar-logo-full { display: none !important; }
     .sidebar.collapsed .sidebar-logo-small { display: block !important; }
 
-    /* Стили для индикатора и кнопки */
     .sync-indicator {
         display: flex;
         align-items: center;
@@ -146,11 +145,14 @@
                 sidebar.classList.toggle('collapsed');
                 if(contentWrapper) contentWrapper.classList.toggle('expanded');
                 localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 300);
             });
         }
     });
 
-    // Функция запуска синхронизации
     async function startSync(e) {
         e.preventDefault();
         if(!confirm('Запустить обновление данных с FTP? Это может занять время.')) return;
@@ -159,7 +161,6 @@
             const res = await fetch('<%= baseUrl %>/api/sync/start', { method: 'POST' });
             const data = await res.json();
             if(data.success) {
-                // Перезагружаем страницу, чтобы увидеть спиннер
                 window.location.reload();
             } else {
                 alert(data.message || 'Ошибка запуска');

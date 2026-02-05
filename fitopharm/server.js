@@ -88,19 +88,34 @@ app.post(BASE_URL + '/api/sync/start', checkAuth, (req, res) => {
 
 app.get(BASE_URL + '/', checkAuth, async (req, res) => {
     const { period, sortType, startDate, endDate } = req.query;
-    const dateWhere = getDateWhere(period || (startDate ? '' : 'year'), startDate, endDate);
 
     try {
         const recordsRaw = await Record.findAll({ 
-            include: [{ model: Dialog, where: { date: dateWhere }, required: false }]
+            include: [{ model: Dialog, required: false }]
         });
 
         const viewData = recordsRaw.map(rec => {
             const plainRec = rec.get({ plain: true });
-            if (!plainRec.Dialogs) plainRec.Dialogs = [];
-            plainRec.sales = plainRec.Dialogs.filter(d => d.status === 'sales').length;
-            plainRec.refusals = plainRec.Dialogs.filter(d => d.status === 'refusals').length;
-            plainRec.unknown = plainRec.Dialogs.filter(d => d.status === 'unknown').length;
+            const allDialogs = plainRec.Dialogs || [];
+            
+            const filtered = allDialogs.filter(d => {
+                const today = moment().format('YYYY-MM-DD');
+                if (startDate && endDate) return d.date >= startDate && d.date <= endDate;
+                if (period === 'today') return d.date === today;
+                if (period === 'yesterday') return d.date === moment().subtract(1, 'days').format('YYYY-MM-DD');
+                if (period === 'week') return d.date >= moment().subtract(7, 'days').format('YYYY-MM-DD');
+                if (period === 'month') return d.date >= moment().subtract(1, 'months').format('YYYY-MM-DD');
+                if (period === 'year') return d.date >= moment().subtract(1, 'years').format('YYYY-MM-DD');
+                return true;
+            });
+
+            plainRec.Dialogs = filtered; 
+            plainRec.globalDialogs = allDialogs; 
+            
+            plainRec.sales = filtered.filter(d => d.status === 'sales').length;
+            plainRec.refusals = filtered.filter(d => d.status === 'refusals').length;
+            plainRec.unknown = filtered.filter(d => d.status === 'unknown').length;
+            
             return plainRec;
         });
 
@@ -275,6 +290,22 @@ app.post(BASE_URL + '/api/change-password', checkAuth, async (req, res) => {
         await user.save();
         res.json({ success: true });
     } catch (e) { res.status(500).json({ success: false }); }
+});
+
+app.post(BASE_URL + '/api/update-status', checkAuth, async (req, res) => {
+    try {
+        const { dialogId, status } = req.body;
+        const dialog = await Dialog.findByPk(dialogId);
+        if (dialog) {
+            dialog.status = status;
+            await dialog.save();
+            res.json({ success: true });
+        } else {
+            res.status(404).json({ success: false });
+        }
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
 });
 
 initDB()

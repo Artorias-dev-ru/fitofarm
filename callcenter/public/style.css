@@ -1568,19 +1568,16 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
     display: block;
 }
 
-/* Квадратная иконка для свернутого состояния */
 .sidebar-logo-small {
     height: 32px;
     width: 32px;
     object-fit: contain;
-    display: none; /* По умолчанию скрыта */
+    display: none;
     margin: 0 auto;
-    /* SVG иконка "F" (Fitopharm) */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none'%3E%3Crect width='40' height='40' rx='8' fill='%2327ae60'/%3E%3Cpath d='M12 10H28V14H16V18H26V22H16V30H12V10Z' fill='white'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
 }
 
-/* Когда сайдбар свернут */
 .sidebar.collapsed .sidebar-logo-full {
     display: none !important;
 }
@@ -1589,7 +1586,6 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
     display: block !important;
 }
 
-/* Скрываем название "Фитофарм" текстом, так как оно теперь часть логотипа */
 .sidebar-title {
     display: none; 
 }
@@ -1600,7 +1596,7 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 }
 
 .sidebar.collapsed .user-initials {
-    display: block; /* Показать инициалы */
+    display: block;
     font-size: 16px;
     font-weight: 700;
     color: #5d6d7e;
@@ -1611,7 +1607,6 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 .sidebar.collapsed .user-name {
     display: none;
 }
-/* Стили индикатора загрузки */
 .sync-indicator {
     display: flex;
     align-items: center;
@@ -1640,7 +1635,6 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
     to { transform: rotate(360deg); }
 }
 
-/* Скрываем текст при сворачивании */
 .sidebar.collapsed .sync-text {
     display: none;
 }

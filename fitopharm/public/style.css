@@ -16,7 +16,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #ededed;
+    background-color: #e1e7ed;
     color: var(--text-dark);
     font-family: 'Segoe UI', Roboto, sans-serif;
     font-size: 0.85vw;
@@ -314,7 +314,6 @@ body {
 }
 
 .object-header {
-    background-color: #e9eaec;
     border-radius: 0.8vw;
     padding: 2vh 2vw;
     display: flex;
@@ -456,6 +455,7 @@ body {
     padding: 2vw;
     box-shadow: 0 2px 10px rgba(0,0,0,0.03);
     position: relative;
+    overflow: hidden;
 }
 
 .transcript-line { margin-bottom: 2vh; line-height: 1.5; }
@@ -764,13 +764,13 @@ span.flatpickr-weekday {
 }
 
 .object-header {
-    background: #dfe1e5;
     border-radius: 12px;
     padding: 20px 30px;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     align-items: center;
     gap: 40px;
+    background: white;
 }
 
 .object-title-box {
@@ -839,21 +839,21 @@ span.flatpickr-weekday {
 }
 
 .stat-card.sales {
-    background-color: #cddbd2;
+    background-color: #e4f6e6;
     color: #219653;
 }
 .stat-card.sales:hover {
     border: 1px solid #7dd27e;
 }
 .stat-card.refusals {
-    background-color: #dbcbd0;
+    background-color: #fae4e6;
     color: #cb2d2a;
 }
 .stat-card.refusals:hover {
     border: 1px solid #f5a9a9;
 }
 .stat-card.unknown {
-    background-color: #d0d2d5;
+    background-color: #e5e5e5;
     color: #828282;
 }
 .stat-card.unknown:hover {
@@ -1142,20 +1142,18 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 .stats-dashboard {
     display: grid;
     grid-template-columns: 1fr 1fr 2fr;
-    gap: 1.5vw;
     padding: 0 2vw;
     margin-bottom: 2vh;
     min-height: 220px;
+    padding-top: 5vh;
 }
 
 .chart-box {
     background: #ffffff;
-    border-radius: 12px;
     padding: 1.5vh;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
-    border: 1px solid #e0e0e0;
+    min-width: 0;
 }
 
 .chart-box.wide {
@@ -1177,6 +1175,7 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
     position: relative;
     width: 100%;
     height: 100%;
+    overflow: hidden;
 }
 
 @media (max-width: 1200px) {
@@ -1205,7 +1204,7 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
     left: 0;
     height: 100vh;
     width: 250px;
-    background-color: #e9eaec;
+    background-color: #e1e7ed;
     display: flex;
     flex-direction: column;
     padding: 20px 15px;
@@ -1568,19 +1567,16 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
     display: block;
 }
 
-/* Квадратная иконка для свернутого состояния */
 .sidebar-logo-small {
     height: 32px;
     width: 32px;
     object-fit: contain;
-    display: none; /* По умолчанию скрыта */
+    display: none;
     margin: 0 auto;
-    /* SVG иконка "F" (Fitopharm) */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none'%3E%3Crect width='40' height='40' rx='8' fill='%2327ae60'/%3E%3Cpath d='M12 10H28V14H16V18H26V22H16V30H12V10Z' fill='white'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
 }
 
-/* Когда сайдбар свернут */
 .sidebar.collapsed .sidebar-logo-full {
     display: none !important;
 }
@@ -1589,7 +1585,6 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
     display: block !important;
 }
 
-/* Скрываем название "Фитофарм" текстом, так как оно теперь часть логотипа */
 .sidebar-title {
     display: none; 
 }
@@ -1600,7 +1595,7 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 }
 
 .sidebar.collapsed .user-initials {
-    display: block; /* Показать инициалы */
+    display: block;
     font-size: 16px;
     font-weight: 700;
     color: #5d6d7e;
@@ -1611,7 +1606,6 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 .sidebar.collapsed .user-name {
     display: none;
 }
-/* Стили индикатора загрузки */
 .sync-indicator {
     display: flex;
     align-items: center;
@@ -1640,7 +1634,6 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
     to { transform: rotate(360deg); }
 }
 
-/* Скрываем текст при сворачивании */
 .sidebar.collapsed .sync-text {
     display: none;
 }
@@ -1654,3 +1647,26 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 .sidebar.collapsed .spinner {
     margin-right: 0;
 }
+.status-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #333;
+}
+.status-option:hover {
+    background-color: #f5f5f5;
+}
+
+.dialog-card.sales {
+    background: #c9e0d6;
+}
+.dialog-card.refusals {
+    background: #fae4e6;
+}
+.dialog-card.unknown {
+    background: #d2d7dd;
+}
+
+.dialog-card.active.sales { border: 1px solid #7bcc89;  }
+.dialog-card.active.refusals { border: 1px solid #c2adb7;  }
+.dialog-card.active.unknown { border: 1px solid rgb(174, 174, 174);  }

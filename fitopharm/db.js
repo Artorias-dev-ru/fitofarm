@@ -5,7 +5,7 @@ const fs = require('fs');
 const DB_FILE = process.env.DB_FILE || 'database.sqlite';
 const DB_STORAGE_DIR = path.join(__dirname, 'db_store');
 
-// Создаем папку для БД, если нет
+
 if (!fs.existsSync(DB_STORAGE_DIR)) {
     fs.mkdirSync(DB_STORAGE_DIR, { recursive: true });
 }
@@ -45,12 +45,12 @@ const User = sequelize.define('User', {
     role: { type: DataTypes.STRING, defaultValue: 'user' }
 });
 
-// === ДОБАВЛЕНО: Модель заметок ===
+
 const Note = sequelize.define('Note', {
     content: { type: DataTypes.TEXT, allowNull: false }
 });
 
-// === СВЯЗИ ===
+
 Record.hasMany(Dialog);
 Dialog.belongsTo(Record);
 
@@ -64,7 +64,7 @@ async function initDB() {
     try {
         await sequelize.sync();
         
-        // Создаем супер-админа по умолчанию
+        
         const adminExists = await User.findOne({ where: { username: 'admin' } });
         if (!adminExists) {
             await User.create({
@@ -79,5 +79,5 @@ async function initDB() {
     }
 }
 
-// ВАЖНО: Note добавлен в экспорт!
+
 module.exports = { Record, Dialog, User, Note, Op, initDB };

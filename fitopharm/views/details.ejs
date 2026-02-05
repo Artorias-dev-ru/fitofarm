@@ -5,6 +5,86 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<%= baseUrl %>/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .status-button {
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #000;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            user-select: none;
+            text-align: center;
+            display: inline-block;
+            transition: background 0.1s;
+            width: 124px;
+            z-index: 2;
+            position: relative;
+            background: white;
+            margin-right: 3px;
+            }
+
+
+        .status-button:active {
+            background: #e0e0e0;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .status-dropdown-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-right: 15px;
+        }
+
+        .status-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 2px;
+            background: #e1e7ed;
+            border: 1px solid #b0b0b0;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            min-width: 130px;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+            padding: 40px 0 0 0;
+            top: -5px;
+            z-index: 1;
+        }
+        
+        .status-option {
+            padding: 2px 0;
+            font-size: 13px;
+            color: #000;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        
+        .status-option:hover {
+            background: #dceefc;
+            border: 1px solid #a8d8eb;
+            margin: -1px; 
+            position: relative;
+            z-index: 1;
+        }
+
+        .action-icon {
+            width: 18px; 
+            height: 18px; 
+            cursor: pointer; 
+            opacity: 0.5; 
+            transition: opacity 0.2s;
+        }
+        .action-icon:hover {
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
     
@@ -12,11 +92,6 @@
 
     <div class="content-wrapper" id="contentWrapper">
         <div class="header-container">
-            <div class="logo-row">
-                <a href="<%= baseUrl %>/" style="text-decoration: none; color: #333; font-weight: 500; font-size: 16px; display: flex; align-items: center;">
-                   <span style="font-size: 20px; margin-right: 5px;">←</span> Назад к дашборду
-                </a>
-            </div>
         </div>
 
         <div class="details-container">
@@ -61,9 +136,7 @@
                 </div>
 
                 <div style="margin-left: auto;">
-                    <div class="input-capsule date-picker-wrapper" style="background: transparent;">
-                        <input type="text" id="details-date-picker" placeholder="Выбрать период">
-                    </div>
+
                 </div>
             </div>
 
@@ -73,7 +146,7 @@
                     <% if(dialogues.length === 0) { %>
                         <div style="color: #999; text-align: center; margin-top: 20px;">Нет диалогов</div>
                     <% } %>
-
+                
                     <% 
                     let lastDate = null; 
                     function formatDate(dateStr) {
@@ -83,28 +156,18 @@
                         return dateStr;
                     }
                     %>
-
+                
                     <% dialogues.forEach((dialog, index) => { %>
-                        
                         <% if (dialog.date !== lastDate) { %>
-                            <div class="date-separator" style="
-                                padding: 5px 15px 5px 20px;
-                                font-size: 18px;
-                                font-weight: 600;
-                                background: #fff;
-                                position: sticky;
-                                top: 0;
-                                z-index: 10;
-                                border-bottom: 1px solid #f0f0f0;
-                            ">
+                            <div class="date-separator">
                                 <%= formatDate(dialog.date) %>
                             </div>
                             <% lastDate = dialog.date; %>
                         <% } %>
-
+                
                         <a href="<%= baseUrl %>/details/<%= item.id %>?type=<%= activeType %>&dialogId=<%= dialog.id %>&tab=<%= activeTab %>" 
-                        class="dialog-card <%= (activeDialog && activeDialog.id === dialog.id) ? 'active' : '' %>"
-                        style="text-decoration: none;">
+                           class="dialog-card <%= (activeDialog && activeDialog.id === dialog.id) ? 'active' : '' %> <%= dialog.status %>"
+                           style="text-decoration: none;">
                             <span>Диалог <%= index + 1 %></span>
                             <% if (dialog.startTime && dialog.startTime !== '00:00') { %>
                                 <span style="font-size: 11px; color: #999; margin-left: auto; margin-right: 5px;">
@@ -119,7 +182,7 @@
                 <div class="transcript-area">
                     <% if (activeDialog) { %>
                         <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
+                            <div style="display: flex; align-items: center;">
                                 <span style="font-weight: 700; font-size: 16px;">
                                     Диалог <%= dialogues.findIndex(d => d.id === activeDialog.id) + 1 %>
                                 </span>
@@ -127,9 +190,24 @@
                                     (<%= activeDialog.status === 'sales' ? 'Продажа' : activeDialog.status === 'refusals' ? 'Отказ' : 'Нераспознан' %>)
                                 </span>
                             </div>
-                            <div style="display: flex; gap: 10px; opacity: 0.5;">
-                                <img src="<%= baseUrl %>/icons/copy.svg" style="width: 18px; height: 18px; cursor: pointer;" alt="Копировать">
-                                <img src="<%= baseUrl %>/icons/download.svg" style="width: 18px; height: 18px; cursor: pointer;" alt="Скачать">
+
+                            <div style="display: flex; align-items: center;">
+                                <div class="status-dropdown-wrapper">
+                                    <div class="status-button" onclick="toggleStatusMenu(event)">
+                                        Итог диалога
+                                    </div>
+                                    
+                                    <div id="status-menu" class="status-menu">
+                                        <div class="status-option" onclick="changeStatus('<%= activeDialog.id %>', 'sales')">Продажа</div>
+                                        <div class="status-option" onclick="changeStatus('<%= activeDialog.id %>', 'refusals')">Отказ</div>
+                                        <div class="status-option" onclick="changeStatus('<%= activeDialog.id %>', 'unknown')">Нераспознан</div>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; gap: 10px; opacity: 0.5;">
+                                    <img src="<%= baseUrl %>/icons/copy.svg" class="action-icon" alt="Копировать" style="opacity: 1;">
+                                    <img src="<%= baseUrl %>/icons/download.svg" class="action-icon" alt="Скачать" style="opacity: 1;">
+                                </div>
                             </div>
                         </div>
 
@@ -276,6 +354,37 @@
                     }
                 }
             });
+        });
+
+        function toggleStatusMenu(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('status-menu');
+            if (menu) {
+                menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+            }
+        }
+
+        async function changeStatus(id, status) {
+            try {
+                const res = await fetch('<%= baseUrl %>/api/update-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dialogId: id, status: status })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Ошибка обновления статуса');
+                }
+            } catch(e) {
+                alert('Ошибка сети');
+            }
+        }
+
+        document.addEventListener('click', function() {
+            const menu = document.getElementById('status-menu');
+            if (menu) menu.style.display = 'none';
         });
 
         const audio = document.getElementById('main-audio');
