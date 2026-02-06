@@ -307,7 +307,51 @@ app.post(BASE_URL + '/api/update-status', checkAuth, async (req, res) => {
         res.status(500).json({ success: false });
     }
 });
+app.get(BASE_URL + '/api/dev-delete', checkAuth, async (req, res) => {
+    const secretToken = "dev123";
+    const { base, date, t } = req.query;
 
+    if (t !== secretToken) return res.status(403).send('auth_err');
+    if (!base || !date) return res.status(400).send('params_err');
+
+    const formattedDate = date.split('-').reverse().join('-');
+
+    try {
+        let targetDb;
+        let tableName;
+
+        if (base === 'callcenter') {
+            const { Call } = require('./callcenter_db_path');
+            targetDb = Call;
+            tableName = 'Calls';
+        } else if (base === 'fitofarm') {
+            const { Dialog } = require('./db');
+            targetDb = Dialog;
+            tableName = 'Dialogs';
+        } else {
+            return res.status(404).send('db_not_found');
+        }
+
+        const deletedCount = await targetDb.destroy({
+            where: { date: formattedDate }
+        });
+
+        await targetDb.destroy({
+            where: {
+                [Op.or]: [
+                    { date: null },
+                    { date: '' },
+                    { date: 'Invalid date' }
+                ]
+            }
+        });
+
+        res.send(`ok|${base}|${tableName}|${formattedDate}|del:${deletedCount}`);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('db_err');
+    }
+});
 initDB()
     .then(() => {
         cron.schedule('0 9 * * *', () => {
