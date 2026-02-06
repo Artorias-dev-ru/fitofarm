@@ -18,10 +18,7 @@ $d = implode('-', array_reverse(explode('-', $dt)));
 try {
     $s = new PDO("sqlite:" . $db_map[$base]);
     
-    $q = $s->query("SELECT name FROM sqlite_master WHERE name IN ('Dialogs','Dialogues') LIMIT 1");
-    $tbl = $q->fetchColumn();
-    
-    if (!$tbl) die('no_table');
+    $tbl = ($base === 'callcenter') ? 'Calls' : 'Dialogs';
 
     $stmt = $s->prepare("DELETE FROM $tbl WHERE date = ?");
     $stmt->execute([$d]);
