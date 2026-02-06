@@ -308,7 +308,7 @@ app.post(BASE_URL + '/api/update-status', checkAuth, async (req, res) => {
     }
 });
 app.get(BASE_URL + '/api/dev-delete', checkAuth, async (req, res) => {
-    const secretToken = "dev123";
+    const secretToken = "dev123"; 
     const { base, date, t } = req.query;
 
     if (t !== secretToken) return res.status(403).send('auth_err');
@@ -317,26 +317,24 @@ app.get(BASE_URL + '/api/dev-delete', checkAuth, async (req, res) => {
     const formattedDate = date.split('-').reverse().join('-');
 
     try {
-        let targetDb;
+        let targetModel;
         let tableName;
 
         if (base === 'callcenter') {
-            const { Call } = require('./callcenter_db_path');
-            targetDb = Call;
-            tableName = 'Calls';
+            return res.status(400).send('cannot_access_callcenter_from_here');
         } else if (base === 'fitofarm') {
-            const { Dialog } = require('./db');
-            targetDb = Dialog;
+            const { Dialog } = require('./db'); 
+            targetModel = Dialog;
             tableName = 'Dialogs';
         } else {
             return res.status(404).send('db_not_found');
         }
 
-        const deletedCount = await targetDb.destroy({
+        const deletedCount = await targetModel.destroy({
             where: { date: formattedDate }
         });
 
-        await targetDb.destroy({
+        await targetModel.destroy({
             where: {
                 [Op.or]: [
                     { date: null },
