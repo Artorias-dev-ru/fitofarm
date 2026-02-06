@@ -172,34 +172,27 @@ app.get(BASE_URL + '/api/dev-delete', checkAuth, async (req, res) => {
     const formattedDate = date.split('-').reverse().join('-');
 
     try {
-        let targetModel;
-        let tableName;
-
         if (base === 'callcenter') {
-            return res.status(400).send('cannot_access_callcenter_from_here');
-        } else if (base === 'fitofarm') {
-            const { Dialog } = require('./db'); 
-            targetModel = Dialog;
-            tableName = 'Dialogs';
+            const { Call } = require('./db');
+            
+            const deletedCount = await Call.destroy({
+                where: { date: formattedDate }
+            });
+
+            await Call.destroy({
+                where: {
+                    [Op.or]: [
+                        { date: null },
+                        { date: '' },
+                        { date: 'Invalid date' }
+                    ]
+                }
+            });
+
+            res.send(`ok|${base}|Calls|${formattedDate}|del:${deletedCount}`);
         } else {
-            return res.status(404).send('db_not_found');
+            return res.status(400).send('wrong_container_use_fitopharm_url');
         }
-
-        const deletedCount = await targetModel.destroy({
-            where: { date: formattedDate }
-        });
-
-        await targetModel.destroy({
-            where: {
-                [Op.or]: [
-                    { date: null },
-                    { date: '' },
-                    { date: 'Invalid date' }
-                ]
-            }
-        });
-
-        res.send(`ok|${base}|${tableName}|${formattedDate}|del:${deletedCount}`);
     } catch (err) {
         console.error(err);
         res.status(500).send('db_err');
