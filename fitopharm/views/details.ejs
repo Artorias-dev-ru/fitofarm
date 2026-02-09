@@ -6,6 +6,23 @@
     <link rel="stylesheet" href="<%= baseUrl %>/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
+        .dialog-sidebar {
+            height: calc(100vh - 250px);
+            overflow-y: auto;
+            position: relative;
+        }
+        .date-separator {
+            position: sticky;
+            top: 0;
+            background: #f4f6f8;
+            z-index: 10;
+            padding: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #999;
+            border-bottom: 1px solid #eee;
+            text-transform: uppercase;
+        }
         .status-button {
             border-radius: 4px;
             padding: 5px 10px;
@@ -24,9 +41,7 @@
             position: relative;
             background: white;
             margin-right: 3px;
-            }
-
-
+        }
         .status-button:active {
             background: #e0e0e0;
             box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
@@ -36,18 +51,14 @@
             display: inline-block;
             margin-right: 15px;
         }
-
         .status-menu {
             display: none;
             position: absolute;
-            top: 100%;
             right: 0;
-            margin-top: 2px;
             background: #e1e7ed;
             border: 1px solid #b0b0b0;
             border-radius: 5px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            z-index: 1000;
             min-width: 130px;
             overflow: hidden;
             font-family: 'Inter', sans-serif;
@@ -56,7 +67,6 @@
             top: -5px;
             z-index: 1;
         }
-        
         .status-option {
             padding: 2px 0;
             font-size: 13px;
@@ -65,7 +75,6 @@
             cursor: pointer;
             transition: background 0.1s;
         }
-        
         .status-option:hover {
             background: #dceefc;
             border: 1px solid #a8d8eb;
@@ -73,9 +82,8 @@
             position: relative;
             z-index: 1;
         }
-
         .action-icon {
-            width: 18px; 
+            width: 18px;
             height: 18px; 
             cursor: pointer; 
             opacity: 0.5; 
@@ -84,16 +92,35 @@
         .action-icon:hover {
             opacity: 1;
         }
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            cursor: pointer;
+            height: 20px;
+        }
+        input[type="range"]:focus { outline: none; }
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #e0e0e0; border-radius: 2px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            height: 12px; width: 12px; border-radius: 50%; background: #333;
+            cursor: pointer; -webkit-appearance: none; margin-top: -4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .tabs-container { display: flex; gap: 10px; margin-top: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .tab-btn { background: none; border: none; padding: 5px 10px; cursor: pointer; font-family: 'Inter'; font-size: 14px; color: #999; font-weight: 500; position: relative; }
+        .tab-btn.active { color: #333; }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: -11px; left: 0; width: 100%; height: 2px; background: #333; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .save-btn { background: #333; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: 'Inter'; width: 100%; }
     </style>
 </head>
 <body>
-    
     <%- include('sidebar') %>
-
     <div class="content-wrapper" id="contentWrapper">
-        <div class="header-container">
-        </div>
-
+        <div class="header-container"></div>
         <div class="details-container">
             <div class="object-header">
                 <div class="object-title-box">
@@ -101,54 +128,28 @@
                     <div class="object-city"><%= item.city %></div>
                     <div class="object-address"><%= item.address %></div>
                 </div>
-        
                 <div class="header-stats">
                     <div class="stats-group">
                         <span class="stats-label">Продажа</span>
-                        <a href="<%= baseUrl %>/details/<%= item.id %>?type=sales" class="stat-card sales">
-                            <img src="<%= baseUrl %>/icons/sale.svg" class="stat-icon" style="width: 25px; margin-right: 10px;" alt="Sales">
-                            <%= item.sales %>
-                        </a>
+                        <a href="<%= baseUrl %>/details/<%= item.id %>?type=sales" class="stat-card sales"><%= item.sales %></a>
                     </div>
-
                     <div class="stats-group">
                         <span class="stats-label">Отказы</span>
-                        <a href="<%= baseUrl %>/details/<%= item.id %>?type=refusals" class="stat-card refusals">
-                            <img src="<%= baseUrl %>/icons/refuse.svg" class="stat-icon" style="width: 25px; margin-right: 10px;" alt="Refusals">
-                            <%= item.refusals %>
-                        </a>
+                        <a href="<%= baseUrl %>/details/<%= item.id %>?type=refusals" class="stat-card refusals"><%= item.refusals %></a>
                     </div>
-
-                    <div class="stats-group">
-                        <span class="stats-label">Нераспозн</span>
-                        <a href="<%= baseUrl %>/details/<%= item.id %>?type=unknown" class="stat-card unknown">
-                            <img src="<%= baseUrl %>/icons/warning.svg" class="stat-icon" style="width: 35px; margin-right: 10px;" alt="Unknown" style="opacity: 0.6;">
-                            <%= item.unknown %>
-                        </a>
-                    </div>
-
                     <div class="stats-group">
                         <span class="stats-label">Итого</span>
-                        <a href="<%= baseUrl %>/details/<%= item.id %>" class="stat-card total">
-                            <%= item.sales + item.refusals + item.unknown %>
-                        </a>
+                        <a href="<%= baseUrl %>/details/<%= item.id %>" class="stat-card total"><%= item.sales + item.refusals + item.unknown %></a>
                     </div>
                 </div>
-
-                <div style="margin-left: auto;">
-
-                </div>
             </div>
-
             <div class="details-grid">
-                
                 <div class="dialog-sidebar">
                     <% if(dialogues.length === 0) { %>
                         <div style="color: #999; text-align: center; margin-top: 20px;">Нет диалогов</div>
                     <% } %>
-                
                     <% 
-                    let lastDate = null; 
+                    let lastDate = null;
                     function formatDate(dateStr) {
                         if (!dateStr) return '';
                         const parts = dateStr.split('-');
@@ -156,237 +157,107 @@
                         return dateStr;
                     }
                     %>
-                
                     <% dialogues.forEach((dialog, index) => { %>
                         <% if (dialog.date !== lastDate) { %>
-                            <div class="date-separator">
-                                <%= formatDate(dialog.date) %>
-                            </div>
+                            <div class="date-separator"><%= formatDate(dialog.date) %></div>
                             <% lastDate = dialog.date; %>
                         <% } %>
-                
-                        <a href="<%= baseUrl %>/details/<%= item.id %>?type=<%= activeType %>&dialogId=<%= dialog.id %>&tab=<%= activeTab %>" 
-                           class="dialog-card <%= (activeDialog && activeDialog.id === dialog.id) ? 'active' : '' %> <%= dialog.status %>"
-                           style="text-decoration: none;">
+                        <a href="<%= baseUrl %>/details/<%= item.id %>?type=<%= activeType %>&dialogId=<%= dialog.id %>&tab=<%= activeTab %>" class="dialog-card <%= (activeDialog && activeDialog.id === dialog.id) ? 'active' : '' %> <%= dialog.status %>" style="text-decoration: none;">
                             <span>Диалог <%= index + 1 %></span>
                             <% if (dialog.startTime && dialog.startTime !== '00:00') { %>
-                                <span style="font-size: 11px; color: #999; margin-left: auto; margin-right: 5px;">
-                                    <%= dialog.startTime %>
-                                </span>
+                                <span style="font-size: 11px; color: #999; margin-left: auto; margin-right: 5px;"><%= dialog.startTime %></span>
                             <% } %>
                             <img src="<%= baseUrl %>/icons/download.svg" class="download-icon" style="width: 16px; opacity: 0.5;"> 
                         </a>
                     <% }) %>
                 </div>
-
                 <div class="transcript-area">
                     <% if (activeDialog) { %>
                         <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
                             <div style="display: flex; align-items: center;">
-                                <span style="font-weight: 700; font-size: 16px;">
-                                    Диалог <%= dialogues.findIndex(d => d.id === activeDialog.id) + 1 %>
-                                </span>
-                                <span style="color: #999; font-size: 13px; margin-left: 10px;">
-                                    (<%= activeDialog.status === 'sales' ? 'Продажа' : activeDialog.status === 'refusals' ? 'Отказ' : 'Нераспознан' %>)
-                                </span>
+                                <span style="font-weight: 700; font-size: 16px;">Диалог <%= dialogues.findIndex(d => d.id === activeDialog.id) + 1 %></span>
+                                <span style="color: #999; font-size: 13px; margin-left: 10px;">(<%= activeDialog.status === 'sales' ? 'Продажа' : activeDialog.status === 'refusals' ? 'Отказ' : 'Нераспознан' %>)</span>
                             </div>
-
                             <div style="display: flex; align-items: center;">
                                 <div class="status-dropdown-wrapper">
-                                    <div class="status-button" onclick="toggleStatusMenu(event)">
-                                        Итог диалога
-                                    </div>
-                                    
+                                    <div class="status-button" onclick="toggleStatusMenu(event)">Итог диалога</div>
                                     <div id="status-menu" class="status-menu">
                                         <div class="status-option" onclick="changeStatus('<%= activeDialog.id %>', 'sales')">Продажа</div>
                                         <div class="status-option" onclick="changeStatus('<%= activeDialog.id %>', 'refusals')">Отказ</div>
                                         <div class="status-option" onclick="changeStatus('<%= activeDialog.id %>', 'unknown')">Нераспознан</div>
                                     </div>
                                 </div>
-
                                 <div style="display: flex; gap: 10px; opacity: 0.5;">
                                     <img src="<%= baseUrl %>/icons/copy.svg" class="action-icon" alt="Копировать" style="opacity: 1;">
                                     <img src="<%= baseUrl %>/icons/download.svg" class="action-icon" alt="Скачать" style="opacity: 1;">
                                 </div>
                             </div>
                         </div>
-
                         <% if (activeDialog.transcribedText) { %>
                             <div style="display: flex; height: 90%; gap: 20px;">
                                 <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid #eee; padding-right: 10px;">
                                     <div style="font-weight: 600; margin-bottom: 10px; color: #555;">Исходный (Output)</div>
-                                    <div style="overflow-y: auto; flex: 1;">
-                                        <pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px;"><%= activeDialog.text %></pre>
-                                    </div>
+                                    <div style="overflow-y: auto; flex: 1;"><pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px;"><%= activeDialog.text %></pre></div>
                                 </div>
                                 <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
                                     <div style="font-weight: 600; margin-bottom: 10px; color: #555;">Распознанный (LLM)</div>
-                                    <div style="overflow-y: auto; flex: 1;">
-                                        <pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px;"><%= activeDialog.transcribedText %></pre>
-                                    </div>
+                                    <div style="overflow-y: auto; flex: 1;"><pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px;"><%= activeDialog.transcribedText %></pre></div>
                                 </div>
                             </div>
                         <% } else { %>
-                            <div style="overflow-y: auto; height: 90%;">
-                                <pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px;"><%= activeDialog.text %></pre>
-                            </div>
+                            <div style="overflow-y: auto; height: 90%;"><pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px;"><%= activeDialog.text %></pre></div>
                         <% } %>
-
                     <% } else { %>
-                        <div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #999;">
-                            Выберите диалог из списка слева
-                        </div>
+                        <div style="display: flex; justify-content: center; align-items: center; height: 100%; color: #999;">Выберите диалог из списка слева</div>
                     <% } %>
                 </div>
-
                 <div class="actions-sidebar">
                     <div class="audio-player-mock <%= (!activeDialog || !activeDialog.audioUrl) ? 'player-disabled' : '' %>">
                         <% if (activeDialog && activeDialog.audioUrl) { %>
                             <audio id="main-audio" src="<%= baseUrl %>/api/audio/<%= activeDialog.id %>"></audio>
                         <% } %>
                         <div class="player-controls">
-                            <div class="play-btn" onclick="toggleAudio()">
-                                <img id="play-icon" src="<%= baseUrl %>/icons/play.svg" style="width: 25px; filter: invert(1);">
-                            </div>
-                            <div style="font-size: 12px; font-weight: 600; min-width: 80px;">
-                                <span id="current-time">0:00</span> / <span id="duration">0:00</span>
-                            </div>
-                            <div class="volume-control">
-                                <img src="data:image/png;base64,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" style="width: 16px; opacity: 0.7;">
-                                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
-                            </div>
+                            <div class="play-btn" onclick="toggleAudio()"><img id="play-icon" src="<%= baseUrl %>/icons/play.svg" style="width: 25px; filter: invert(1);"></div>
+                            <div style="font-size: 12px; font-weight: 600; min-width: 80px;"><span id="current-time">0:00</span> / <span id="duration">0:00</span></div>
+                            <div class="volume-control"><input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1"></div>
                         </div>
                         <input type="range" id="seek-slider" max="100" value="0">
                     </div>
-
                     <div class="tabs-container">
                         <button class="tab-btn <%= activeTab === 'summary' ? 'active' : '' %>" onclick="openTab('summary')">Краткий отчет</button>
                         <button class="tab-btn <%= activeTab === 'notes' ? 'active' : '' %>" onclick="openTab('notes')">Заметки</button>
                     </div>
-
                     <div class="report-body">
                         <div id="tab-summary" class="tab-content <%= activeTab === 'summary' ? 'active' : '' %>">
                             <% if (activeDialog) { %>
                                 <p style="margin-top: 0;"><strong>Краткое содержание:</strong></p>
                                 <p style="line-height: 1.6; color: #555; white-space: pre-wrap;"><%= activeDialog.summary %></p>
-                            <% } else { %>
-                                <p style="color:#999">...</p>
-                            <% } %>
+                            <% } else { %><p style="color:#999">...</p><% } %>
                         </div>
                         <div id="tab-notes" class="tab-content <%= activeTab === 'notes' ? 'active' : '' %>">
                             <% if (activeDialog) { %>
-                                <textarea id="note-textarea" placeholder="Напишите заметку к диалогу..."><%= activeDialog.note || '' %></textarea>
-                                <button class="save-btn" onclick="saveNote(<%= activeDialog.id %>)">Сохранить</button>
-                            <% } else { %>
-                                <p style="color:#999">Выберите диалог</p>
-                            <% } %>
+                                <div style="margin-bottom: 20px;">
+                                    <textarea id="note-textarea" placeholder="Напишите новую заметку..." style="width: 100%; height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; font-family: 'Inter', sans-serif;"></textarea>
+                                    <button class="save-btn" onclick="saveNote(<%= activeDialog.id %>)">Добавить заметку</button>
+                                </div>
+                                <div class="notes-history" style="border-top: 1px solid #eee; padding-top: 20px;">
+                                    <% if (activeDialog.notes && activeDialog.notes.length > 0) { %>
+                                        <% activeDialog.notes.forEach(note => { %>
+                                            <div style="background: #f9f9f9; padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #eee;">
+                                                <div style="font-size: 11px; color: #999; margin-bottom: 6px;"><%= new Date(note.createdAt).toLocaleString('ru-RU') %></div>
+                                                <div style="font-size: 13px; color: #333; line-height: 1.4; white-space: pre-wrap;"><%= note.content %></div>
+                                            </div>
+                                        <% }) %>
+                                    <% } else { %><div style="color: #ccc; text-align: center; font-size: 13px;">Нет заметок</div><% } %>
+                                </div>
+                            <% } else { %><p style="color:#999">Выберите диалог</p><% } %>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const contentWrapper = document.getElementById('contentWrapper');
-            const toggleBtn = document.getElementById('sidebarToggle');
-            const sidebarState = localStorage.getItem('sidebarState');
-
-            if (sidebarState === 'collapsed') {
-                sidebar.classList.add('collapsed');
-                contentWrapper.classList.add('expanded');
-            }
-
-            if(toggleBtn) {
-                toggleBtn.addEventListener('click', () => {
-                    sidebar.classList.toggle('collapsed');
-                    contentWrapper.classList.toggle('expanded');
-                    localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
-                });
-            }
-
-            const activeCard = document.querySelector('.dialog-card.active');
-            if (activeCard) {
-                activeCard.scrollIntoView({ behavior: 'auto', block: 'center' });
-            }
-            const urlParams = new URLSearchParams(window.location.search);
-            const startParam = urlParams.get('startDate');
-            const endParam = urlParams.get('endDate');
-            const currentTab = urlParams.get('tab') || 'summary';
-    
-            if (startParam && endParam) {
-                const linksToUpdate = document.querySelectorAll('.stat-card, .dialog-card');
-                linksToUpdate.forEach(link => {
-                    const url = new URL(link.href, window.location.origin);
-                    url.searchParams.set('startDate', startParam);
-                    url.searchParams.set('endDate', endParam);
-                    url.searchParams.set('tab', currentTab);
-                    url.searchParams.delete('period');
-                    link.href = url.toString();
-                });
-            }
-
-            let defaultDates = [];
-            if (startParam && endParam) {
-                defaultDates = [startParam, endParam];
-            }
-            flatpickr("#details-date-picker", {
-                mode: "range",
-                dateFormat: "Y-m-d",
-                altInput: true,
-                altFormat: "d.m.Y", 
-                locale: "ru",
-                defaultDate: defaultDates,
-                onClose: function(selectedDates, dateStr, instance) {
-                    if (selectedDates.length === 2) {
-                        const start = instance.formatDate(selectedDates[0], "Y-m-d");
-                        const end = instance.formatDate(selectedDates[1], "Y-m-d");
-                        const currentUrl = new URL(window.location.href);
-                        currentUrl.searchParams.set('startDate', start);
-                        currentUrl.searchParams.set('endDate', end);
-                        currentUrl.searchParams.delete('period'); 
-                        currentUrl.searchParams.set('tab', currentTab);
-                        window.location.href = currentUrl.toString();
-                    }
-                }
-            });
-        });
-
-        function toggleStatusMenu(e) {
-            e.stopPropagation();
-            const menu = document.getElementById('status-menu');
-            if (menu) {
-                menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-            }
-        }
-
-        async function changeStatus(id, status) {
-            try {
-                const res = await fetch('<%= baseUrl %>/api/update-status', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ dialogId: id, status: status })
-                });
-                const data = await res.json();
-                if(data.success) {
-                    window.location.reload();
-                } else {
-                    alert('Ошибка обновления статуса');
-                }
-            } catch(e) {
-                alert('Ошибка сети');
-            }
-        }
-
-        document.addEventListener('click', function() {
-            const menu = document.getElementById('status-menu');
-            if (menu) menu.style.display = 'none';
-        });
-
         const audio = document.getElementById('main-audio');
         const playIcon = document.getElementById('play-icon');
         const seekSlider = document.getElementById('seek-slider');
@@ -394,122 +265,35 @@
         const currentTimeEl = document.getElementById('current-time');
         const durationEl = document.getElementById('duration');
         let isDragging = false;
-
-        function formatTime(seconds) {
-            if (!seconds || isNaN(seconds)) return "0:00";
-            const m = Math.floor(seconds / 60);
-            const s = Math.floor(seconds % 60);
-            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        function formatTime(s) { if (!s || isNaN(s)) return "0:00"; const m = Math.floor(s/60); const sec = Math.floor(s%60); return `${m}:${sec<10?'0':''}${sec}`; }
+        function updateSliderBackground(s) {
+            const v = s.value; const min = s.min || 0; const max = s.max || 100; const p = (v-min)/(max-min)*100;
+            s.style.background = `linear-gradient(to right, #333 0%, #333 ${p}%, #e0e0e0 ${p}%, #e0e0e0 100%)`;
+            s.style.backgroundSize = '100% 4px'; s.style.backgroundRepeat = 'no-repeat'; s.style.backgroundPosition = 'center';
         }
-
-        function updateSliderBackground(slider) {
-            const min = slider.min ? parseFloat(slider.min) : 0;
-            const max = slider.max ? parseFloat(slider.max) : 100;
-            const val = slider.value ? parseFloat(slider.value) : 0;
-            let percentage = 0;
-            if (max > min) percentage = (val - min) / (max - min) * 100;
-            slider.style.background = `linear-gradient(to right, #333 0%, #333 ${percentage}%, #e0e0e0 ${percentage}%, #e0e0e0 100%)`;
-            slider.style.backgroundSize = '100% 4px';
-            slider.style.backgroundRepeat = 'no-repeat';
-            slider.style.backgroundPosition = 'center';
-        }
-
-        function initAudioMetadata() {
-            if (!isNaN(audio.duration) && audio.duration !== Infinity) {
-                durationEl.innerText = formatTime(audio.duration);
-                seekSlider.max = Math.floor(audio.duration);
-            }
-            updateSliderBackground(seekSlider);
-        }
-
         if (audio) {
-            audio.addEventListener('loadedmetadata', initAudioMetadata);
-            if (audio.readyState >= 1) initAudioMetadata();
-            
-            audio.addEventListener('timeupdate', () => {
-                if (!isDragging) {
-                    seekSlider.value = Math.floor(audio.currentTime);
-                    currentTimeEl.innerText = formatTime(audio.currentTime);
-                    updateSliderBackground(seekSlider);
-                }
-            });
-            audio.addEventListener('ended', () => {
-                playIcon.src = "<%= baseUrl %>/icons/play.svg";
-                seekSlider.value = 0;
-                updateSliderBackground(seekSlider);
-            });
-            seekSlider.addEventListener('mousedown', () => isDragging = true);
-            seekSlider.addEventListener('touchstart', () => isDragging = true);
-            seekSlider.addEventListener('input', () => {
-                isDragging = true;
-                currentTimeEl.innerText = formatTime(seekSlider.value);
-                updateSliderBackground(seekSlider);
-            });
-            seekSlider.addEventListener('change', () => {
-                audio.currentTime = seekSlider.value;
-                isDragging = false;
-            });
-            seekSlider.addEventListener('mouseup', () => isDragging = false);
-            seekSlider.addEventListener('touchend', () => isDragging = false);
-            volumeSlider.addEventListener('input', (e) => {
-                audio.volume = e.target.value;
-                updateSliderBackground(volumeSlider);
-            });
-            updateSliderBackground(volumeSlider);
-            updateSliderBackground(seekSlider);
-        }
-
-        function toggleAudio() {
-            if (!audio) return;
-            if (audio.paused) {
-                audio.play().then(() => playIcon.src = "<%= baseUrl %>/icons/pause.svg").catch(e => console.error(e));
-            } else {
-                audio.pause();
-                playIcon.src = "<%= baseUrl %>/icons/play.svg";
+            audio.addEventListener('loadedmetadata', () => { durationEl.innerText = formatTime(audio.duration); if(seekSlider) seekSlider.max = Math.floor(audio.duration); updateSliderBackground(seekSlider); updateSliderBackground(volumeSlider); });
+            audio.addEventListener('timeupdate', () => { if (!isDragging) { if(seekSlider) seekSlider.value = Math.floor(audio.currentTime); currentTimeEl.innerText = formatTime(audio.currentTime); updateSliderBackground(seekSlider); } });
+            audio.addEventListener('ended', () => { playIcon.src = "<%= baseUrl %>/icons/play.svg"; if(seekSlider) seekSlider.value = 0; updateSliderBackground(seekSlider); });
+            if(seekSlider) {
+                seekSlider.addEventListener('input', () => { isDragging = true; currentTimeEl.innerText = formatTime(seekSlider.value); updateSliderBackground(seekSlider); });
+                seekSlider.addEventListener('change', () => { audio.currentTime = seekSlider.value; isDragging = false; });
             }
+            if(volumeSlider) volumeSlider.addEventListener('input', (e) => { audio.volume = e.target.value; updateSliderBackground(volumeSlider); });
         }
-
-        function openTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('tab-' + tabName).classList.add('active');
-            const btnIndex = tabName === 'summary' ? 0 : 1;
-            if(document.querySelectorAll('.tab-btn')[btnIndex]) {
-                document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
-            }
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('tab', tabName);
-            window.history.replaceState({}, '', currentUrl);
-            const linksToUpdate = document.querySelectorAll('.stat-card, .dialog-card');
-            linksToUpdate.forEach(link => {
-                const url = new URL(link.href, window.location.origin);
-                url.searchParams.set('tab', tabName);
-                link.href = url.toString();
-            });
+        function toggleAudio() { if(!audio) return; if(audio.paused) audio.play().then(()=>playIcon.src="<%= baseUrl %>/icons/pause.svg"); else { audio.pause(); playIcon.src="<%= baseUrl %>/icons/play.svg"; } }
+        function toggleStatusMenu(e) { e.stopPropagation(); const m = document.getElementById('status-menu'); m.style.display = m.style.display==='block'?'none':'block'; }
+        document.addEventListener('click', () => { const m = document.getElementById('status-menu'); if(m) m.style.display = 'none'; });
+        async function changeStatus(id, s) { try { const r = await fetch('<%= baseUrl %>/api/update-status', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ dialogId: id, status: s }) }); if(r.ok) window.location.reload(); } catch(e) { alert('Ошибка'); } }
+        function openTab(t) { document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active'); const u = new URL(window.location.href); u.searchParams.set('tab', t); window.history.replaceState({}, '', u); }
+        async function saveNote(id) {
+            const txt = document.getElementById('note-textarea').value; if(!txt.trim()) return;
+            try { const r = await fetch('<%= baseUrl %>/api/save-note', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ dialogId: id, note: txt }) }); if(r.ok) { const u = new URL(window.location.href); u.searchParams.set('tab', 'notes'); window.location.href = u.toString(); } } catch(e) {}
         }
-
-        async function saveNote(dialogId) {
-            const text = document.getElementById('note-textarea').value;
-            const btn = document.querySelector('.save-btn');
-            const originalText = btn.innerText;
-            btn.innerText = "Сохранение...";
-            try {
-                const response = await fetch('<%= baseUrl %>/api/save-note', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ dialogId: dialogId, note: text })
-                });
-                if (response.ok) {
-                    btn.innerText = "Сохранено!";
-                    setTimeout(() => btn.innerText = originalText, 2000);
-                } else {
-                    btn.innerText = "Ошибка";
-                }
-            } catch (e) {
-                console.error(e);
-                btn.innerText = "Ошибка сети";
-            }
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const activeCard = document.querySelector('.dialog-card.active');
+            if (activeCard) activeCard.scrollIntoView({ behavior: 'auto', block: 'center' });
+        });
     </script>
 </body>
 </html>

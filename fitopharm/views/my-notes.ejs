@@ -5,210 +5,170 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<%= baseUrl %>/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .note-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 80px 50px 2fr 70px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+            padding: 10px 15px;
+            background: #fff;
+            transition: background 0.2s;
+        }
+        .note-row:hover { background-color: #fcfcfc; }
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            opacity: 0.4;
+            transition: opacity 0.2s;
+        }
+        .note-row:hover .actions-cell { opacity: 1; }
+        .action-btn {
+            background: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .action-btn:hover { background-color: #eee; color: #333; }
+        .action-btn.delete:hover { background-color: #fff0f0; color: #d32f2f; }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-window {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 500px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .modal-title { margin-bottom: 15px; font-weight: 600; font-size: 16px; }
+        textarea.modal-input {
+            width: 100%;
+            height: 120px;
+            padding: 10px; border: 1px solid #ddd;
+            border-radius: 6px; resize: vertical;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 15px;
+        }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-sm { padding: 6px 12px; border-radius: 4px; cursor: pointer; border: none; font-size: 13px; }
+        .btn-cancel { background: #eee; color: #333; }
+        .btn-save { background: #333; color: #fff; }
+    </style>
 </head>
 <body>
-
     <%- include('sidebar') %>
-
     <div class="content-wrapper" id="contentWrapper" style="background-color: #f4f6f8;">
         <div class="header-container" style="padding-top: 20px; padding-bottom: 0;">
             <h2 style="font-family: 'Inter', sans-serif; margin-bottom: 20px; font-size: 20px;">Мои заметки</h2>
         </div>
-
         <div class="notes-container" style="padding-top: 0;">
-            
-            <div class="notes-header-row">
-                <div class="filter-box">
-                    <div class="filter-input-wrapper">
-                        <input type="text" id="filter-date-dialog" class="filter-input" placeholder="Дата диалога">
-                        <div class="dropdown-arrow"></div>
-                    </div>
-                </div>
-
-                <div class="filter-box">
-                    <div class="filter-input-wrapper">
-                        <input type="text" id="filter-address" class="filter-input" placeholder="Адрес аптеки" style="text-align: left; padding-left: 5px;">
-                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E" class="search-icon-sm">
-                    </div>
-                </div>
-
-                <div class="filter-box">
-                    <div class="filter-input-wrapper">
-                        <input type="text" id="filter-date-note" class="filter-input" placeholder="Дата заметки">
-                        <div class="dropdown-arrow"></div>
-                    </div>
-                </div>
-
-                <div class="filter-box label-only">
-                    Статус диалога
-                </div>
-
-                <div class="filter-box label-only">
-                    Заметка
-                </div>
+            <div class="notes-header-row" style="display: grid; grid-template-columns: 80px 1fr 80px 50px 2fr 70px; padding: 10px 15px; font-weight: 600; font-size: 12px; color: #999; border-bottom: 1px solid #ddd;">
+                <div class="filter-box"><input type="text" id="filter-date-dialog" class="filter-input" placeholder="Дата диалога"></div>
+                <div class="filter-box"><input type="text" id="filter-address" class="filter-input" placeholder="Адрес аптеки"></div>
+                <div class="filter-box"><input type="text" id="filter-date-note" class="filter-input" placeholder="Дата заметки"></div>
+                <div class="filter-box label-only">Статус</div>
+                <div class="filter-box label-only">Заметка</div>
+                <div class="filter-box label-only"></div>
             </div>
-
             <div class="notes-list" id="notesList">
-                <% 
-                function formatDate(dateString) {
-                    if (!dateString) return '';
-                    const d = new Date(dateString);
-                    const day = ('0' + d.getDate()).slice(-2);
-                    const month = ('0' + (d.getMonth() + 1)).slice(-2);
-                    const year = d.getFullYear().toString().slice(-2);
-                    return `${day}.${month}.${year}`;
-                }
-
-                function formatNoteDate(dateObj) {
-                    if (!dateObj) return '';
-                    const d = new Date(dateObj);
-                    const day = ('0' + d.getDate()).slice(-2);
-                    const month = ('0' + (d.getMonth() + 1)).slice(-2);
-                    const year = d.getFullYear().toString().slice(-2);
-                    return `${day}.${month}.${year}`;
-                }
-                %>
-
+                <% function formatDate(dateString) { if (!dateString) return ''; const d = new Date(dateString); return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear().toString().slice(-2); } %>
                 <% notes.forEach(note => { 
-                    let statusIcon = '';
-                    let statusClass = '';
-                    if (note.Dialog.status === 'sales') {
-                        statusClass = 'status-sales';
-                        statusIcon = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                    } else if (note.Dialog.status === 'refusals') {
-                        statusClass = 'status-refusals';
-                        statusIcon = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-                    } else {
-                        statusClass = 'status-unknown';
-                        statusIcon = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
-                    }
-                    
-                    const dialogDate = note.Dialog.date; 
-                    const noteDateRaw = note.updatedAt;
+                    let statusIcon = note.Dialog.status === 'sales' ? '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : (note.Dialog.status === 'refusals' ? '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' : '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>');
                     const addressFull = note.Dialog.Record ? note.Dialog.Record.address : 'Неизвестно';
                     const city = note.Dialog.Record ? note.Dialog.Record.city : '';
                 %>
-                <div class="note-row" 
-                     data-dialog-date="<%= dialogDate %>" 
-                     data-note-date="<%= noteDateRaw %>"
-                     data-address="<%= (city + ' ' + addressFull).toLowerCase() %>"
-                     onclick="window.location.href='<%= baseUrl %>/details/<%= note.Dialog.RecordId %>?dialogId=<%= note.Dialog.id %>&tab=notes'"
-                     style="cursor: pointer;">
-                    
-                    <div class="cell-date">
-                        <%= formatDate(dialogDate) %>
+                <div class="note-row" id="note-row-<%= note.id %>" data-dialog-date="<%= note.Dialog.date %>" data-note-date="<%= note.updatedAt %>" data-address="<%= (city + ' ' + addressFull).toLowerCase() %>" onclick="window.location.href='<%= baseUrl %>/details/<%= note.Dialog.RecordId %>?dialogId=<%= note.Dialog.id %>&tab=notes'" style="cursor: pointer;">
+                    <div class="cell-date"><%= formatDate(note.Dialog.date) %></div>
+                    <div class="cell-address"><strong><%= city %></strong> <span><%= addressFull %></span></div>
+                    <div class="cell-date"><%= formatDate(note.updatedAt) %></div>
+                    <div class="cell-status <%= note.Dialog.status %>"><%- statusIcon %></div>
+                    <div class="cell-note" id="content-<%= note.id %>" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 10px;"><%= note.content %></div>
+                    <div class="actions-cell" onclick="event.stopPropagation()">
+                        <button class="action-btn" onclick="openEditModal(<%= note.id %>)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                        <button class="action-btn delete" onclick="deleteNote(<%= note.id %>)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                     </div>
-
-                    <div class="cell-address">
-                        <strong><%= city %></strong>
-                        <span><%= addressFull %></span>
-                    </div>
-
-                    <div class="cell-date">
-                        <%= formatNoteDate(noteDateRaw) %>
-                    </div>
-
-                    <div class="cell-status <%= statusClass %>">
-                        <%- statusIcon %>
-                    </div>
-
-                    <div class="cell-note">
-                        <%= note.content %>
-                    </div>
-
                 </div>
                 <% }) %>
-                
-                <% if(notes.length === 0) { %>
-                    <div style="padding: 20px; text-align: center; color: #999;">Нет заметок</div>
-                <% } %>
+                <% if(notes.length === 0) { %><div style="padding: 20px; text-align: center; color: #999;">Нет заметок</div><% } %>
             </div>
-
         </div>
     </div>
-
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-title">Редактирование заметки</div>
+            <textarea id="modalText" class="modal-input"></textarea>
+            <div class="modal-footer">
+                <button class="btn-sm btn-cancel" onclick="closeEditModal()">Отмена</button>
+                <button class="btn-sm btn-save" onclick="saveEditedNote()">Сохранить</button>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const contentWrapper = document.getElementById('contentWrapper');
-            const toggleBtn = document.getElementById('sidebarToggle');
-            const sidebarState = localStorage.getItem('sidebarState');
-
-            if (sidebarState === 'collapsed') {
-                sidebar.classList.add('collapsed');
-                contentWrapper.classList.add('expanded');
-            }
-
-            if(toggleBtn) {
-                toggleBtn.addEventListener('click', () => {
-                    sidebar.classList.toggle('collapsed');
-                    contentWrapper.classList.toggle('expanded');
-                    localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+        let currentNoteId = null;
+        const modal = document.getElementById('editModal');
+        const modalText = document.getElementById('modalText');
+        function openEditModal(id) {
+            currentNoteId = id;
+            modalText.value = document.getElementById('content-' + id).innerText;
+            modal.style.display = 'flex';
+        }
+        function closeEditModal() { modal.style.display = 'none'; currentNoteId = null; }
+        async function saveEditedNote() {
+            if(!currentNoteId) return;
+            try {
+                const res = await fetch('<%= baseUrl %>/api/note/edit', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ noteId: currentNoteId, content: modalText.value })
                 });
-            }
-
+                if(res.ok) { document.getElementById('content-' + currentNoteId).innerText = modalText.value; closeEditModal(); }
+            } catch(e) { alert('Ошибка сети'); }
+        }
+        async function deleteNote(id) {
+            if(!confirm('Удалить заметку?')) return;
+            try {
+                const res = await fetch('<%= baseUrl %>/api/note/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ noteId: id })
+                });
+                if(res.ok) document.getElementById('note-row-' + id).remove();
+            } catch(e) { alert('Ошибка сети'); }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
             const rows = document.querySelectorAll('.note-row');
             const addressInput = document.getElementById('filter-address');
-            
-            let dateDialogRange = [];
-            let dateNoteRange = [];
-
+            let dateDialogRange = [], dateNoteRange = [];
             function applyFilters() {
                 const addressVal = addressInput.value.toLowerCase();
-                
                 rows.forEach(row => {
                     let visible = true;
-
-                    const rowAddress = row.getAttribute('data-address');
-                    if (addressVal && !rowAddress.includes(addressVal)) {
-                        visible = false;
-                    }
-
+                    if (addressVal && !row.getAttribute('data-address').includes(addressVal)) visible = false;
                     if (visible && dateDialogRange.length === 2) {
-                        const rowDateStr = row.getAttribute('data-dialog-date');
-                        const rowDate = new Date(rowDateStr).setHours(0,0,0,0);
-                        const start = dateDialogRange[0].setHours(0,0,0,0);
-                        const end = dateDialogRange[1].setHours(0,0,0,0);
-                        
-                        if (rowDate < start || rowDate > end) visible = false;
+                        const rowDate = new Date(row.getAttribute('data-dialog-date')).setHours(0,0,0,0);
+                        if (rowDate < dateDialogRange[0].setHours(0,0,0,0) || rowDate > dateDialogRange[1].setHours(0,0,0,0)) visible = false;
                     }
-
-                    if (visible && dateNoteRange.length === 2) {
-                        const rowDateStr = row.getAttribute('data-note-date');
-                        const rowDate = new Date(rowDateStr).setHours(0,0,0,0);
-                        const start = dateNoteRange[0].setHours(0,0,0,0);
-                        const end = dateNoteRange[1].setHours(0,0,0,0);
-                        
-                        if (rowDate < start || rowDate > end) visible = false;
-                    }
-
                     row.style.display = visible ? 'grid' : 'none';
                 });
             }
-
             addressInput.addEventListener('input', applyFilters);
-
-            flatpickr("#filter-date-dialog", {
-                mode: "range",
-                dateFormat: "d.m.y",
-                locale: "ru",
-                onChange: function(selectedDates) {
-                    dateDialogRange = selectedDates;
-                    applyFilters();
-                }
-            });
-
-            flatpickr("#filter-date-note", {
-                mode: "range",
-                dateFormat: "d.m.y",
-                locale: "ru",
-                onChange: function(selectedDates) {
-                    dateNoteRange = selectedDates;
-                    applyFilters();
-                }
-            });
+            flatpickr("#filter-date-dialog", { mode: "range", dateFormat: "d.m.y", locale: "ru", onChange: (sd) => { dateDialogRange = sd; applyFilters(); } });
+            flatpickr("#filter-date-note", { mode: "range", dateFormat: "d.m.y", locale: "ru", onChange: (sd) => { dateNoteRange = sd; applyFilters(); } });
         });
     </script>
 </body>

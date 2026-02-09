@@ -88,16 +88,13 @@ app.post(BASE_URL + '/api/sync/start', checkAuth, (req, res) => {
 
 app.get(BASE_URL + '/', checkAuth, async (req, res) => {
     const { period, sortType, startDate, endDate } = req.query;
-
     try {
         const recordsRaw = await Record.findAll({ 
             include: [{ model: Dialog, required: false }]
         });
-
         const viewData = recordsRaw.map(rec => {
             const plainRec = rec.get({ plain: true });
             const allDialogs = plainRec.Dialogs || [];
-            
             const filtered = allDialogs.filter(d => {
                 const today = moment().format('YYYY-MM-DD');
                 if (startDate && endDate) return d.date >= startDate && d.date <= endDate;
@@ -108,21 +105,16 @@ app.get(BASE_URL + '/', checkAuth, async (req, res) => {
                 if (period === 'year') return d.date >= moment().subtract(1, 'years').format('YYYY-MM-DD');
                 return true;
             });
-
             plainRec.Dialogs = filtered; 
             plainRec.globalDialogs = allDialogs; 
-            
             plainRec.sales = filtered.filter(d => d.status === 'sales').length;
             plainRec.refusals = filtered.filter(d => d.status === 'refusals').length;
             plainRec.unknown = filtered.filter(d => d.status === 'unknown').length;
-            
             return plainRec;
         });
-
         if (sortType === 'sales') viewData.sort((a, b) => b.sales - a.sales);
         else if (sortType === 'refusals') viewData.sort((a, b) => b.refusals - a.refusals);
         else viewData.sort((a, b) => a.address.localeCompare(b.address));
-
         res.render('dashboard', {
             data: viewData,
             activeSort: sortType || 'alphabet',
@@ -139,36 +131,30 @@ app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
         const { startDate, endDate, type, dialogId, period, tab } = req.query;
         const recordId = req.params.id;
         const dateWhere = getDateWhere(period || (startDate ? '' : 'year'), startDate, endDate);
-
         let listWhere = { RecordId: recordId, date: dateWhere };
         if (type) listWhere.status = type;
-
         const itemRaw = await Record.findByPk(recordId);
         if (!itemRaw) return res.redirect(BASE_URL + '/');
-        
         const allDialogs = await Dialog.findAll({ where: { RecordId: recordId, date: dateWhere } });
         const item = itemRaw.get({ plain: true });
         item.sales = allDialogs.filter(d => d.status === 'sales').length;
         item.refusals = allDialogs.filter(d => d.status === 'refusals').length;
         item.unknown = allDialogs.filter(d => d.status === 'unknown').length;
-
         const dialogues = await Dialog.findAll({
             where: listWhere,
             order: [['date', 'ASC'], ['startTime', 'ASC'], ['id', 'ASC']] 
         });
-
         let activeDialog = null;
         if (dialogues.length > 0) {
             activeDialog = dialogId ? dialogues.find(d => d.id == dialogId) : dialogues[0];
         }
-
         if (activeDialog) {
-            const noteEntry = await Note.findOne({
-                where: { DialogId: activeDialog.id, UserId: req.user.id }
+            const notes = await Note.findAll({
+                where: { DialogId: activeDialog.id, UserId: req.user.id },
+                order: [['createdAt', 'DESC']] 
             });
-            activeDialog.note = noteEntry ? noteEntry.content : '';
+            activeDialog.notes = notes; 
         }
-
         res.render('details', {
             item: item,
             dialogues: dialogues,
@@ -177,7 +163,6 @@ app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
             currentRange: startDate && endDate ? `${startDate} to ${endDate}` : '',
             activeTab: tab || 'summary'
         });
-
     } catch (err) {
         res.status(500).send(err.message);
     }
@@ -196,17 +181,36 @@ app.get(BASE_URL + '/my-notes', checkAuth, async (req, res) => {
     }
 });
 
+app.post(BASE_URL + '/api/note/edit', checkAuth, async (req, res) => {
+    try {
+        const { noteId, content } = req.body;
+        const note = await Note.findOne({ where: { id: noteId, UserId: req.user.id } });
+        if (note) {
+            note.content = content;
+            await note.save();
+            res.json({ success: true });
+        } else {
+            res.status(404).json({ success: false });
+        }
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+app.post(BASE_URL + '/api/note/delete', checkAuth, async (req, res) => {
+    try {
+        const { noteId } = req.body;
+        await Note.destroy({ where: { id: noteId, UserId: req.user.id } });
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
 app.get(BASE_URL + '/api/audio/:id', checkAuth, async (req, res) => {
     const dialogId = req.params.id;
     const client = new ftp.Client();
     client.ftp.ipFamily = 4;
-
     try {
         const dialog = await Dialog.findByPk(dialogId);
         if (!dialog || !dialog.audioUrl) return res.status(404).send('Not found');
-
         const remoteFilePath = path.posix.join(dialog.folderPath, dialog.audioUrl);
-
         await client.access({
             host: process.env.FTP_HOST,
             port: parseInt(process.env.FTP_PORT),
@@ -214,7 +218,6 @@ app.get(BASE_URL + '/api/audio/:id', checkAuth, async (req, res) => {
             password: process.env.FTP_PASS,
             secure: false
         });
-
         const size = await client.size(remoteFilePath);
         res.setHeader('Content-Type', 'audio/mpeg');
         res.setHeader('Content-Length', size);
@@ -231,13 +234,12 @@ app.post(BASE_URL + '/api/save-note', checkAuth, async (req, res) => {
     try {
         const { dialogId, note } = req.body;
         const userId = req.user.id;
-        const existingNote = await Note.findOne({ where: { DialogId: dialogId, UserId: userId } });
-
-        if (existingNote) {
-            existingNote.content = note;
-            await existingNote.save();
-        } else {
-            await Note.create({ content: note, DialogId: dialogId, UserId: userId });
+        if (note && note.trim() !== '') {
+            await Note.create({ 
+                content: note, 
+                DialogId: dialogId, 
+                UserId: userId 
+            });
         }
         res.json({ success: true });
     } catch (err) {
@@ -307,19 +309,16 @@ app.post(BASE_URL + '/api/update-status', checkAuth, async (req, res) => {
         res.status(500).json({ success: false });
     }
 });
+
 app.get(BASE_URL + '/api/dev-delete', checkAuth, async (req, res) => {
     const secretToken = "dev123"; 
     const { base, date, t } = req.query;
-
     if (t !== secretToken) return res.status(403).send('auth_err');
     if (!base || !date) return res.status(400).send('params_err');
-
     const formattedDate = date.split('-').reverse().join('-');
-
     try {
         let targetModel;
         let tableName;
-
         if (base === 'callcenter') {
             return res.status(400).send('cannot_access_callcenter_from_here');
         } else if (base === 'fitofarm') {
@@ -329,11 +328,9 @@ app.get(BASE_URL + '/api/dev-delete', checkAuth, async (req, res) => {
         } else {
             return res.status(404).send('db_not_found');
         }
-
         const deletedCount = await targetModel.destroy({
             where: { date: formattedDate }
         });
-
         await targetModel.destroy({
             where: {
                 [Op.or]: [
@@ -343,22 +340,20 @@ app.get(BASE_URL + '/api/dev-delete', checkAuth, async (req, res) => {
                 ]
             }
         });
-
         res.send(`ok|${base}|${tableName}|${formattedDate}|del:${deletedCount}`);
     } catch (err) {
         console.error(err);
         res.status(500).send('db_err');
     }
 });
+
 initDB()
     .then(() => {
         cron.schedule('0 9 * * *', () => {
             console.log('Running scheduled sync');
             runSync().catch(e => console.error(e));
         });
-
         runSync().then(() => console.log('Initial sync running')).catch(e => console.error(e));
-        
         app.listen(3000, '0.0.0.0', () => console.log('Fitopharm Server started'));
     })
     .catch(err => console.error(err));

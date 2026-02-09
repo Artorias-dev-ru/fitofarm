@@ -99,6 +99,13 @@ async function runSync() {
                 let quality = jsonData.quality || "medium";
                 let duration = jsonData.duration || 0;
 
+                const metrics = jsonData.metrics || {};
+                const politeness = metrics.politeness || 0;
+                const friendliness = metrics.friendliness || 0;
+                const rudeness = metrics.rudeness || 0;
+                const manipulativeness = metrics.manipulativeness || 0;
+                const said_hello = (metrics.said_hello !== undefined) ? metrics.said_hello : true;
+
                 await Call.create({
                     uid: uniqueId,
                     date: dateFolder.name,
@@ -111,7 +118,12 @@ async function runSync() {
                     text: textContent,
                     summary: summary,
                     audioUrl: audioPathRemote, 
-                    folderPath: dPathRemote 
+                    folderPath: dPathRemote,
+                    politeness,
+                    friendliness,
+                    rudeness,
+                    manipulativeness,
+                    said_hello
                 });
                 
                 console.log(`Synced Call: ${uniqueId}`);

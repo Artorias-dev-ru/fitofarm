@@ -4,20 +4,65 @@
     <title>Детали звонка</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<%= baseUrl %>/style.css">
+    <style>
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            cursor: pointer;
+            height: 20px;
+        }
+        input[type="range"]:focus { outline: none; }
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #e0e0e0; border-radius: 2px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            height: 12px; width: 12px; border-radius: 50%; background: #333;
+            cursor: pointer; -webkit-appearance: none; margin-top: -4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input[type="range"]::-moz-range-track {
+            width: 100%; height: 4px; background: #e0e0e0; border-radius: 2px;
+        }
+        input[type="range"]::-moz-range-thumb {
+            height: 12px; width: 12px; border-radius: 50%; background: #333; border: none;
+        }
+        .status-button {
+            border-radius: 4px; padding: 5px 10px; font-family: 'Inter', sans-serif;
+            font-size: 14px; font-weight: 600; color: #000; cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); user-select: none;
+            text-align: center; display: inline-block; transition: background 0.1s;
+            width: 124px; z-index: 2; position: relative; background: white; margin-right: 3px;
+        }
+        .status-button:active { background: #e0e0e0; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+        .status-dropdown-wrapper { position: relative; display: inline-block; margin-right: 15px; }
+        .status-menu {
+            display: none; position: absolute; right: 0; background: #e1e7ed;
+            border: 1px solid #b0b0b0; border-radius: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            min-width: 130px; overflow: hidden; font-family: 'Inter', sans-serif;
+            text-align: center; padding: 40px 0 0 0; top: -5px; z-index: 1;
+        }
+        .status-option { padding: 4px 0; font-size: 13px; color: #000; font-weight: 500; cursor: pointer; }
+        .status-option:hover { background: #dceefc; }
+        .tabs-container { display: flex; gap: 10px; margin-top: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .tab-btn { background: none; border: none; padding: 5px 10px; cursor: pointer; font-family: 'Inter'; font-size: 14px; color: #999; font-weight: 500; position: relative; }
+        .tab-btn.active { color: #333; }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: -11px; left: 0; width: 100%; height: 2px; background: #333; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .save-btn { background: #333; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: 'Inter'; width: 100%; }
+    </style>
 </head>
 <body>
-    
     <%- include('sidebar') %>
-
     <div class="content-wrapper" id="contentWrapper">
         <div class="header-container">
             <div class="logo-row">
                 <a href="<%= baseUrl %>/" style="text-decoration: none; color: #333; font-weight: 500; font-size: 16px; display: flex; align-items: center;">
-                   <span style="font-size: 20px; margin-right: 5px;">←</span> Назад к списку
+                    <span style="font-size: 20px; margin-right: 5px;">←</span> Назад к списку
                 </a>
             </div>
         </div>
-
         <div class="details-container">
             <div class="object-header">
                 <div class="object-title-box">
@@ -25,7 +70,6 @@
                     <div class="object-address" style="font-size: 24px;"><%= call.phoneNumber %></div>
                     <div class="object-city"><%= call.date %> <%= call.time %></div>
                 </div>
-                
                 <div class="header-stats" style="margin-left: auto;">
                     <div class="stats-group">
                         <span class="stats-label">Длительность</span>
@@ -33,59 +77,73 @@
                     </div>
                     <div class="stats-group" style="margin-left: 20px;">
                         <span class="stats-label">Тип</span>
-                        <span style="font-size: 18px; font-weight: 600;">
-                            <%= call.direction === 'incoming' ? 'Входящий' : 'Исходящий' %>
-                        </span>
+                        <span style="font-size: 18px; font-weight: 600;"><%= call.direction === 'incoming' ? 'Входящий' : 'Исходящий' %></span>
                     </div>
                 </div>
             </div>
-
-            <div class="details-grid" style="grid-template-columns: 1fr 300px;">
-                
+            <div class="details-grid" style="grid-template-columns: 1fr 350px;">
                 <div class="transcript-area" style="height: calc(100vh - 200px);">
-                    <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                        <span style="font-weight: 700; font-size: 16px;">Расшифровка звонка</span>
+                    <div style="margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-weight: 700; font-size: 16px;">Расшифровка звонка</span>
+                            <span style="color: #999; font-size: 13px; margin-left: 10px;">(<%= call.status === 'sales' ? 'Продажа' : call.status === 'refusals' ? 'Отказ' : 'Нераспознан' %>)</span>
+                        </div>
+                        <div class="status-dropdown-wrapper">
+                            <div class="status-button" onclick="toggleStatusMenu(event)">Итог звонка</div>
+                            <div id="status-menu" class="status-menu">
+                                <div class="status-option" onclick="changeStatus('<%= call.id %>', 'sales')">Продажа</div>
+                                <div class="status-option" onclick="changeStatus('<%= call.id %>', 'refusals')">Отказ</div>
+                                <div class="status-option" onclick="changeStatus('<%= call.id %>', 'unknown')">Нераспознан</div>
+                            </div>
+                        </div>
                     </div>
-                    
                     <div style="overflow-y: auto; height: 90%;">
                         <pre style="white-space: pre-wrap; font-family: 'Inter', sans-serif; color: #444; font-size: 14px; line-height: 1.6;"><%= call.text %></pre>
                     </div>
                 </div>
-
                 <div class="actions-sidebar">
                     <div class="audio-player-mock <%= (!call.audioUrl) ? 'player-disabled' : '' %>">
-                        <% if (call.audioUrl) { %>
-                            <audio id="main-audio" src="<%= baseUrl %>/api/audio/<%= call.id %>"></audio>
-                        <% } %>
+                        <% if (call.audioUrl) { %><audio id="main-audio" src="<%= baseUrl %>/api/audio/<%= call.id %>"></audio><% } %>
                         <div class="player-controls">
-                            <div class="play-btn" onclick="toggleAudio()">
-                                <img id="play-icon" src="<%= baseUrl %>/icons/play.svg" style="width: 25px; filter: invert(1);">
-                            </div>
-                            <div style="font-size: 12px; font-weight: 600; min-width: 80px;">
-                                <span id="current-time">0:00</span> / <span id="duration">0:00</span>
-                            </div>
-                            <div class="volume-control">
+                            <div class="play-btn" onclick="toggleAudio()"><img id="play-icon" src="<%= baseUrl %>/icons/play.svg" style="width: 25px; filter: invert(1);"></div>
+                            <div style="font-size: 12px; font-weight: 600; min-width: 80px;"><span id="current-time">0:00</span> / <span id="duration">0:00</span></div>
+                            <div class="volume-control" style="display: flex; align-items: center; gap: 8px;">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5'/%3E%3Cpath d='M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07'/%3E%3C/svg%3E" style="width: 16px; opacity: 0.7;">
                                 <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1">
                             </div>
                         </div>
                         <input type="range" id="seek-slider" max="100" value="0">
                     </div>
-
-                    <div class="report-body" style="margin-top: 20px;">
-                        <div style="margin-bottom: 10px; font-weight: 600;">Краткое содержание:</div>
-                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; font-size: 13px; color: #555; margin-bottom: 20px;">
-                            <%= call.summary || 'Нет описания' %>
+                    <div class="tabs-container">
+                        <button class="tab-btn <%= activeTab === 'summary' ? 'active' : '' %>" onclick="openTab('summary')">Краткий отчет</button>
+                        <button class="tab-btn <%= activeTab === 'notes' ? 'active' : '' %>" onclick="openTab('notes')">Заметки</button>
+                    </div>
+                    <div class="report-body">
+                        <div id="tab-summary" class="tab-content <%= activeTab === 'summary' ? 'active' : '' %>">
+                            <div style="margin-bottom: 10px; font-weight: 600;">Краткое содержание:</div>
+                            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; font-size: 13px; color: #555; white-space: pre-wrap;"><%= call.summary || 'Нет описания' %></div>
                         </div>
-
-                        <div style="margin-bottom: 10px; font-weight: 600;">Заметка:</div>
-                        <textarea id="note-textarea" placeholder="Напишите заметку..." style="width: 100%; height: 100px; border: 1px solid #ddd; border-radius: 8px; padding: 10px;"><%= call.note || '' %></textarea>
-                        <button class="save-btn" onclick="saveNote(<%= call.id %>)" style="width: 100%; margin-top: 10px;">Сохранить</button>
+                        <div id="tab-notes" class="tab-content <%= activeTab === 'notes' ? 'active' : '' %>">
+                            <div style="margin-bottom: 20px;">
+                                <textarea id="note-textarea" placeholder="Напишите новую заметку..." style="width: 100%; height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; font-family: 'Inter';"></textarea>
+                                <button class="save-btn" onclick="saveNote(<%= call.id %>)">Добавить заметку</button>
+                            </div>
+                            <div class="notes-history">
+                                <% if (call.notes && call.notes.length > 0) { %>
+                                    <% call.notes.forEach(note => { %>
+                                        <div style="background: #f9f9f9; padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #eee;">
+                                            <div style="font-size: 11px; color: #999; margin-bottom: 6px;"><%= new Date(note.createdAt).toLocaleString('ru-RU') %></div>
+                                            <div style="font-size: 13px; color: #333; line-height: 1.4; white-space: pre-wrap;"><%= note.content %></div>
+                                        </div>
+                                    <% }) %>
+                                <% } else { %><div style="color: #ccc; text-align: center; font-size: 13px;">Нет заметок</div><% } %>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
     <script>
         const audio = document.getElementById('main-audio');
         const playIcon = document.getElementById('play-icon');
@@ -94,67 +152,28 @@
         const currentTimeEl = document.getElementById('current-time');
         const durationEl = document.getElementById('duration');
         let isDragging = false;
-
-        function formatTime(seconds) {
-            if (!seconds || isNaN(seconds)) return "0:00";
-            const m = Math.floor(seconds / 60);
-            const s = Math.floor(seconds % 60);
-            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        function formatTime(s) { if (!s || isNaN(s)) return "0:00"; const m = Math.floor(s/60); const sec = Math.floor(s%60); return `${m}:${sec<10?'0':''}${sec}`; }
+        function updateSliderBackground(s) {
+            const v = s.value; const min = s.min || 0; const max = s.max || 100; const p = (v-min)/(max-min)*100;
+            s.style.background = `linear-gradient(to right, #333 0%, #333 ${p}%, #e0e0e0 ${p}%, #e0e0e0 100%)`;
+            s.style.backgroundSize = '100% 4px'; s.style.backgroundRepeat = 'no-repeat'; s.style.backgroundPosition = 'center';
         }
-
         if (audio) {
-            audio.addEventListener('loadedmetadata', () => {
-                durationEl.innerText = formatTime(audio.duration);
-                seekSlider.max = Math.floor(audio.duration);
-            });
-            audio.addEventListener('timeupdate', () => {
-                if (!isDragging) {
-                    seekSlider.value = Math.floor(audio.currentTime);
-                    currentTimeEl.innerText = formatTime(audio.currentTime);
-                }
-            });
-            audio.addEventListener('ended', () => {
-                playIcon.src = "<%= baseUrl %>/icons/play.svg";
-                seekSlider.value = 0;
-            });
-            seekSlider.addEventListener('input', () => {
-                isDragging = true;
-                currentTimeEl.innerText = formatTime(seekSlider.value);
-            });
-            seekSlider.addEventListener('change', () => {
-                audio.currentTime = seekSlider.value;
-                isDragging = false;
-            });
-            volumeSlider.addEventListener('input', (e) => {
-                audio.volume = e.target.value;
-            });
+            audio.addEventListener('loadedmetadata', () => { durationEl.innerText = formatTime(audio.duration); seekSlider.max = Math.floor(audio.duration); updateSliderBackground(seekSlider); updateSliderBackground(volumeSlider); });
+            audio.addEventListener('timeupdate', () => { if (!isDragging) { seekSlider.value = Math.floor(audio.currentTime); currentTimeEl.innerText = formatTime(audio.currentTime); updateSliderBackground(seekSlider); } });
+            audio.addEventListener('ended', () => { playIcon.src = "<%= baseUrl %>/icons/play.svg"; seekSlider.value = 0; updateSliderBackground(seekSlider); });
+            seekSlider.addEventListener('input', () => { isDragging = true; currentTimeEl.innerText = formatTime(seekSlider.value); updateSliderBackground(seekSlider); });
+            seekSlider.addEventListener('change', () => { audio.currentTime = seekSlider.value; isDragging = false; });
+            volumeSlider.addEventListener('input', (e) => { audio.volume = e.target.value; updateSliderBackground(volumeSlider); });
         }
-
-        function toggleAudio() {
-            if (!audio) return;
-            if (audio.paused) {
-                audio.play().then(() => playIcon.src = "<%= baseUrl %>/icons/pause.svg").catch(e => console.error(e));
-            } else {
-                audio.pause();
-                playIcon.src = "<%= baseUrl %>/icons/play.svg";
-            }
-        }
-
-        async function saveNote(callId) {
-            const text = document.getElementById('note-textarea').value;
-            const btn = document.querySelector('.save-btn');
-            btn.innerText = "Сохранение...";
-            try {
-                const response = await fetch('<%= baseUrl %>/api/save-note', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ callId: callId, note: text })
-                });
-                if (response.ok) {
-                    btn.innerText = "Сохранено!";
-                    setTimeout(() => btn.innerText = "Сохранить", 2000);
-                } else btn.innerText = "Ошибка";
-            } catch (e) { btn.innerText = "Ошибка сети"; }
+        function toggleAudio() { if(!audio) return; if(audio.paused) audio.play().then(()=>playIcon.src="<%= baseUrl %>/icons/pause.svg"); else { audio.pause(); playIcon.src="<%= baseUrl %>/icons/play.svg"; } }
+        function toggleStatusMenu(e) { e.stopPropagation(); const m = document.getElementById('status-menu'); m.style.display = m.style.display==='block'?'none':'block'; }
+        document.addEventListener('click', () => { document.getElementById('status-menu').style.display = 'none'; });
+        async function changeStatus(id, s) { try { const r = await fetch('<%= baseUrl %>/api/update-status', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ callId: id, status: s }) }); if(r.ok) window.location.reload(); } catch(e) { alert('Ошибка'); } }
+        function openTab(t) { document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active'); const u = new URL(window.location.href); u.searchParams.set('tab', t); window.history.replaceState({}, '', u); }
+        async function saveNote(id) {
+            const txt = document.getElementById('note-textarea').value; const b = document.querySelector('.save-btn'); if(!txt.trim()) return; b.innerText = "Сохранение...";
+            try { const r = await fetch('<%= baseUrl %>/api/save-note', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ callId: id, note: txt }) }); if(r.ok) { const u = new URL(window.location.href); u.searchParams.set('tab', 'notes'); window.location.href = u.toString(); } else b.innerText = "Ошибка"; } catch(e) { b.innerText = "Ошибка сети"; }
         }
     </script>
 </body>
