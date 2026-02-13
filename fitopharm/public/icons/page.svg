@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_Слой_1" data-name="Слой 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #6a7c95;
+        stroke-miterlimit: 10;
+        stroke-width: 4.04px;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x="13.28" y="9.68" width="73.44" height="80.64" rx="10.67" ry="10.67"/>
+  <line class="cls-1" x1="27.35" y1="33.94" x2="72.65" y2="33.94"/>
+  <line class="cls-1" x1="27.35" y1="49.31" x2="72.65" y2="49.31"/>
+  <line class="cls-1" x1="27.35" y1="64.67" x2="72.65" y2="64.67"/>
+</svg>

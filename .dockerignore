@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+docker-compose.dev.yml
+docker-compose.prod.yml
+Dockerfile
+README.md
+
+data
+database_fitofarm.sqlite
+database_callcenter.sqlite

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Админ панель</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<%= baseUrl %>/style.css">
+</head>
+<body>
+
+    <%- include('sidebar') %>
+
+    <div class="content-wrapper" id="contentWrapper">
+        <div class="header-container" style="padding-top: 20px;">
+            <h2 style="font-family: 'Inter', sans-serif; margin-bottom: 20px;">Управление администраторами</h2>
+        </div>
+
+        <div class="main-layout">
+            <div class="chart-box" style="margin-bottom: 20px;">
+                <h3 class="chart-title" style="text-align: left; margin-bottom: 15px;">Создать нового администратора</h3>
+                <form action="<%= baseUrl %>/admin/create-user" method="POST" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">ФИО</label>
+                        <input type="text" name="fullName" required class="input-capsule" style="width: 100%; box-sizing: border-box; background: #f9f9f9;">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">Почта</label>
+                        <input type="email" name="email" required class="input-capsule" style="width: 100%; box-sizing: border-box; background: #f9f9f9;">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">Пароль</label>
+                        <input type="text" name="password" required class="input-capsule" style="width: 100%; box-sizing: border-box; background: #f9f9f9;">
+                    </div>
+                    <button type="submit" class="pill green" style="border: none; padding: 10px 20px; font-size: 14px; cursor: pointer; height: 40px;">Создать</button>
+                </form>
+                <% if (error) { %>
+                    <p style="color: #c0392b; margin-top: 10px;"><%= error %></p>
+                <% } %>
+            </div>
+
+            <div class="grid-system data-row-container">
+                <div class="data-main-card table_header">
+                    <div class="data-main-card_border table_header" style="grid-template-columns: 2fr 2fr 1fr;">
+                        <p style="text-align: left; padding-left: 10px;">ФИО</p>
+                        <p style="text-align: left;">Почта</p>
+                        <p>Роль</p>
+                    </div>
+                </div>
+            </div>
+
+            <% users.forEach(u => { %>
+                <div class="grid-system data-row-container">
+                    <div class="data-main-card" style="grid-column: 1 / -1; cursor: default;">
+                        <div class="data-main-card_border" style="grid-template-columns: 2fr 2fr 1fr;">
+                            <div style="font-weight: 600; padding-left: 10px;"><%= u.fullName %></div>
+                            <div style="color: #555;"><%= u.email %></div>
+                            <div class="pill grey" style="font-size: 12px; width: fit-content; margin: 0 auto;">Администратор</div>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const contentWrapper = document.getElementById('contentWrapper');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const sidebarState = localStorage.getItem('sidebarState');
+
+            if (sidebarState === 'collapsed') {
+                sidebar.classList.add('collapsed');
+                contentWrapper.classList.add('expanded');
+            }
+
+            if(toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('collapsed');
+                    contentWrapper.classList.toggle('expanded');
+                    localStorage.setItem('sidebarState', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

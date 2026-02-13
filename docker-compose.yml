@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  fitopharm-app:
+    build: ./fitopharm
+    container_name: fitopharm_app
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - BASE_URL=
+      - DATA_FOLDER=data
+    volumes:
+      - ./data:/app/data
+      - ./fitopharm/db_store:/app/db_store
+    networks:
+      - app-network
+
+  callcenter-app:
+    build: ./callcenter
+    container_name: callcenter_app
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - BASE_URL=/callcenter
+      - DATA_FOLDER=data
+    volumes:
+      - ./data:/app/data
+      - ./callcenter/db_store:/app/db_store
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - fitopharm-app
+      - callcenter-app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

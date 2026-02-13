@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Вход КЦ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<%= baseUrl %>/style.css">
+</head>
+<body style="align-items: center; justify-content: center;">
+    <div class="login-box">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 32px; font-weight: 800; color: #2f80ed;">CALLCENTER</div>
+        </div>
+        <form action="<%= baseUrl %>/login" method="POST">
+            <input type="text" name="login" placeholder="Email или Логин" required>
+            <input type="password" name="password" placeholder="Пароль" required>
+            <button type="submit" style="background-color: #2f80ed;">Войти</button>
+        </form>
+    </div>
+</body>
+</html>

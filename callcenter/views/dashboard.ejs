@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Мониторинг КЦ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <%- include('sidebar') %>
+
+    <div class="main-content">
+        <h2 class="page-title">Мониторинг</h2>
+
+        <div class="controls-row">
+            <div class="filter-group">
+                <button class="filter-btn <%= activePeriod === 'today' ? 'active' : '' %>" onclick="setPeriod('today')">Сегодня</button>
+                <button class="filter-btn <%= activePeriod === 'yesterday' ? 'active' : '' %>" onclick="setPeriod('yesterday')">Вчера</button>
+                <button class="filter-btn <%= activePeriod === 'week' ? 'active' : '' %>" onclick="setPeriod('week')">Неделя</button>
+                <button class="filter-btn <%= activePeriod === 'month' ? 'active' : '' %>" onclick="setPeriod('month')">Месяц</button>
+                
+                <button class="filter-btn" id="calendarBtn">
+                    <%= (activePeriod !== 'today' && activePeriod !== 'yesterday' && activePeriod !== 'week' && activePeriod !== 'month') ? currentRange : 'Выбрать даты' %> ▼
+                </button>
+                <input type="text" id="date-range-picker">
+            </div>
+
+            <div class="view-switcher">
+                <button class="view-btn active">Аналитика</button>
+                <button class="view-btn" onclick="window.location.href='<%= baseUrl %>/?status=all'">Список</button>
+                <button class="view-btn">Календарь</button>
+            </div>
+        </div>
+
+        <div class="dash-grid">
+            <div class="stat-card large">
+                <div class="card-label">Всего звонков за период</div>
+                <div class="card-value"><%= stats.total %></div>
+            </div>
+
+            <div class="stat-card large">
+                <div class="card-label">Всего нарушений за период</div>
+                <div class="card-value red"><%= stats.violations %></div>
+            </div>
+
+            <div class="stat-card card-gradient-orange">
+                <div class="stat-card-row">
+                    <div class="card-label" style="max-width: 60%">Грубая ошибка</div>
+                    <div class="diff-badge diff-plus">+<%= Math.floor(stats.rudeness * 0.1) %></div> </div>
+                <div class="card-value"><%= stats.rudeness %></div>
+            </div>
+
+            <div class="stat-card card-gradient-red">
+                <div class="stat-card-row">
+                    <div class="card-label">Приветствие</div>
+                    <div class="diff-badge diff-plus-red">+<%= Math.floor(stats.noHello * 0.2) %></div> </div>
+                <div class="card-value"><%= stats.noHello %></div>
+            </div>
+
+            <div class="chart-container">
+                <div class="card-label" style="margin-bottom: 20px;">Всего звонков за период</div>
+                <canvas id="callsChart" height="250"></canvas>
+            </div>
+
+            <div class="stat-card card-gradient-orange" style="opacity: 0.5; display: none;">
+               </div>
+             <div class="stat-card card-gradient-red" style="opacity: 0.5; display: none;">
+               </div>
+
+            <div class="violations-container">
+                <% violationsList.forEach(v => { %>
+                <div class="v-row">
+                    <div class="v-date"><%= moment(v.date).format('DD.MM.YY') %></div>
+                    <div class="v-tag"><%= v.type %></div>
+                    <div class="v-status <%= v.status === 'отработано' ? 'status-green' : 'status-red' %>">
+                        <%= v.status %>
+                    </div>
+                    <div class="v-desc"><%= v.desc %></div>
+                </div>
+                <% }) %>
+                <% if(violationsList.length === 0) { %>
+                    <div style="text-align: center; color: #999; padding: 20px;">Нет нарушений за период</div>
+                <% } %>
+                <div style="text-align: right; margin-top: 10px; font-size: 12px;">
+                    <a href="#" style="color: #999; text-decoration: none;">Подробнее ></a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="stat-card" style="grid-column: span 2; display: flex; align-items: center; justify-content: center; color: #999;">
+            <div class="card-label">Агрессия: 0 (Норма)</div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script>
+        const ctx = document.getElementById('callsChart').getContext('2d');
+        const labels = <%- chart.labels %>;
+        const dataValues = <%- chart.values %>;
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Звонки',
+                    data: dataValues,
+                    borderColor: '#333',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#333',
+                    tension: 0.4,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        function setPeriod(p) {
+            const url = new URL(window.location);
+            url.searchParams.set('period', p);
+            url.searchParams.delete('startDate');
+            url.searchParams.delete('endDate');
+            window.location.href = url.href;
+        }
+
+        const fp = flatpickr("#date-range-picker", {
+            mode: "range", dateFormat: "Y-m-d", locale: "ru",
+            onClose: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    const url = new URL(window.location);
+                    url.searchParams.set('startDate', instance.formatDate(selectedDates[0], "Y-m-d"));
+                    url.searchParams.set('endDate', instance.formatDate(selectedDates[1], "Y-m-d"));
+                    url.searchParams.delete('period');
+                    window.location.href = url.href;
+                }
+            }
+        });
+        
+        document.getElementById('calendarBtn').addEventListener('click', () => {
+            fp.open();
+        });
+    </script>
+</body>
+</html>
