@@ -54,71 +54,72 @@
                 </div>
                 
                <div class="input-capsule" style="position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                   
-                   <input type="text" 
-                          id="date-range-picker" 
-                          placeholder="Выбрать период" 
-                          value="<%= currentRange %>" 
-                          style="background-image: none !important; 
-                                 background-color: transparent !important;
-                                 border: none !important; 
-                                 outline: none !important; 
-                                 width: 100%; 
-                                 font-weight: 600; 
-                                 color: #555; 
-                                 text-align: center !important; 
-                                 padding: 0 !important;
-                                 padding-right: 35px !important;
-                                 z-index: 2;
-                                 cursor: pointer;">
-                               
-                   <img src="/icons/calendar.svg" 
-                        alt="📅"
-                        style="position: absolute; 
-                               right: 12px; 
-                               top: 50%; 
-                               transform: translateY(-50%); 
-                               width: 18px; 
-                               height: 18px; 
-                               opacity: 0.3; 
-                               pointer-events: none; 
-                               z-index: 1;">
-               </div>
+                                  <input type="text" 
+                                         id="date-range-picker" 
+                                         placeholder="Период" 
+                                         value="<%= currentRange %>" 
+                                         style="background-image: none !important; 
+                                                background-color: transparent !important;
+                                                border: none !important; 
+                                                outline: none !important; 
+                                                width: 100% !important; /* На всю ширину, чтобы работало центрирование */
+                                                font-weight: 500; 
+                                                color: #999 !important; /* Серый цвет как на макете */
+                                                text-align: center !important; /* Центрируем весь текст */
+                                                padding: 0 !important;
+                                                padding-right: 35px !important;
+                                                z-index: 2;
+                                                cursor: pointer;">
+                                              
+                                  <img src="/icons/calendar.svg" 
+                                       alt="📅"
+                                       style="position: absolute; 
+                                              right: 12px; 
+                                              top: 50%; 
+                                              transform: translateY(-50%); 
+                                              width: 18px; 
+                                              height: 18px; 
+                                              opacity: 0.3; 
+                                              pointer-events: none; 
+                                              z-index: 1;">
+                              </div>
                 
                 <div class="input-capsule" style="color: #ccc;">Город</div> 
                 <div class="input-capsule" style="color: #ccc;">Адрес</div>
 
                 <div class="dropdown" style="margin-left: auto;">
-                    <div class="input-capsule">
-                        ≡ <%= (activeSort === 'sales') ? 'Больше продаж' : 
-                              (activeSort === 'refusals') ? 'Больше отказов' : 'По алфавиту' %> ▾
-                    </div>
-                    <div class="dropdown-content" style="right: 0; left: auto; min-width: 180px;">
-                        <a href="#" onclick="applySort('alphabet')">По алфавиту</a>
-                        <a href="#" onclick="applySort('sales')">Больше продаж</a>
-                        <a href="#" onclick="applySort('refusals')">Больше отказов</a>
-                    </div>
-                </div>
+                                    <div class="input-capsule" style="color: #999; font-weight: 500; font-size: 1.1vw;">
+                                        ≡ <%= (activeSort === 'sales') ? 'Больше продаж' : 
+                                              (activeSort === 'refusals') ? 'Больше отказов' : 'По алфавиту' %> ▾
+                                    </div>
+                                    <div class="dropdown-content" style="right: 0; left: auto; min-width: 180px;">
+                                        <a href="#" onclick="applySort('alphabet')">По алфавиту</a>
+                                        <a href="#" onclick="applySort('sales')">Больше продаж</a>
+                                        <a href="#" onclick="applySort('refusals')">Больше отказов</a>
+                 </div>
+              </div>
             </div>
         </div>
 
-        <div class="main-layout">
-            <div class="grid-system data-row-container">
-                <div class="data-main-card table_header">
-                    <div class="data-main-card_border table_header">
-                        <div class="address-cell">
-                            <p class="address-cell-adress" style="color: rgb(29, 29, 27);">Анапа</p>
-                        </div>
-                        <p>Продажа</p>
-                        <p>Отказ</p>
-                        <p>Нераспознан</p>
-                    </div>
-                </div>
-                <div class="total-card" style="background-color: rgb(223, 225, 229); border-radius: 5px; font-size: 1.3vw; color: rgb(178, 178, 178); font-weight: 400;">
-                    Итог
-                </div>
-            </div>
-
+      <div class="grid-system data-row-container">
+                      
+                      <div class="data-main-card table_header" style="background-color: #abb7c2 !important; border-radius: 5px; box-shadow: none !important; border: none !important;">
+                          <div class="data-main-card_border table_header" style="border: none !important; background-color: transparent !important;">
+                              <div class="address-cell">
+                                  <p class="address-cell-adress" style="color: #333333 !important; font-weight: 600; margin: 0;">Анапа</p>
+                              </div>
+                              <p style="color: #333333 !important; font-weight: 600; margin: 0;">Продажа</p>
+                              <p style="color: #333333 !important; font-weight: 600; margin: 0;">Отказ</p>
+                              <p style="color: #333333 !important; font-weight: 600; margin: 0;">Нераспознан</p>
+                          </div>
+                      </div>
+              
+                      <div class="total-card" style="background-color: #abb7c2 !important; border-radius: 5px; font-size: 1.3vw; color: #333333 !important; font-weight: 600; box-shadow: none !important;">
+                          Итог
+                      </div>
+              
+              </div>
+        
             <% data.forEach(item => { %>
                 <div class="grid-system data-row-container">
                     <div class="data-main-card" onclick="window.location.href='<%= baseUrl %>/details/<%= item.id %>' + window.location.search">
@@ -216,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const { ctx, chartArea: {top, bottom, left, right} } = chart;
             ctx.restore();
             const height = bottom - top;
-            const fontSize = (height / 140).toFixed(2);
+            const fontSize = (height / 240).toFixed(2);
             ctx.font = "bold " + fontSize + "em Inter";
             ctx.textBaseline = "middle";
             ctx.fillStyle = "#333";
@@ -436,25 +437,43 @@ document.addEventListener("DOMContentLoaded", function() {
     let defaultDates = [];
     if (startParam && endParam) defaultDates = [startParam, endParam];
 
-    flatpickr("#date-range-picker", {
-        mode: "range",
-        dateFormat: "Y-m-d",
-        altInput: true,
-        altFormat: "d.m.Y",
-        locale: "ru",
-        defaultDate: defaultDates,
-        onClose: function(selectedDates, dateStr, instance) {
-            if (selectedDates.length === 2) {
-                const start = instance.formatDate(selectedDates[0], "Y-m-d");
-                const end = instance.formatDate(selectedDates[1], "Y-m-d");
-                const currentUrl = new URL(window.location.href);
-                currentUrl.searchParams.set('startDate', start);
-                currentUrl.searchParams.set('endDate', end);
-                currentUrl.searchParams.delete('period');
-                window.location.href = currentUrl.toString();
+    flatpickr.l10ns.ru.rangeSeparator = " по ";
+    
+        flatpickr("#date-range-picker", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "j.m",
+            locale: "ru",
+            defaultDate: defaultDates,
+            // Срабатывает при загрузке: добавляем "с "
+            onReady: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2 && instance.altInput) {
+                    const start = flatpickr.formatDate(selectedDates[0], "j.m", instance.config.locale);
+                    const end = flatpickr.formatDate(selectedDates[1], "j.m", instance.config.locale);
+                    instance.altInput.value = `с ${start} по ${end}`;
+                }
+            },
+            // Срабатывает при выборе: добавляем "с "
+            onValueUpdate: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2 && instance.altInput) {
+                    const start = flatpickr.formatDate(selectedDates[0], "j.m", instance.config.locale);
+                    const end = flatpickr.formatDate(selectedDates[1], "j.m", instance.config.locale);
+                    instance.altInput.value = `с ${start} по ${end}`;
+                }
+            },
+            onClose: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    const start = instance.formatDate(selectedDates[0], "Y-m-d");
+                    const end = instance.formatDate(selectedDates[1], "Y-m-d");
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('startDate', start);
+                    currentUrl.searchParams.set('endDate', end);
+                    currentUrl.searchParams.delete('period');
+                    window.location.href = currentUrl.toString();
+                }
             }
-        }
-    });
+        });
 
     const dropdowns = document.querySelectorAll('.dropdown');
     dropdowns.forEach(dropdown => {
