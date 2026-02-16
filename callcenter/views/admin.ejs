@@ -2,36 +2,64 @@
 <html>
 <head>
     <title>Админ панель</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<%= baseUrl %>/fonts.css">
     <link rel="stylesheet" href="<%= baseUrl %>/style.css">
+    <style>
+        :root { --bg-body: #E5E5E5; --orange-accent: #E86B35; --card-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        body { margin: 0; padding: 0; background-color: var(--bg-body); display: flex; font-family: 'Manrope', sans-serif; }
+        .main-content { flex: 1; margin-left: 260px; padding: 40px; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: var(--card-shadow); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+        .btn-add { background: var(--orange-accent); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: inherit; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th, td { text-align: left; padding: 15px; border-bottom: 1px solid #eee; }
+        th { color: #999; font-weight: 500; font-size: 13px; }
+        .header-title { font-size: 24px; font-weight: 600; margin-bottom: 25px; }
+    </style>
 </head>
 <body>
     <%- include('sidebar') %>
-    <div class="content-wrapper" id="contentWrapper">
-        <div class="header-container" style="padding-top: 20px;">
-            <h2>Управление администраторами</h2>
-        </div>
-        <div class="main-layout">
-            <div class="chart-box" style="margin-bottom: 20px;">
-                <h3 class="chart-title" style="text-align: left; margin-bottom: 15px;">Создать нового администратора</h3>
-                <form action="<%= baseUrl %>/admin/create-user" method="POST" style="display: flex; gap: 10px;">
-                    <input type="text" name="fullName" required placeholder="ФИО" style="flex: 1;">
-                    <input type="text" name="email" required placeholder="Логин" style="flex: 1;">
-                    <input type="password" name="password" required placeholder="Пароль" style="flex: 1;">
-                    <button type="submit" style="background: #2f80ed; color: white; border: none; padding: 0 20px; border-radius: 4px; cursor: pointer;">Создать</button>
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <h2 class="header-title">Управление администраторами</h2>
+            <div style="max-width: 500px;">
+                <h3 style="font-size: 18px; margin-bottom: 20px;">Создать нового администратора</h3>
+                <form action="<%= baseUrl %>/admin/create-user" method="POST">
+                    <div class="form-group">
+                        <label>ФИО</label>
+                        <input type="text" name="fullName" required placeholder="Введите ФИО">
+                    </div>
+                    <div class="form-group">
+                        <label>Почта (Логин)</label>
+                        <input type="email" name="email" required placeholder="example@mail.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Пароль</label>
+                        <input type="password" name="password" required placeholder="Введите пароль">
+                    </div>
+                    <button type="submit" class="btn-add">Создать аккаунт</button>
                 </form>
             </div>
-            <% users.forEach(u => { %>
-                <div class="grid-system data-row-container" style="grid-template-columns: 1fr;">
-                    <div class="data-main-card">
-                        <div class="data-main-card_border" style="grid-template-columns: 2fr 2fr 1fr;">
-                            <div style="font-weight: 600; padding-left: 10px;"><%= u.fullName %></div>
-                            <div style="color: #555;"><%= u.username %></div>
-                            <div class="pill grey" style="font-size: 12px;">Администратор</div>
-                        </div>
-                    </div>
-                </div>
-            <% }) %>
+
+            <hr style="margin: 40px 0; border: none; border-top: 1px solid #eee;">
+
+            <h3 style="font-size: 18px; margin-bottom: 20px;">Список администраторов</h3>
+            <table>
+                <thead>
+                    <tr><th>ФИО</th><th>Почта</th><th>Роль</th></tr>
+                </thead>
+                <tbody>
+                    <% users.forEach(u => { %>
+                        <tr>
+                            <td><strong><%= u.fullName %></strong></td>
+                            <td><%= u.email %></td>
+                            <td><span style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;">Администратор</span></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
         </div>
     </div>
 </body>
