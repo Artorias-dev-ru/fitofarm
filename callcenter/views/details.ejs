@@ -4,75 +4,150 @@
     <title>Детали диалога</title>
     <link rel="stylesheet" href="<%= baseUrl %>/fonts.css">
     <style>
-        :root { --card-shadow: 0 4px 12px rgba(0,0,0,0.05); --orange-accent: #E86B35; }
-        body { margin: 0; padding: 0; background: #E5E5E5; display: flex; font-family: 'Manrope', sans-serif; }
-        .main-content { flex: 1; margin-left: 260px; padding: 20px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; transition: margin-left 0.3s ease; }
-        .top-nav { display: flex; background: white; padding: 15px 30px; border-radius: 15px; margin-bottom: 15px; box-shadow: var(--card-shadow); align-items: center; min-height: 90px; }
-        .header-date-range { display: flex; flex-direction: column; font-size: 22px; font-weight: 500; color: #333; line-height: 1.2; padding-right: 30px; border-right: 1px solid #ddd; }
-        .header-date-range div span { color: #999; font-size: 16px; margin-right: 10px; font-weight: 400; }
-        .header-filters { flex: 1; padding-left: 30px; display: flex; flex-direction: column; gap: 8px; }
-        .filter-activity { position: relative; font-size: 14px; color: #333; font-weight: 500; display: flex; align-items: center; gap: 12px; }
-        .activity-pill-dropdown { background: #f0f0f0; padding: 4px 14px; border-radius: 8px; color: #555; font-weight: 600; cursor: pointer; }
-        .dropdown-menu-activity { display: none; position: absolute; top: 100%; left: 100px; background: #f0f0f0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; min-width: 200px; margin-top: 5px; overflow: hidden; }
-        .dropdown-menu-activity.show { display: block; }
-        .dropdown-item-act { padding: 10px 15px; font-size: 14px; color: #333; cursor: pointer; text-align: center; font-weight: 500; }
-        .dropdown-item-act:hover { background: #e0e0e0; }
-        .filter-status { font-size: 14px; color: #aaa; font-weight: 500; }
-        .filter-status span { cursor: pointer; transition: 0.2s; padding: 2px 8px; border-radius: 4px; }
-        .filter-status .active-status { background: #f0f0f0; color: #333; font-weight: 600; }
-        .header-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; height: 75px; }
-        .header-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
-        .layout-grid { display: grid; grid-template-columns: 280px 1fr 400px; gap: 15px; flex: 1; overflow: hidden; }
-        .sidebar-calls { overflow-y: auto; display: flex; flex-direction: column; padding-right: 10px; scroll-behavior: smooth; font-family: 'Myriad Pro', sans-serif; }
-        .date-card { position: sticky; top: 0; z-index: 10; background: white; border: 1px solid #ccc; border-radius: 0; padding: 12px; text-align: center; cursor: pointer; box-shadow: var(--card-shadow); margin-bottom: 8px; }
-        .date-card.active { border-color: #333; border-width: 2px; }
-        .date-val { display: block; font-size: 20px; font-weight: 800; color: #333; line-height: 1.1; }
-        .date-count { display: block; font-size: 11px; font-weight: 700; color: #333; margin-top: 4px; }
-        .dialog-stack { display: none; flex-direction: column; gap: 6px; margin: 0 0 15px 0; }
-        .dialog-stack.expanded { display: flex; }
-        .dialog-box { background: #929292; border-radius: 0; padding: 12px 15px; color: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-decoration: none; border: 1px solid transparent; }
-        .dialog-box.current { background: white; border: 1px solid #ccc; color: #333; }
-        .dialog-name { font-size: 16px; font-weight: 600; }
-        .dialog-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
-        .dialog-time-wrap { font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
-        .error-label { color: #EB5757; font-size: 10px; font-weight: 900; margin-top: 1px; text-transform: lowercase; }
-        .center-pane { background: white; border-radius: 15px; display: flex; padding: 30px; gap: 30px; overflow-y: auto; box-shadow: var(--card-shadow); border: 1px solid #eee; }
-        .dialog-col { flex: 1; font-size: 14px; line-height: 1.8; color: #333; }
-        .dialog-header-row { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
-        .violation-tag { font-size: 12px; font-weight: 700; color: #EB5757; text-transform: lowercase; }
-        .right-pane { display: flex; flex-direction: column; gap: 15px; }
-
-        /* ПЛЕЕР */
-        .audio-card { background: white; border-radius: 15px; padding: 25px; box-shadow: var(--card-shadow); border: 1px solid #eee; display: flex; flex-direction: column; gap: 15px; }
-        .player-seeker-wrap { width: 100%; height: 4px; background: #eee; border-radius: 2px; position: relative; cursor: pointer; }
-        .player-seeker-fill { height: 100%; background: #929292; border-radius: 2px; width: 0%; pointer-events: none; }
-        .player-seeker-thumb { width: 12px; height: 12px; background: #929292; border-radius: 50%; position: absolute; top: -4px; margin-left: -6px; pointer-events: none; }
-        .player-controls { display: flex; align-items: center; gap: 15px; }
-        .play-btn { width: 44px; height: 44px; background: #929292; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; }
-        .play-btn svg { width: 24px; height: 24px; fill: white; }
-        .player-timer { font-size: 16px; font-weight: 700; flex-grow: 1; }
-        .volume-section { display: flex; align-items: center; gap: 10px; }
-        .vol-btn svg { width: 18px; height: 18px; fill: #999; }
-        .vol-slider { width: 60px; height: 4px; background: #eee; border-radius: 2px; position: relative; cursor: pointer; }
-        .vol-fill { height: 100%; background: #929292; border-radius: 2px; width: 80%; }
-        .vol-thumb { width: 10px; height: 10px; background: #929292; border-radius: 50%; position: absolute; top: -3px; left: 80%; margin-left: -5px; }
-        .download-btn svg { width: 20px; height: 20px; fill: #999; cursor: pointer; }
-
-        .tabs-card { background: white; border-radius: 15px; flex: 1; padding: 0; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--card-shadow); border: 1px solid #eee; }
-        .tab-headers { display: flex; border-bottom: 1px solid #f0f0f0; }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: #f8f8f8; cursor: pointer; font-size: 13px; font-weight: 700; color: #888; border-right: 1px solid #eee; }
-        .tab-btn.active { background: var(--orange-accent); color: white; }
-        .tab-content { padding: 25px; font-size: 14px; flex: 1; display: none; }
-        .tab-content.active { display: block; }
-        .info-box { border: 1px solid var(--orange-accent); border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: center; color: #333; font-weight: 700; font-size: 14px; }
-        .modal-result-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-result-box { background: #E5E5E5; padding: 25px; border-radius: 12px; width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .modal-result-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #333; }
-        .modal-result-white-bg { background: white; padding: 30px; border-radius: 12px; margin-bottom: 20px; }
-        .status-option { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; cursor: pointer; font-size: 18px; font-weight: 600; color: #000; }
-        .result-textarea { width: 100%; border: none; font-size: 16px; outline: none; resize: none; min-height: 100px; font-family: inherit; }
-        .btn-cancel-res { background: #929292; color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 16px; }
-        .btn-save-res { background: var(--orange-accent); color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 16px; }
+        :root { --card-shadow: 0 4px 12px rgba(0,0,0,0.05);
+ --orange-accent: #E86B35; }
+        body { margin: 0; padding: 0; background: #E5E5E5; display: flex;
+ font-family: 'Manrope', sans-serif; }
+        .main-content { flex: 1; margin-left: 260px; padding: 20px;
+ display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; transition: margin-left 0.3s ease;
+ }
+        .top-nav { display: flex; background: white; padding: 15px 30px; border-radius: 15px;
+ margin-bottom: 15px; box-shadow: var(--card-shadow); align-items: center; min-height: 90px; }
+        .header-date-range { display: flex;
+ flex-direction: column; font-size: 22px; font-weight: 500; color: #333; line-height: 1.2; padding-right: 30px; border-right: 1px solid #ddd;
+ }
+        .header-date-range div span { color: #999; font-size: 16px; margin-right: 10px; font-weight: 400;
+ }
+        .header-filters { flex: 1; padding-left: 30px; display: flex; flex-direction: column; gap: 8px;
+ }
+        .filter-activity { position: relative; font-size: 14px; color: #333; font-weight: 500; display: flex;
+ align-items: center; gap: 12px; }
+        .activity-pill-dropdown { background: #f0f0f0; padding: 4px 14px;
+ border-radius: 8px; color: #555; font-weight: 600; cursor: pointer; }
+        .dropdown-menu-activity { display: none;
+ position: absolute; top: 100%; left: 100px; background: #f0f0f0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; min-width: 200px;
+ margin-top: 5px; overflow: hidden; }
+        .dropdown-menu-activity.show { display: block;
+ }
+        .dropdown-item-act { padding: 10px 15px; font-size: 14px; color: #333; cursor: pointer;
+ text-align: center; font-weight: 500; }
+        .dropdown-item-act:hover { background: #e0e0e0;
+ }
+        .filter-status { font-size: 14px; color: #aaa; font-weight: 500;
+ }
+        .filter-status span { cursor: pointer; transition: 0.2s; padding: 2px 8px; border-radius: 4px;
+ }
+        .filter-status .active-status { background: #f0f0f0; color: #333; font-weight: 600;
+ }
+        .header-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; height: 75px;
+ }
+        .header-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover;
+ }
+        .layout-grid { display: grid; grid-template-columns: 280px 1fr 400px; gap: 15px; flex: 1;
+ overflow: hidden; }
+        .sidebar-calls { overflow-y: auto; display: flex; flex-direction: column; padding-right: 10px;
+ scroll-behavior: smooth; font-family: 'Myriad Pro', sans-serif; }
+        .date-card { position: sticky; top: 0;
+ z-index: 10; background: white; border: 1px solid #ccc; border-radius: 0; padding: 12px; text-align: center; cursor: pointer; box-shadow: var(--card-shadow); margin-bottom: 8px;
+ }
+        .date-card.active { border-color: #333; border-width: 2px;
+ }
+        .date-val { display: block; font-size: 20px; font-weight: 800; color: #333; line-height: 1.1;
+ }
+        .date-count { display: block; font-size: 11px; font-weight: 700; color: #333; margin-top: 4px;
+ }
+        .dialog-stack { display: none; flex-direction: column; gap: 6px;
+ margin: 0 0 15px 0; }
+        .dialog-stack.expanded { display: flex;
+ }
+        .dialog-box { background: #929292; border-radius: 0; padding: 12px 15px; color: white;
+ cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-decoration: none; border: 1px solid transparent;
+ }
+        .dialog-box.current { background: white; border: 1px solid #ccc; color: #333;
+ }
+        .dialog-name { font-size: 16px; font-weight: 600;
+ }
+        .dialog-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end;
+ }
+        .dialog-time-wrap { font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 6px;
+ }
+        .error-label { color: #EB5757; font-size: 10px; font-weight: 900; margin-top: 1px; text-transform: lowercase;
+ }
+        .center-pane { background: white; border-radius: 15px; display: flex; padding: 30px; gap: 30px;
+ overflow-y: auto; box-shadow: var(--card-shadow); border: 1px solid #eee; }
+        .dialog-col { flex: 1;
+ font-size: 14px; line-height: 1.8; color: #333; }
+        .dialog-header-row { display: flex; align-items: center;
+ gap: 15px; margin-bottom: 25px; }
+        .violation-tag { font-size: 12px; font-weight: 700; color: #EB5757;
+ text-transform: lowercase; }
+        .right-pane { display: flex; flex-direction: column; gap: 15px;
+ }
+        .audio-card { background: white;
+ border-radius: 15px; padding: 25px; box-shadow: var(--card-shadow); border: 1px solid #eee; display: flex; flex-direction: column; gap: 15px;
+ }
+        .player-seeker-wrap { width: 100%; height: 4px; background: #eee; border-radius: 2px; position: relative;
+ cursor: pointer; }
+        .player-seeker-fill { height: 100%; background: #929292; border-radius: 2px; width: 0%;
+ pointer-events: none; }
+        .player-seeker-thumb { width: 12px; height: 12px; background: #929292; border-radius: 50%;
+ position: absolute; top: -4px; margin-left: -6px; pointer-events: none; }
+        .player-controls { display: flex;
+ align-items: center; gap: 15px; }
+        .play-btn { width: 44px; height: 44px; background: #929292;
+ border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer;
+ }
+        .play-btn svg { width: 24px; height: 24px; fill: white;
+ }
+        .player-timer { font-size: 16px; font-weight: 700; flex-grow: 1;
+ }
+        .volume-section { display: flex; align-items: center; gap: 10px;
+ }
+        .vol-btn svg { width: 18px; height: 18px; fill: #999;
+ }
+        .vol-slider { width: 60px; height: 4px; background: #eee; border-radius: 2px; position: relative;
+ cursor: pointer; }
+        .vol-fill { height: 100%; background: #929292; border-radius: 2px; width: 80%;
+ }
+        .vol-thumb { width: 10px; height: 10px; background: #929292; border-radius: 50%; position: absolute;
+ top: -3px; left: 80%; margin-left: -5px; }
+        .download-btn svg { width: 20px;
+ height: 20px; fill: #999; cursor: pointer; }
+        .tabs-card { background: white; border-radius: 15px;
+ flex: 1; padding: 0; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--card-shadow); border: 1px solid #eee;
+ }
+        .tab-headers { display: flex; border-bottom: 1px solid #f0f0f0;
+ }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: #f8f8f8; cursor: pointer;
+ font-size: 13px; font-weight: 700; color: #888; border-right: 1px solid #eee;
+ }
+        .tab-btn.active { background: var(--orange-accent); color: white;
+ }
+        .tab-content { padding: 25px; font-size: 14px; flex: 1; display: none;
+ }
+        .tab-content.active { display: block;
+ }
+        .info-box { border: 1px solid var(--orange-accent); border-radius: 12px; padding: 12px; margin-bottom: 10px;
+ text-align: center; color: #333; font-weight: 700; font-size: 14px; }
+        .modal-result-overlay { display: none;
+ position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 2000; align-items: center; justify-content: center;
+ }
+        .modal-result-box { background: #E5E5E5; padding: 25px; border-radius: 12px; width: 600px;
+ box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-result-title { font-size: 18px; font-weight: 700;
+ margin-bottom: 20px; color: #333; }
+        .modal-result-white-bg { background: white; padding: 30px; border-radius: 12px;
+ margin-bottom: 20px; }
+        .status-option { display: flex; align-items: center; gap: 15px; margin-bottom: 20px;
+ cursor: pointer; font-size: 18px; font-weight: 600; color: #000; }
+        .result-textarea { width: 100%;
+ border: none; font-size: 16px; outline: none; resize: none; min-height: 100px; font-family: inherit;
+ }
+        .btn-cancel-res { background: #929292; color: white; border: none; padding: 10px 30px;
+ border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 16px; }
+        .btn-save-res { background: var(--orange-accent);
+ color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 16px;
+ }
     </style>
 </head>
 <body>
@@ -100,27 +175,29 @@
         </div>
         <div class="layout-grid">
             <div class="sidebar-calls">
-                <% Object.keys(groupedSidebar).sort((a,b) => new Date(b) - new Date(a)).forEach(date => { %>
-                    <% const isDateActive = date === currentCall.date; %>
+                <% sidebarDates.forEach(item => { %>
+                    <% const isDateActive = item.date === currentCall.date; %>
                     <div class="date-group">
-                        <div class="date-card <%= isDateActive ? 'active' : '' %>" onclick="toggleDate(this)">
-                            <span class="date-val"><%= moment(date).format('DD.MM.YY') %></span>
-                            <span class="date-count">Диалогов <%= groupedSidebar[date].length %></span>
+                        <div class="date-card <%= isDateActive ? 'active' : '' %>" onclick="toggleDate(this, '<%= item.date %>')">
+                            <span class="date-val"><%= moment(item.date).format('DD.MM.YY') %></span>
+                            <span class="date-count">Диалогов <%= item.count %></span>
                         </div>
                         <div class="dialog-stack <%= isDateActive ? 'expanded' : '' %>">
-                            <% groupedSidebar[date].forEach((call, idx) => { %>
-                                <% const isError = (call.rudeness > 0.5 || !call.said_hello); %>
-                                <a id="dialog-<%= call.id %>" href="<%= baseUrl %>/details/<%= call.id %>?status=<%= currentStatusFilter %>&activity=<%= currentActivityFilter %>" class="dialog-box <%= call.id == currentCall.id ? 'current' : '' %>">
-                                    <span class="dialog-name">Диалог <%= idx + 1 %></span>
-                                    <div class="dialog-meta"><div class="dialog-time-wrap"><%= Math.floor(call.duration/60) %>:<%= String(Math.floor(call.duration%60)).padStart(2, '0') %></div><% if(isError) { %><span class="error-label">ошибка!</span><% } %></div>
-                                </a>
-                            <% }) %>
+                            <% if (isDateActive) { %>
+                                <% currentDayCalls.forEach((call, idx) => { %>
+                                    <% const isError = (call.rudeness > 0.5 || call.said_hello === false); %>
+                                    <a id="dialog-<%= call.id %>" href="<%= baseUrl %>/details/<%= call.id %>?status=<%= currentStatusFilter %>&activity=<%= currentActivityFilter %>" class="dialog-box <%= call.id == currentCall.id ? 'current' : '' %>">
+                                        <span class="dialog-name">Диалог <%= idx + 1 %></span>
+                                        <div class="dialog-meta"><div class="dialog-time-wrap"><%= Math.floor(call.duration/60) %>:<%= String(Math.floor(call.duration%60)).padStart(2, '0') %></div><% if(isError) { %><span class="error-label">ошибка!</span><% } %></div>
+                                    </a>
+                                <% }) %>
+                            <% } %>
                         </div>
                     </div>
                 <% }) %>
             </div>
             <div class="center-pane">
-                <div class="dialog-col">
+                 <div class="dialog-col">
                     <div class="dialog-header-row"><strong style="font-size: 18px; color: #000;">Диалог <%= currentCall.id %></strong><% if (currentCall.rudeness > 0.5) { %><span class="violation-tag">#агрессия</span><% } %><% if (currentCall.said_hello === false) { %><span class="violation-tag">#отсутствие приветствия</span><% } %></div>
                     <div style="white-space: pre-wrap;"><%- currentCall.text ? currentCall.text : '' %></div>
                 </div>
@@ -142,9 +219,8 @@
                             <div class="vol-slider" id="volSlider"><div class="vol-fill" id="volFill"></div><div class="vol-thumb" id="volThumb"></div></div>
                         </div>
                         <a href="<%= baseUrl %>/api/audio/<%= currentCall.id %>" download class="download-btn"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></a>
-                    </div>
+                  </div>
                 </div>
-
                 <div class="tabs-card">
                     <div class="tab-headers">
                         <button class="tab-btn active" onclick="switchTab(event, 'brief')">Краткий отчет</button>
@@ -169,9 +245,7 @@
             </div>
         </div>
     </div>
-
-    <div id="modalResult" class="modal-result-overlay"><div class="modal-result-box"><div class="modal-result-title">Результат диалога</div><div class="modal-result-white-bg"><label class="status-option"><input type="radio" name="resStatus" value="отработано" <%= currentCall.status === 'отработано' ? 'checked' : '' %>> Отработано</label><label class="status-option"><input type="radio" name="resStatus" value="не отработано" <%= currentCall.status === 'не отработано' ? 'checked' : '' %>> Неотработано</label><label class="status-option"><input type="radio" name="resStatus" value="нераспознано" <%= currentCall.status === 'нераспознано' ? 'checked' : '' %>> Нераспознано</label><div style="border-top:1px solid #eee; margin-top:20px; padding-top:20px"><div style="font-size:18px; color:#999; margin-bottom:10px">Результат</div><textarea id="manualResultText" class="result-textarea" placeholder="Напишите результат..."><%= currentCall.manualResult || '' %></textarea></div></div><div style="display:flex; justify-content:space-between; align-items:center"><div style="color:#888; font-size:14px">* <%= currentCall.Processor ? currentCall.Processor.fullName : user.fullName %></div><div style="display:flex; gap:10px"><button class="btn-cancel-res" onclick="closeResultModal()">Отмена</button><button class="btn-save-res" onclick="saveDialogResult()">Сохранить</button></div></div></div></div>
-
+    <div id="modalResult" class="modal-result-overlay"><div class="modal-result-box"><div class="modal-result-title">Результат диалога</div><div class="modal-result-white-bg"><label class="status-option"><input type="radio" name="resStatus" value="отработано" <%= currentCall.status === 'отработано' ? 'checked' : '' %>> Отработано</label><label class="status-option"><input type="radio" name="resStatus" value="не отработано" <%= currentCall.status === 'не отработано' ? 'checked' : '' %>> Неотработано</label><label class="status-option"><input type="radio" name="resStatus" value="нераспознано" <%= currentCall.status === 'нераспознано' ? 'checked' : '' %>> Нераспознано</label><label class="status-option"><input type="radio" name="resStatus" value="без статуса" <%= currentCall.status === 'без статуса' ? 'checked' : '' %>> Без статуса</label><div style="border-top:1px solid #eee; margin-top:20px; padding-top:20px"><div style="font-size:18px; color:#999; margin-bottom:10px">Результат</div><textarea id="manualResultText" class="result-textarea" placeholder="Напишите результат..."><%= currentCall.manualResult || '' %></textarea></div></div><div style="display:flex; justify-content:space-between; align-items:center"><div style="color:#888; font-size:14px">* <%= currentCall.Processor ? currentCall.Processor.fullName : user.fullName %></div><div style="display:flex; gap:10px"><button class="btn-cancel-res" onclick="closeResultModal()">Отмена</button><button class="btn-save-res" onclick="saveDialogResult()">Сохранить</button></div></div></div></div>
     <script>
         const audio = new Audio('<%= baseUrl %>/api/audio/<%= currentCall.id %>');
         const playBtn = document.getElementById('masterPlay');
@@ -184,9 +258,7 @@
         const vS = document.getElementById('volSlider');
         const vF = document.getElementById('volFill');
         const vT = document.getElementById('volThumb');
-
         const fmt = (s) => { if(isNaN(s)) return '0:00'; let m=Math.floor(s/60), sec=Math.floor(s%60); return `${m}:${sec<10?'0':''}${sec}`; };
-
         playBtn.onclick = () => { if(audio.paused) audio.play(); else audio.pause(); };
         audio.onplay = () => { svgP.style.display='none'; svgS.style.display='block'; };
         audio.onpause = () => { svgP.style.display='block'; svgS.style.display='none'; };
@@ -196,40 +268,52 @@
             timer.innerText = `${fmt(audio.currentTime)} - ${fmt(audio.duration)}`;
         };
         audio.onloadedmetadata = () => { timer.innerText = `0:00 - ${fmt(audio.duration)}`; };
-        sWrap.onclick = (e) => { const r=sWrap.getBoundingClientRect(); const p=(e.clientX-r.left)/r.width; audio.currentTime = p*audio.duration; };
+        sWrap.onclick = (e) => { const r=sWrap.getBoundingClientRect(); const p=(e.clientX-r.left)/r.width;
+        audio.currentTime = p*audio.duration; };
         vS.onclick = (e) => { const r=vS.getBoundingClientRect(); let p=(e.clientX-r.left)/r.width; if(p<0)p=0; if(p>1)p=1; audio.volume=p; vF.style.width=p*100+'%'; vT.style.left=p*100+'%'; };
-
         function switchTab(evt, name) { 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(name).classList.add('active'); evt.currentTarget.classList.add('active'); 
         }
-
         async function saveNote() {
             const res = await fetch('<%= baseUrl %>/api/notes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ callId: '<%= currentCall.id %>', content: document.getElementById('noteInput').value }) });
             if (res.ok) alert('Сохранено');
         }
-
         function openResultModal() { document.getElementById('modalResult').style.display='flex'; }
         function closeResultModal() { document.getElementById('modalResult').style.display='none'; }
         async function saveDialogResult() {
             const res = await fetch('<%= baseUrl %>/api/calls/<%= currentCall.id %>/result', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: document.querySelector('input[name="resStatus"]:checked').value, manualResult: document.getElementById('manualResultText').value }) });
             if (res.ok) window.location.reload();
         }
-
         document.addEventListener('DOMContentLoaded', () => {
             const cur = document.querySelector('.dialog-box.current');
             if (cur) cur.scrollIntoView({ behavior: 'auto', block: 'center' });
         });
-        function toggleDate(el) {
-            const st = el.nextElementSibling;
-            if (st.classList.contains('expanded')) { st.classList.remove('expanded'); el.classList.remove('active'); }
-            else { document.querySelectorAll('.dialog-stack').forEach(s => s.classList.remove('expanded')); document.querySelectorAll('.date-card').forEach(c => c.classList.remove('active')); st.classList.add('expanded'); el.classList.add('active'); }
+        function toggleDate(el, dateStr) {
+            const stack = el.nextElementSibling;
+            if (stack.classList.contains('expanded')) {
+                stack.classList.remove('expanded');
+                el.classList.remove('active');
+            } else {
+                const u = new URL(window.location.href);
+                const s = u.searchParams.get('status') || 'all';
+                const a = u.searchParams.get('activity') || 'все звонки';
+                window.location.href = '<%= baseUrl %>/details/' + dateStr + '_redir?date=' + dateStr + '&status=' + s + '&activity=' + a;
+            }
         }
-        function toggleActivityDropdown(e) { e.stopPropagation(); document.getElementById("activityDropdown").classList.toggle("show"); }
-        window.onclick = (e) => { if (!e.target.matches('.activity-pill-dropdown')) { const d = document.getElementById("activityDropdown"); if(d) d.classList.remove('show'); } };
-        function filterByStatus(s) { const u = new URL(window.location); if (s === 'all') u.searchParams.delete('status'); else u.searchParams.set('status', s); window.location.href = u.href; }
-        function filterByActivity(a) { const u = new URL(window.location); if (a === 'все звонки') u.searchParams.delete('activity'); else u.searchParams.set('activity', a); window.location.href = u.href; }
+        function toggleActivityDropdown(e) { e.stopPropagation();
+        document.getElementById("activityDropdown").classList.toggle("show"); }
+        window.onclick = (e) => { if (!e.target.matches('.activity-pill-dropdown')) { const d = document.getElementById("activityDropdown");
+        if(d) d.classList.remove('show'); } };
+        function filterByStatus(s) { 
+            const u = new URL(window.location); 
+            if (u.searchParams.get('status') === s) u.searchParams.delete('status'); 
+            else u.searchParams.set('status', s);
+            window.location.href = u.href; 
+        }
+        function filterByActivity(a) { const u = new URL(window.location);
+        if (a === 'все звонки') u.searchParams.delete('activity'); else u.searchParams.set('activity', a); window.location.href = u.href; }
     </script>
 </body>
 </html>

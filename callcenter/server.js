@@ -130,21 +130,52 @@ app.get(BASE_URL + '/', checkAuth, async (req, res) => {
 app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
     const { status, activity } = req.query;
     try {
-        const currentCall = await Call.findByPk(req.params.id, { include: [{ model: User, as: 'Processor' }] });
+        let currentCall;
+        if (req.params.id.endsWith('_redir')) {
+            const targetDate = req.query.date;
+            let redirWhere = { date: targetDate };
+            if (status && status !== 'all') redirWhere.status = status;
+            if (activity === 'грубая ошибка') redirWhere[Op.or] = [{ rudeness: { [Op.gt]: 0.5 } }, { said_hello: false }];
+            else if (activity === 'агрессия') redirWhere.rudeness = { [Op.gt]: 0.5 };
+            else if (activity === 'отсутствие приветствия') redirWhere.said_hello = false;
+
+            currentCall = await Call.findOne({ where: redirWhere, order: [['time', 'DESC']] });
+            if (!currentCall) currentCall = await Call.findOne({ where: { date: targetDate }, order: [['time', 'DESC']] });
+            if (!currentCall) return res.redirect(BASE_URL + '/');
+            return res.redirect(`${BASE_URL}/details/${currentCall.id}?status=${status || 'all'}&activity=${activity || 'все звонки'}`);
+        }
+
+        currentCall = await Call.findByPk(req.params.id, { include: [{ model: User, as: 'Processor' }] });
         if (!currentCall) return res.redirect(BASE_URL + '/');
-        const sidebarCalls = await Call.findAll({ order: [['date', 'DESC'], ['time', 'DESC']] });
-        const groupedSidebar = {};
-        sidebarCalls.forEach(c => { if (!groupedSidebar[c.date]) groupedSidebar[c.date] = []; groupedSidebar[c.date].push(c); });
+
+        const sidebarDates = await Call.findAll({
+            attributes: ['date', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
+            group: ['date'],
+            order: [['date', 'DESC']],
+            raw: true
+        });
+
+        let dayWhere = { date: currentCall.date };
+        if (status && status !== 'all') dayWhere.status = status;
+        if (activity === 'грубая ошибка') dayWhere[Op.or] = [{ rudeness: { [Op.gt]: 0.5 } }, { said_hello: false }];
+        else if (activity === 'агрессия') dayWhere.rudeness = { [Op.gt]: 0.5 };
+        else if (activity === 'отсутствие приветствия') dayWhere.said_hello = false;
+
+        const currentDayCalls = await Call.findAll({
+            where: dayWhere,
+            order: [['time', 'DESC']]
+        });
+
         const userNote = await Note.findOne({ where: { CallId: currentCall.id, UserId: req.user.id } });
-        res.render('details', { currentCall, groupedSidebar, userNote, moment, currentStatusFilter: status || 'all', currentActivityFilter: activity || 'все звонки' });
+        res.render('details', { currentCall, sidebarDates, currentDayCalls, userNote, moment, currentStatusFilter: status || 'all', currentActivityFilter: activity || 'все звонки' });
     } catch (err) { res.status(500).send(err.message); }
 });
 
 app.get(BASE_URL + '/api/audio/:id', checkAuth, async (req, res) => {
+    const client = new ftp.Client();
     try {
         const call = await Call.findByPk(req.params.id);
         if (!call || !call.audioUrl) return res.status(404).send("File not found");
-        const client = new ftp.Client();
         await client.access({
             host: process.env.FTP_HOST,
             port: parseInt(process.env.FTP_PORT),
@@ -153,8 +184,11 @@ app.get(BASE_URL + '/api/audio/:id', checkAuth, async (req, res) => {
         });
         res.setHeader('Content-Type', 'audio/wav');
         await client.downloadTo(res, call.audioUrl);
+    } catch (e) {
+        if (!res.headersSent) res.status(500).send(e.message);
+    } finally {
         client.close();
-    } catch (e) { res.status(500).send(e.message); }
+    }
 });
 
 app.get(BASE_URL + '/my-notes', checkAuth, async (req, res) => {
