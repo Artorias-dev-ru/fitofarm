@@ -138,9 +138,16 @@
                         <a href="<%= baseUrl %>/details/<%= item.id %>?type=refusals" class="stat-card refusals"><%= item.refusals %></a>
                     </div>
                     <div class="stats-group">
+                        <span class="stats-label">Нераспознан</span>
+                        <a href="<%= baseUrl %>/details/<%= item.id %>?type=unknown" class="stat-card unknown"><%= item.unknown %></a>
+                    </div>
+                    <div class="stats-group">
                         <span class="stats-label">Итого</span>
                         <a href="<%= baseUrl %>/details/<%= item.id %>" class="stat-card total"><%= item.sales + item.refusals + item.unknown %></a>
                     </div>
+                </div>
+                <div class="input-capsule" style="margin-left: 15px;">
+                    <input type="text" id="date-range-picker" placeholder="Выбрать период" value="<%= currentRange %>">
                 </div>
             </div>
             <div class="details-grid">
@@ -257,6 +264,9 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
     <script>
         const audio = document.getElementById('main-audio');
         const playIcon = document.getElementById('play-icon');
@@ -293,6 +303,25 @@
         document.addEventListener('DOMContentLoaded', () => {
             const activeCard = document.querySelector('.dialog-card.active');
             if (activeCard) activeCard.scrollIntoView({ behavior: 'auto', block: 'center' });
+        });
+        flatpickr("#date-range-picker", {
+            mode: "range",
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d.m.Y",
+            locale: "ru",
+            onClose: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length === 2) {
+                    const start = instance.formatDate(selectedDates[0], "Y-m-d");
+                    const end = instance.formatDate(selectedDates[1], "Y-m-d");
+                    const currentUrl = new URL(window.location.href);
+
+                    currentUrl.searchParams.set('startDate', start);
+                    currentUrl.searchParams.set('endDate', end);
+                    currentUrl.searchParams.delete('period');
+                    window.location.href = currentUrl.toString();
+                }
+            }
         });
     </script>
 </body>

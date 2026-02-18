@@ -161,7 +161,8 @@ app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
             activeDialog: activeDialog,
             activeType: type || '',
             currentRange: startDate && endDate ? `${startDate} to ${endDate}` : '',
-            activeTab: tab || 'summary'
+            activeTab: tab || 'summary',
+            activePeriod: period || (startDate ? '' : 'year') 
         });
     } catch (err) {
         res.status(500).send(err.message);

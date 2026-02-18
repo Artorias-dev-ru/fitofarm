@@ -81,68 +81,118 @@ app.get(BASE_URL + '/', checkAuth, async (req, res) => {
         const dateWhere = getDateWhere(period || 'month', startDate, endDate);
         const calls = await Call.findAll({ 
             where: { date: dateWhere },
-            order: [['date', 'DESC'], ['time', 'DESC']]
+            order: [['date', 'DESC'], ['time', 'DESC']],
+            limit: 500
         });
+        
+        const totalCount = calls.length || 1;
         const aggressionCount = calls.filter(c => c.rudeness > 0.5).length;
         const noHelloCount = calls.filter(c => !c.said_hello).length;
-        const totalViolationsCount = calls.filter(c => c.rudeness > 0.5 || !c.said_hello).length;
-        const totalCount = calls.length || 1;
+        const politenessCount = calls.filter(c => c.politeness < 0.5).length;
+        const friendlinessCount = calls.filter(c => c.friendliness < 0.5).length;
+        const manipulativenessCount = calls.filter(c => c.manipulativeness > 0.5).length;
+
+        const totalViolationsCount = calls.filter(c => 
+            c.rudeness > 0.5 || !c.said_hello || c.politeness < 0.5 || c.friendliness < 0.5 || c.manipulativeness > 0.5
+        ).length;
+
+        let notesDashWhere = {};
+        if (req.user.role !== 'superadmin') notesDashWhere.UserId = req.user.id;
+
+        const latestNotes = await Note.findAll({
+            where: notesDashWhere,
+            include: [{ model: Call }],
+            order: [['createdAt', 'DESC']],
+            limit: 4
+        });
+
         const chartStats = await Call.findAll({
             where: { date: dateWhere },
             attributes: [
                 'date',
                 [sequelize.fn('COUNT', sequelize.col('id')), 'total_calls'],
-                [sequelize.literal("SUM(CASE WHEN said_hello = 0 OR rudeness > 0.5 THEN 1 ELSE 0 END)"), 'violations'],
+                [sequelize.literal("SUM(CASE WHEN said_hello = 0 OR rudeness > 0.5 OR politeness < 0.5 OR friendliness < 0.5 OR manipulativeness > 0.5 THEN 1 ELSE 0 END)"), 'violations'],
                 [sequelize.literal("SUM(CASE WHEN said_hello = 0 THEN 1 ELSE 0 END)"), 'no_hello'],
-                [sequelize.literal("SUM(CASE WHEN rudeness > 0.5 THEN 1 ELSE 0 END)"), 'aggression']
+                [sequelize.literal("SUM(CASE WHEN rudeness > 0.5 THEN 1 ELSE 0 END)"), 'aggression'],
+                [sequelize.literal("SUM(CASE WHEN politeness < 0.5 THEN 1 ELSE 0 END)"), 'no_politeness'],
+                [sequelize.literal("SUM(CASE WHEN friendliness < 0.5 THEN 1 ELSE 0 END)"), 'no_friendliness'],
+                [sequelize.literal("SUM(CASE WHEN manipulativeness > 0.5 THEN 1 ELSE 0 END)"), 'manipulation']
             ],
             group: ['date'],
             order: [['date', 'ASC']]
         });
+
         const chartLabels = [];
-        const series = { calls: [], violations: [], no_hello: [], aggression: [] };
+        const series = { calls: [], violations: [], no_hello: [], aggression: [], no_politeness: [], no_friendliness: [], manipulation: [] };
         chartStats.forEach(item => {
             chartLabels.push(moment(item.getDataValue('date')).format('DD.MM'));
             series.calls.push(item.getDataValue('total_calls') || 0);
             series.violations.push(item.getDataValue('violations') || 0);
             series.no_hello.push(item.getDataValue('no_hello') || 0);
             series.aggression.push(item.getDataValue('aggression') || 0);
+            series.no_politeness.push(item.getDataValue('no_politeness') || 0);
+            series.no_friendliness.push(item.getDataValue('no_friendliness') || 0);
+            series.manipulation.push(item.getDataValue('manipulation') || 0);
         });
+
         const groupedByDate = {};
         calls.forEach(c => {
             if (!groupedByDate[c.date]) groupedByDate[c.date] = { date: c.date, count: 0, activities: new Set(), firstId: c.id };
             groupedByDate[c.date].count++;
-            if (c.rudeness > 0.5) { groupedByDate[c.date].activities.add('грубая ошибка'); groupedByDate[c.date].activities.add('агрессия'); }
+            if (c.rudeness > 0.5) groupedByDate[c.date].activities.add('агрессия');
             if (!c.said_hello) groupedByDate[c.date].activities.add('приветствие');
+            if (c.politeness < 0.5) groupedByDate[c.date].activities.add('вежливость');
+            if (c.friendliness < 0.5) groupedByDate[c.date].activities.add('дружелюбие');
+            if (c.manipulativeness > 0.5) groupedByDate[c.date].activities.add('манипуляция');
         });
+
         const listData = Object.values(groupedByDate).sort((a, b) => new Date(b.date) - new Date(a.date));
         const settings = await Setting.findAll();
         const config = {};
         settings.forEach(s => config[s.key] = parseInt(s.value));
+
         res.render('dashboard', {
-            stats: { total: calls.length, violations: totalViolationsCount, rudeness: aggressionCount, hello: noHelloCount, p_violations: (totalViolationsCount/totalCount)*100, p_rudeness: (aggressionCount/totalCount)*100, p_hello: (noHelloCount/totalCount)*100 },
+            stats: { 
+                total: calls.length, 
+                violations: totalViolationsCount, 
+                rudeness: aggressionCount, 
+                hello: noHelloCount,
+                politeness: politenessCount,
+                friendliness: friendlinessCount,
+                manipulation: manipulativenessCount,
+                p_violations: (totalViolationsCount/totalCount)*100, 
+                p_rudeness: (aggressionCount/totalCount)*100, 
+                p_hello: (noHelloCount/totalCount)*100,
+                p_politeness: (politenessCount/totalCount)*100,
+                p_friendliness: (friendlinessCount/totalCount)*100,
+                p_manipulation: (manipulativenessCount/totalCount)*100
+            },
             chart: { labels: JSON.stringify(chartLabels), datasets: JSON.stringify(series) },
-            activePeriod: period || 'month', currentView: view || 'analytics', currentRange: startDate && endDate ? `${startDate} to ${endDate}` : '', listData, moment, config
+            activePeriod: period || 'month', currentView: view || 'analytics', currentRange: startDate && endDate ? `${startDate} to ${endDate}` : '', 
+            listData, moment, config, latestNotes 
         });
     } catch (err) { res.status(500).send(err.message); }
 });
 
 app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
-    const { status, activity } = req.query;
+    const { status, activity, tab } = req.query;
     try {
         let currentCall;
         if (req.params.id.endsWith('_redir')) {
             const targetDate = req.query.date;
             let redirWhere = { date: targetDate };
             if (status && status !== 'all') redirWhere.status = status;
-            if (activity === 'грубая ошибка') redirWhere[Op.or] = [{ rudeness: { [Op.gt]: 0.5 } }, { said_hello: false }];
+            if (activity === 'грубая ошибка') redirWhere[Op.or] = [{ rudeness: { [Op.gt]: 0.5 } }, { said_hello: false }, { politeness: { [Op.lt]: 0.5 } }, { friendliness: { [Op.lt]: 0.5 } }, { manipulativeness: { [Op.gt]: 0.5 } }];
             else if (activity === 'агрессия') redirWhere.rudeness = { [Op.gt]: 0.5 };
             else if (activity === 'отсутствие приветствия') redirWhere.said_hello = false;
+            else if (activity === 'вежливость') redirWhere.politeness = { [Op.lt]: 0.5 };
+            else if (activity === 'дружелюбие') redirWhere.friendliness = { [Op.lt]: 0.5 };
+            else if (activity === 'манипуляция') redirWhere.manipulativeness = { [Op.gt]: 0.5 };
 
             currentCall = await Call.findOne({ where: redirWhere, order: [['time', 'DESC']] });
             if (!currentCall) currentCall = await Call.findOne({ where: { date: targetDate }, order: [['time', 'DESC']] });
             if (!currentCall) return res.redirect(BASE_URL + '/');
-            return res.redirect(`${BASE_URL}/details/${currentCall.id}?status=${status || 'all'}&activity=${activity || 'все звонки'}`);
+            return res.redirect(`${BASE_URL}/details/${currentCall.id}?status=${status || 'all'}&activity=${activity || 'все звонки'}${tab ? '&tab=' + tab : ''}`);
         }
 
         currentCall = await Call.findByPk(req.params.id, { include: [{ model: User, as: 'Processor' }] });
@@ -152,22 +202,59 @@ app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
             attributes: ['date', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
             group: ['date'],
             order: [['date', 'DESC']],
+            limit: 60,
             raw: true
         });
 
         let dayWhere = { date: currentCall.date };
         if (status && status !== 'all') dayWhere.status = status;
-        if (activity === 'грубая ошибка') dayWhere[Op.or] = [{ rudeness: { [Op.gt]: 0.5 } }, { said_hello: false }];
-        else if (activity === 'агрессия') dayWhere.rudeness = { [Op.gt]: 0.5 };
-        else if (activity === 'отсутствие приветствия') dayWhere.said_hello = false;
-
+        
+        if (activity === 'грубая ошибка') {
+            dayWhere[Op.or] = [
+                { rudeness: { [Op.gt]: 0.5 } }, 
+                { said_hello: false }, 
+                { politeness: { [Op.lt]: 0.5 } }, 
+                { friendliness: { [Op.lt]: 0.5 } }, 
+                { manipulativeness: { [Op.gt]: 0.5 } }
+            ];
+        } else if (activity === 'агрессия') {
+            dayWhere.rudeness = { [Op.gt]: 0.5 };
+        } else if (activity === 'отсутствие приветствия') {
+            dayWhere.said_hello = false;
+        } else if (activity === 'вежливость') {
+            dayWhere.politeness = { [Op.lt]: 0.5 };
+        } else if (activity === 'дружелюбие') {
+            dayWhere.friendliness = { [Op.lt]: 0.5 };
+        } else if (activity === 'манипуляция') {
+            dayWhere.manipulativeness = { [Op.gt]: 0.5 };
+        }
+        
         const currentDayCalls = await Call.findAll({
             where: dayWhere,
             order: [['time', 'DESC']]
         });
 
-        const userNote = await Note.findOne({ where: { CallId: currentCall.id, UserId: req.user.id } });
-        res.render('details', { currentCall, sidebarDates, currentDayCalls, userNote, moment, currentStatusFilter: status || 'all', currentActivityFilter: activity || 'все звонки' });
+        let notesWhere = { CallId: currentCall.id };
+        if (req.user.role !== 'superadmin') {
+            notesWhere.UserId = req.user.id;
+        }
+
+        const callNotes = await Note.findAll({ 
+            where: notesWhere, 
+            include: [User],
+            order: [['createdAt', 'DESC']] 
+        });
+
+        res.render('details', { 
+            currentCall, 
+            sidebarDates, 
+            currentDayCalls, 
+            callNotes,
+            moment, 
+            currentStatusFilter: status || 'all', 
+            currentActivityFilter: activity || 'все звонки',
+            activeTab: tab || 'brief'
+        });
     } catch (err) { res.status(500).send(err.message); }
 });
 
@@ -194,17 +281,43 @@ app.get(BASE_URL + '/api/audio/:id', checkAuth, async (req, res) => {
 app.get(BASE_URL + '/my-notes', checkAuth, async (req, res) => {
     try {
         let where = {};
-        if (req.user.role !== 'superadmin') where.UserId = req.user.id;
-        const notes = await Note.findAll({ where, include: [Call, User], order: [['updatedAt', 'DESC']] });
-        res.render('my_notes', { notes, moment });
+        if (req.user.role !== 'superadmin') {
+            where.UserId = req.user.id;
+        }
+        const notes = await Note.findAll({ 
+            where, 
+            include: [{ model: Call }, { model: User }],
+            order: [['createdAt', 'DESC']]
+        });
+        res.render('my-notes', { notes, moment });
     } catch (err) { res.status(500).send(err.message); }
 });
 
 app.post(BASE_URL + '/api/notes', checkAuth, async (req, res) => {
     const { callId, content } = req.body;
     try {
-        const [note, created] = await Note.findOrCreate({ where: { CallId: callId, UserId: req.user.id }, defaults: { content } });
-        if (!created) { note.content = content; await note.save(); }
+        await Note.create({ CallId: callId, UserId: req.user.id, content });
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+app.put(BASE_URL + '/api/notes/:id', checkAuth, async (req, res) => {
+    try {
+        const note = await Note.findByPk(req.params.id);
+        if (!note) return res.status(404).json({ success: false });
+        if (req.user.role !== 'superadmin' && note.UserId !== req.user.id) return res.status(403).json({ success: false });
+        note.content = req.body.content;
+        await note.save();
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+app.delete(BASE_URL + '/api/notes/:id', checkAuth, async (req, res) => {
+    try {
+        const note = await Note.findByPk(req.params.id);
+        if (!note) return res.status(404).json({ success: false });
+        if (req.user.role !== 'superadmin' && note.UserId !== req.user.id) return res.status(403).json({ success: false });
+        await note.destroy();
         res.json({ success: true });
     } catch (e) { res.status(500).json({ success: false }); }
 });

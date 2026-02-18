@@ -51,7 +51,7 @@
  z-index: 10; background: white; border: 1px solid #ccc; border-radius: 0; padding: 12px; text-align: center; cursor: pointer; box-shadow: var(--card-shadow); margin-bottom: 8px;
  }
         .date-card.active { border-color: #333; border-width: 2px;
- }
+}
         .date-val { display: block; font-size: 20px; font-weight: 800; color: #333; line-height: 1.1;
  }
         .date-count { display: block; font-size: 11px; font-weight: 700; color: #333; margin-top: 4px;
@@ -66,7 +66,7 @@
         .dialog-box.current { background: white; border: 1px solid #ccc; color: #333;
  }
         .dialog-name { font-size: 16px; font-weight: 600;
- }
+}
         .dialog-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end;
  }
         .dialog-time-wrap { font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 6px;
@@ -75,8 +75,8 @@
  }
         .center-pane { background: white; border-radius: 15px; display: flex; padding: 30px; gap: 30px;
  overflow-y: auto; box-shadow: var(--card-shadow); border: 1px solid #eee; }
-        .dialog-col { flex: 1;
- font-size: 14px; line-height: 1.8; color: #333; }
+        .dialog-col { flex: 1; font-size: 14px; line-height: 1.8; color: #333; 
+            overflow-wrap: break-word; word-break: break-word; }
         .dialog-header-row { display: flex; align-items: center;
  gap: 15px; margin-bottom: 25px; }
         .violation-tag { font-size: 12px; font-weight: 700; color: #EB5757;
@@ -84,7 +84,8 @@
         .right-pane { display: flex; flex-direction: column; gap: 15px;
  }
         .audio-card { background: white;
- border-radius: 15px; padding: 25px; box-shadow: var(--card-shadow); border: 1px solid #eee; display: flex; flex-direction: column; gap: 15px;
+ border-radius: 15px; padding: 25px; box-shadow: var(--card-shadow);
+ border: 1px solid #eee; display: flex; flex-direction: column; gap: 15px;
  }
         .player-seeker-wrap { width: 100%; height: 4px; background: #eee; border-radius: 2px; position: relative;
  cursor: pointer; }
@@ -123,8 +124,8 @@
  }
         .tab-btn.active { background: var(--orange-accent); color: white;
  }
-        .tab-content { padding: 25px; font-size: 14px; flex: 1; display: none;
- }
+        .tab-content { padding: 25px; font-size: 14px; flex: 1; display: none; 
+            overflow-wrap: break-word; word-break: break-word; }
         .tab-content.active { display: block;
  }
         .info-box { border: 1px solid var(--orange-accent); border-radius: 12px; padding: 12px; margin-bottom: 10px;
@@ -148,7 +149,29 @@
         .btn-save-res { background: var(--orange-accent);
  color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 16px;
  }
-    </style>
+ .note-block { background: #f9f9f9;
+ border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-top: 10px; position: relative; }
+    .note-meta { display: flex;
+ justify-content: space-between; font-size: 11px; color: #999; margin-bottom: 5px; font-weight: 600; padding-right: 50px; }
+    .note-text { font-size: 13px; color: #333; line-height: 1.4; white-space: pre-wrap; 
+        overflow-wrap: break-word; word-break: break-word; }
+    .note-actions { position: absolute; top: 10px; right: 10px; display: flex;
+ gap: 8px; }
+    .note-action-btn { cursor: pointer; opacity: 0.5; transition: 0.2s; background: none; border: none; padding: 0;
+ }
+    .note-action-btn:hover { opacity: 1; }
+    .note-action-btn svg { width: 14px; height: 14px;
+ }
+    
+    .modal-note-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%;
+ height: 100%; background: rgba(0,0,0,0.4); z-index: 3000; align-items: center; justify-content: center; }
+    .modal-note-box { background: white; padding: 25px;
+ border-radius: 12px; width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+ .status-отработано { color: #27ae60 !important; }
+.status-неотработано { color: #e74c3c !important; }
+.status-нераспознано { color: #95a5a6 !important; }
+.status-безстатуса { color: #aaa !important; }
+</style>
 </head>
 <body>
     <%- include('sidebar') %>
@@ -162,6 +185,9 @@
                         <div class="dropdown-item-act <%= currentActivityFilter === 'грубая ошибка' ? 'active' : '' %>" onclick="filterByActivity('грубая ошибка')">грубая ошибка</div>
                         <div class="dropdown-item-act <%= currentActivityFilter === 'отсутствие приветствия' ? 'active' : '' %>" onclick="filterByActivity('отсутствие приветствия')">отсутствие приветствия</div>
                         <div class="dropdown-item-act <%= currentActivityFilter === 'агрессия' ? 'active' : '' %>" onclick="filterByActivity('агрессия')">агрессия</div>
+                        <div class="dropdown-item-act" onclick="filterByActivity('вежливость')">вежливость</div>
+                        <div class="dropdown-item-act" onclick="filterByActivity('дружелюбие')">дружелюбие</div>
+                        <div class="dropdown-item-act" onclick="filterByActivity('манипуляция')">манипуляция</div>
                     </div>
                 </div>
                 <div class="filter-status">
@@ -198,7 +224,7 @@
             </div>
             <div class="center-pane">
                  <div class="dialog-col">
-                    <div class="dialog-header-row"><strong style="font-size: 18px; color: #000;">Диалог <%= currentCall.id %></strong><% if (currentCall.rudeness > 0.5) { %><span class="violation-tag">#агрессия</span><% } %><% if (currentCall.said_hello === false) { %><span class="violation-tag">#отсутствие приветствия</span><% } %></div>
+                    <div class="dialog-header-row"><strong style="font-size: 18px; color: #000;">Диалог <%= currentCall.id %></strong><% if (currentCall.rudeness > 0.5) { %><span class="violation-tag">#агрессия</span><% } %><% if (currentCall.said_hello === false) { %><span class="violation-tag">#отсутствие приветствия</span><% } %></div><% if (currentCall.politeness < 0.5) { %><span class="violation-tag">#отсутствие вежливости</span><% } %><% if (currentCall.friendliness < 0.5) { %><span class="violation-tag">#отсутствие дружелюбия</span><% } %><% if (currentCall.manipulativeness > 0.5) { %><span class="violation-tag">#манипуляция</span><% } %>
                     <div style="white-space: pre-wrap;"><%- currentCall.text ? currentCall.text : '' %></div>
                 </div>
             </div>
@@ -234,7 +260,56 @@
                         <div style="margin-top:25px"><strong style="display:block; margin-bottom:12px; font-size:16px;">Сводка:</strong><p style="color: #444; line-height: 1.6; margin: 0;"><%= currentCall.summary || 'Нет данных' %></p></div>
                     </div>
                     <div id="notes" class="tab-content">
-                        <div style="border: 2px solid #ddd; padding: 15px; border-radius: 12px; background: #fff;"><strong style="display:block; margin-bottom:12px; font-size:16px;">Ваша заметка:</strong><textarea id="noteInput" style="width:100%; height:150px; border:1px solid #ddd; border-radius:8px; padding:10px; margin-bottom:10px; font-family:inherit; resize:none;"><%= userNote ? userNote.content : '' %></textarea><button onclick="saveNote()" style="background: var(--orange-accent); color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:700; width: 100%;">Сохранить</button></div>
+                        <div style="border: 2px solid #ddd; padding: 15px; border-radius: 12px; background: #fff;">
+                            <strong style="display:block; margin-bottom:12px; font-size:16px;">Добавить заметку:</strong>
+                            <textarea id="noteInput" style="width:calc(100%-20px); height:80px; border:1px solid #ddd; border-radius:8px; padding:10px; margin-bottom:10px; font-family:inherit; resize:none;" placeholder="Введите текст..."></textarea>
+                            <button onclick="saveNote()" style="background: var(--orange-accent); color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:700; width: 100%;">Сохранить</button>
+                        </div>
+                        <div style="margin-top:20px">
+                            <% if (callNotes && callNotes.length > 0) { %>
+                                <% callNotes.forEach(note => { %>
+                                    <div class="note-block" id="note-<%= note.id %>">
+                                        <div class="note-meta">
+                                            <span><%= note.User ? note.User.fullName : 'Пользователь' %></span>
+                                            <span><%= moment(note.createdAt).format('DD.MM.YY HH:mm') %></span>
+                                        </div>
+                                        <div class="note-text"><%= note.content %></div>
+                                        <div class="note-actions">
+                                            <button class="note-action-btn" onclick="openEditNoteModal('<%= note.id %>', `<%= note.content.replace(/`/g, '\\`') %>`)">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                            </button>
+                                            <button class="note-action-btn" onclick="confirmDeleteNote('<%= note.id %>')">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <p style="text-align:center; color:#999; margin-top: 20px;">Заметок пока нет</p>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div id="modalEditNote" class="modal-note-overlay">
+                        <div class="modal-note-box">
+                            <h3 style="margin-top:0">Редактировать заметку</h3>
+                            <textarea id="editNoteText" style="width:100%; height:120px; border:1px solid #ddd; border-radius:8px; padding:10px; margin-bottom:15px; font-family:inherit; resize:none;"></textarea>
+                            <input type="hidden" id="editNoteId">
+                            <div style="display:flex; justify-content:flex-end; gap:10px">
+                                <button onclick="closeEditNoteModal()" style="background:#eee; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Отмена</button>
+                                <button onclick="updateNote()" style="background:var(--orange-accent); color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700;">Сохранить изменения</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="modalDeleteNote" class="modal-note-overlay">
+                        <div class="modal-note-box" style="width:350px; text-align:center;">
+                            <h3 style="margin-top:0">Удалить заметку?</h3>
+                            <p style="color:#666; font-size:14px;">Это действие нельзя будет отменить.</p>
+                            <input type="hidden" id="deleteNoteId">
+                            <div style="display:flex; justify-content:center; gap:10px; margin-top:20px">
+                                <button onclick="closeDeleteNoteModal()" style="background:#eee; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Отмена</button>
+                                <button onclick="deleteNote()" style="background:#e74c3c; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:700;">Удалить</button>
+                            </div>
+                        </div>
                     </div>
                     <div id="result" class="tab-content">
                         <div class="info-box">Статус: <%= currentCall.status || 'без статуса' %></div>
@@ -274,11 +349,48 @@
         function switchTab(evt, name) { 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(name).classList.add('active'); evt.currentTarget.classList.add('active'); 
+            document.getElementById(name).classList.add('active'); 
+            if (evt) evt.currentTarget.classList.add('active');
+            else document.querySelector(`[onclick*="'${name}'"]`).classList.add('active');
+            const url = new URL(window.location);
+            url.searchParams.set('tab', name);
+            window.history.replaceState({}, '', url);
         }
         async function saveNote() {
-            const res = await fetch('<%= baseUrl %>/api/notes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ callId: '<%= currentCall.id %>', content: document.getElementById('noteInput').value }) });
-            if (res.ok) alert('Сохранено');
+            const content = document.getElementById('noteInput').value;
+            if(!content.trim()) return;
+            const res = await fetch('<%= baseUrl %>/api/notes', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ callId: '<%= currentCall.id %>', content }) 
+            });
+            if (res.ok) window.location.reload();
+        }
+        function openEditNoteModal(id, content) {
+            document.getElementById('editNoteId').value = id;
+            document.getElementById('editNoteText').value = content;
+            document.getElementById('modalEditNote').style.display = 'flex';
+        }
+        function closeEditNoteModal() { document.getElementById('modalEditNote').style.display = 'none'; }
+        async function updateNote() {
+            const id = document.getElementById('editNoteId').value;
+            const content = document.getElementById('editNoteText').value;
+            const res = await fetch(`<%= baseUrl %>/api/notes/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content })
+            });
+            if (res.ok) window.location.reload();
+        }
+        function confirmDeleteNote(id) {
+            document.getElementById('deleteNoteId').value = id;
+            document.getElementById('modalDeleteNote').style.display = 'flex';
+        }
+        function closeDeleteNoteModal() { document.getElementById('modalDeleteNote').style.display = 'none'; }
+        async function deleteNote() {
+            const id = document.getElementById('deleteNoteId').value;
+            const res = await fetch(`<%= baseUrl %>/api/notes/${id}`, { method: 'DELETE' });
+            if (res.ok) window.location.reload();
         }
         function openResultModal() { document.getElementById('modalResult').style.display='flex'; }
         function closeResultModal() { document.getElementById('modalResult').style.display='none'; }
@@ -289,6 +401,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             const cur = document.querySelector('.dialog-box.current');
             if (cur) cur.scrollIntoView({ behavior: 'auto', block: 'center' });
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = urlParams.get('tab') || 'brief';
+            switchTab(null, activeTab);
         });
         function toggleDate(el, dateStr) {
             const stack = el.nextElementSibling;
@@ -299,7 +414,8 @@
                 const u = new URL(window.location.href);
                 const s = u.searchParams.get('status') || 'all';
                 const a = u.searchParams.get('activity') || 'все звонки';
-                window.location.href = '<%= baseUrl %>/details/' + dateStr + '_redir?date=' + dateStr + '&status=' + s + '&activity=' + a;
+                const t = u.searchParams.get('tab') || 'brief';
+                window.location.href = '<%= baseUrl %>/details/' + dateStr + '_redir?date=' + dateStr + '&status=' + s + '&activity=' + a + '&tab=' + t;
             }
         }
         function toggleActivityDropdown(e) { e.stopPropagation();
@@ -307,10 +423,10 @@
         window.onclick = (e) => { if (!e.target.matches('.activity-pill-dropdown')) { const d = document.getElementById("activityDropdown");
         if(d) d.classList.remove('show'); } };
         function filterByStatus(s) { 
-            const u = new URL(window.location); 
+            const u = new URL(window.location);
             if (u.searchParams.get('status') === s) u.searchParams.delete('status'); 
             else u.searchParams.set('status', s);
-            window.location.href = u.href; 
+            window.location.href = u.href;
         }
         function filterByActivity(a) { const u = new URL(window.location);
         if (a === 'все звонки') u.searchParams.delete('activity'); else u.searchParams.set('activity', a); window.location.href = u.href; }

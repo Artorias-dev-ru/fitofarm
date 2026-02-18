@@ -77,9 +77,14 @@ async function runSync() {
                 }
                 const metrics = jsonData.metrics || {};
                 const rudeness = metrics.rudeness || 0;
+                const politeness = metrics.politeness || 0;
+                const friendliness = metrics.friendliness || 0;
+                const manipulativeness = metrics.manipulativeness || 0;
                 const said_hello = metrics.said_hello !== undefined ? metrics.said_hello : true;
-                const hasError = (rudeness > 0.5 || said_hello === false);
+                
+                const hasError = (rudeness > 0.5 || said_hello === false || politeness < 0.5 || friendliness < 0.5 || manipulativeness > 0.5);
                 const initialStatus = hasError ? "не отработано" : "без статуса";
+                
                 await Call.create({
                     uid: uniqueId,
                     date: dateFolder.name,
@@ -93,10 +98,10 @@ async function runSync() {
                     summary: metrics.summary || jsonData.summary || "",
                     audioUrl: audioPathRemote, 
                     folderPath: dPathRemote,
-                    politeness: metrics.politeness || 0,
-                    friendliness: metrics.friendliness || 0,
+                    politeness: politeness,
+                    friendliness: friendliness,
                     rudeness: rudeness,
-                    manipulativeness: metrics.manipulativeness || 0,
+                    manipulativeness: manipulativeness,
                     said_hello: said_hello
                 });
             }
