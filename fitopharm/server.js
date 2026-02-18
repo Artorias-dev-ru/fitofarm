@@ -205,13 +205,13 @@ app.post(BASE_URL + '/api/note/delete', checkAuth, async (req, res) => {
 });
 
 app.get(BASE_URL + '/api/audio/:id', checkAuth, async (req, res) => {
-    const dialogId = req.params.id;
     const client = new ftp.Client();
-    client.ftp.ipFamily = 4;
     try {
-        const dialog = await Dialog.findByPk(dialogId);
+        const dialog = await Dialog.findByPk(req.params.id);
         if (!dialog || !dialog.audioUrl) return res.status(404).send('Not found');
+
         const remoteFilePath = path.posix.join(dialog.folderPath, dialog.audioUrl);
+        
         await client.access({
             host: process.env.FTP_HOST,
             port: parseInt(process.env.FTP_PORT),
@@ -219,16 +219,12 @@ app.get(BASE_URL + '/api/audio/:id', checkAuth, async (req, res) => {
             password: process.env.FTP_PASS,
             secure: false
         });
-        const size = await client.size(remoteFilePath);
-        res.setHeader('Content-Type', 'audio/mpeg');
-        res.setHeader('Content-Length', size);
-        res.setHeader('Accept-Ranges', 'bytes');
+        
+        res.setHeader('Content-Type', 'audio/wav');
         await client.downloadTo(res, remoteFilePath);
     } catch (err) {
-        if (!res.headersSent) res.status(500).send('Stream error');
-    } finally {
-        client.close();
-    }
+        if (!res.headersSent) res.status(500).send('FTP Error');
+    } finally { client.close(); }
 });
 
 app.post(BASE_URL + '/api/save-note', checkAuth, async (req, res) => {
