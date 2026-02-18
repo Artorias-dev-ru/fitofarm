@@ -23,6 +23,7 @@ const Record = sequelize.define('Record', {
 });
 
 const Dialog = sequelize.define('Dialog', {
+    uid: { type: DataTypes.STRING, unique: true },
     title: DataTypes.STRING,
     status: DataTypes.STRING,
     text: DataTypes.TEXT,
@@ -62,7 +63,7 @@ Note.belongsTo(Dialog);
 
 async function initDB() {
     try {
-        await sequelize.sync();
+        await sequelize.sync({ alter: true });
         
         
         const adminExists = await User.findOne({ where: { username: 'admin' } });

@@ -41,7 +41,7 @@ const User = sequelize.define('User', {
     username: { type: DataTypes.STRING, unique: true },
     password: { type: DataTypes.STRING, allowNull: false },
     role: { type: DataTypes.STRING, defaultValue: 'admin' },
-    avatar: { type: DataTypes.STRING, defaultValue: '/public/avatar1.png' }
+    avatar: { type: DataTypes.STRING, defaultValue: '/callcenter/public/avatar1.png' }
 });
 
 const Setting = sequelize.define('Setting', {
@@ -68,11 +68,13 @@ async function initDB() {
                 email: 'admin@fitofarm.ru',
                 password: 'admin', 
                 role: 'superadmin',
-                avatar: '/public/avatar1.png'
+                avatar: '/callcenter/public/avatar1.png'
             });
         }
-        await Setting.findOrCreate({ where: { key: 'threshold_low' }, defaults: { value: '20' } });
-        await Setting.findOrCreate({ where: { key: 'threshold_high' }, defaults: { value: '50' } });
+        if (typeof Setting !== 'undefined') {
+            await Setting.findOrCreate({ where: { key: 'threshold_low' }, defaults: { value: '20' } });
+            await Setting.findOrCreate({ where: { key: 'threshold_high' }, defaults: { value: '50' } });
+        }
     } catch (err) { console.error("DB Error:", err); }
 }
 

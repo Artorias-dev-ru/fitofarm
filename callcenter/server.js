@@ -79,26 +79,48 @@ app.get(BASE_URL + '/', checkAuth, async (req, res) => {
     const { period, startDate, endDate, view } = req.query;
     try {
         const dateWhere = getDateWhere(period || 'month', startDate, endDate);
-        const calls = await Call.findAll({ 
+
+        const summaryStats = await Call.findOne({
+            where: { date: dateWhere },
+            attributes: [
+                [sequelize.fn('COUNT', sequelize.col('id')), 'total'],
+                [sequelize.literal("SUM(CASE WHEN rudeness > 0.5 THEN 1 ELSE 0 END)"), 'rudeness'],
+                [sequelize.literal("SUM(CASE WHEN said_hello = 0 THEN 1 ELSE 0 END)"), 'hello'],
+                [sequelize.literal("SUM(CASE WHEN politeness < 0.5 THEN 1 ELSE 0 END)"), 'politeness'],
+                [sequelize.literal("SUM(CASE WHEN friendliness < 0.5 THEN 1 ELSE 0 END)"), 'friendliness'],
+                [sequelize.literal("SUM(CASE WHEN manipulativeness > 0.5 THEN 1 ELSE 0 END)"), 'manipulation'],
+                [sequelize.literal("SUM(CASE WHEN (rudeness > 0.5 OR said_hello = 0 OR politeness < 0.5 OR friendliness < 0.5 OR manipulativeness > 0.5) THEN 1 ELSE 0 END)"), 'violations']
+            ],
+            raw: true
+        });
+
+        const totalCount = parseInt(summaryStats.total) || 0;
+        const stats = {
+            total: totalCount,
+            rudeness: parseInt(summaryStats.rudeness) || 0,
+            hello: parseInt(summaryStats.hello) || 0,
+            politeness: parseInt(summaryStats.politeness) || 0,
+            friendliness: parseInt(summaryStats.friendliness) || 0,
+            manipulation: parseInt(summaryStats.manipulation) || 0,
+            violations: parseInt(summaryStats.violations) || 0
+        };
+
+        const divisor = totalCount || 1;
+        stats.p_violations = (stats.violations / divisor) * 100;
+        stats.p_rudeness = (stats.rudeness / divisor) * 100;
+        stats.p_hello = (stats.hello / divisor) * 100;
+        stats.p_politeness = (stats.politeness / divisor) * 100;
+        stats.p_friendliness = (stats.friendliness / divisor) * 100;
+        stats.p_manipulation = (stats.manipulation / divisor) * 100;
+
+        const displayCalls = await Call.findAll({ 
             where: { date: dateWhere },
             order: [['date', 'DESC'], ['time', 'DESC']],
-            limit: 500
+            limit: 500 
         });
-        
-        const totalCount = calls.length || 1;
-        const aggressionCount = calls.filter(c => c.rudeness > 0.5).length;
-        const noHelloCount = calls.filter(c => !c.said_hello).length;
-        const politenessCount = calls.filter(c => c.politeness < 0.5).length;
-        const friendlinessCount = calls.filter(c => c.friendliness < 0.5).length;
-        const manipulativenessCount = calls.filter(c => c.manipulativeness > 0.5).length;
-
-        const totalViolationsCount = calls.filter(c => 
-            c.rudeness > 0.5 || !c.said_hello || c.politeness < 0.5 || c.friendliness < 0.5 || c.manipulativeness > 0.5
-        ).length;
 
         let notesDashWhere = {};
         if (req.user.role !== 'superadmin') notesDashWhere.UserId = req.user.id;
-
         const latestNotes = await Note.findAll({
             where: notesDashWhere,
             include: [{ model: Call }],
@@ -111,7 +133,7 @@ app.get(BASE_URL + '/', checkAuth, async (req, res) => {
             attributes: [
                 'date',
                 [sequelize.fn('COUNT', sequelize.col('id')), 'total_calls'],
-                [sequelize.literal("SUM(CASE WHEN said_hello = 0 OR rudeness > 0.5 OR politeness < 0.5 OR friendliness < 0.5 OR manipulativeness > 0.5 THEN 1 ELSE 0 END)"), 'violations'],
+                [sequelize.literal("SUM(CASE WHEN (said_hello = 0 OR rudeness > 0.5 OR politeness < 0.5 OR friendliness < 0.5 OR manipulativeness > 0.5) THEN 1 ELSE 0 END)"), 'violations'],
                 [sequelize.literal("SUM(CASE WHEN said_hello = 0 THEN 1 ELSE 0 END)"), 'no_hello'],
                 [sequelize.literal("SUM(CASE WHEN rudeness > 0.5 THEN 1 ELSE 0 END)"), 'aggression'],
                 [sequelize.literal("SUM(CASE WHEN politeness < 0.5 THEN 1 ELSE 0 END)"), 'no_politeness'],
@@ -136,7 +158,7 @@ app.get(BASE_URL + '/', checkAuth, async (req, res) => {
         });
 
         const groupedByDate = {};
-        calls.forEach(c => {
+        displayCalls.forEach(c => {
             if (!groupedByDate[c.date]) groupedByDate[c.date] = { date: c.date, count: 0, activities: new Set(), firstId: c.id };
             groupedByDate[c.date].count++;
             if (c.rudeness > 0.5) groupedByDate[c.date].activities.add('агрессия');
@@ -146,30 +168,20 @@ app.get(BASE_URL + '/', checkAuth, async (req, res) => {
             if (c.manipulativeness > 0.5) groupedByDate[c.date].activities.add('манипуляция');
         });
 
-        const listData = Object.values(groupedByDate).sort((a, b) => new Date(b.date) - new Date(a.date));
         const settings = await Setting.findAll();
         const config = {};
         settings.forEach(s => config[s.key] = parseInt(s.value));
 
         res.render('dashboard', {
-            stats: { 
-                total: calls.length, 
-                violations: totalViolationsCount, 
-                rudeness: aggressionCount, 
-                hello: noHelloCount,
-                politeness: politenessCount,
-                friendliness: friendlinessCount,
-                manipulation: manipulativenessCount,
-                p_violations: (totalViolationsCount/totalCount)*100, 
-                p_rudeness: (aggressionCount/totalCount)*100, 
-                p_hello: (noHelloCount/totalCount)*100,
-                p_politeness: (politenessCount/totalCount)*100,
-                p_friendliness: (friendlinessCount/totalCount)*100,
-                p_manipulation: (manipulativenessCount/totalCount)*100
-            },
+            stats,
             chart: { labels: JSON.stringify(chartLabels), datasets: JSON.stringify(series) },
-            activePeriod: period || 'month', currentView: view || 'analytics', currentRange: startDate && endDate ? `${startDate} to ${endDate}` : '', 
-            listData, moment, config, latestNotes 
+            activePeriod: period || 'month', 
+            currentView: view || 'analytics', 
+            currentRange: startDate && endDate ? `${startDate} to ${endDate}` : '', 
+            listData: Object.values(groupedByDate).sort((a, b) => new Date(b.date) - new Date(a.date)), 
+            moment, 
+            config, 
+            latestNotes 
         });
     } catch (err) { res.status(500).send(err.message); }
 });

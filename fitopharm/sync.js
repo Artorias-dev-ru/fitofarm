@@ -10,121 +10,63 @@ function getSyncStatus() {
 }
 
 async function runSync() {
-    if (isSyncing) {
-        console.log("Sync is already running.");
-        return;
-    }
-
+    if (isSyncing) return;
     isSyncing = true;
-    const client = new ftp.Client();
-    client.ftp.verbose = false;
-
+    const client = new ftp.Client(0); 
+    client.ftp.ipFamily = 4; client.ftp.verbose = false; client.ftp.timeout = 120000;
     try {
-        console.log("Connecting to FTP...");
-        
-        await client.access({
-            host: process.env.FTP_HOST,
-            port: parseInt(process.env.FTP_PORT),
-            user: process.env.FTP_USER,
-            password: process.env.FTP_PASS,
-            secure: false
-        });
-
-        const remoteRoot = process.env.FTP_ROOT_FITO || "/Developers/results-fitofarm/";
-
-        const [record] = await Record.findOrCreate({
-            where: { address: "Владимирская 114" },
-            defaults: { city: "Анапа" }
-        });
-
-        const dateFolders = await client.list(remoteRoot);
-
+        const { Dialog } = require("./db");
+        await client.access({ host: process.env.FTP_HOST, port: parseInt(process.env.FTP_PORT), user: process.env.FTP_USER, password: process.env.FTP_PASS, secure: false });
+        const remoteResultRoot = process.env.FTP_ROOT_CALLS || "/Developers/results-calls/";
+        const remoteAudioRoot = process.env.FTP_ROOT_AUDIO || "/Developers/Calls/";
+        const dateFolders = await client.list(remoteResultRoot);
         for (const dateFolder of dateFolders) {
             if (!dateFolder.isDirectory) continue;
-            
-            const datePath = path.posix.join(remoteRoot, dateFolder.name);
-            const outFolders = await client.list(datePath);
-
-            for (const outFolder of outFolders) {
-                if (!outFolder.isDirectory) continue;
-
-                const outPath = path.posix.join(datePath, outFolder.name);
-                const dialogFolders = await client.list(outPath);
-
-                for (const dFolder of dialogFolders) {
-                    if (!dFolder.isDirectory) continue;
-                    
-                    const uniqueKey = path.posix.join(outPath, dFolder.name);
-                    
-                    const exists = await Dialog.findOne({ where: { folderPath: uniqueKey } });
-                    if (exists) continue;
-
-                    const dPathRemote = path.posix.join(outPath, dFolder.name);
-                    
-                    const filesInDialog = await client.list(dPathRemote);
-                    const audioFile = filesInDialog.find(f => f.name.endsWith('.mp3') || f.name.endsWith('.wav'));
-                    const audioFileName = audioFile ? audioFile.name : "";
-
-                    const txtPathRemote = path.posix.join(dPathRemote, "dialog.txt");
-                    const jsonPathRemote = path.posix.join(dPathRemote, "metadata.json");
-
-                    let textContent = "";
-                    try {
-                        const chunks = [];
-                        const writable = new Writable({
-                            write(chunk, encoding, callback) { chunks.push(chunk); callback(); }
-                        });
-                        await client.downloadTo(writable, txtPathRemote);
-                        textContent = Buffer.concat(chunks).toString('utf8');
-                    } catch (e) {}
-
-                    let jsonData = {};
-                    try {
-                         const chunks = [];
-                         const writable = new Writable({
-                            write(chunk, encoding, callback) { chunks.push(chunk); callback(); }
-                        });
-                        await client.downloadTo(writable, jsonPathRemote);
-                        const jsonStr = Buffer.concat(chunks).toString('utf8');
-                        jsonData = JSON.parse(jsonStr);
-                    } catch (e) {}
-
-                    let status = "unknown";
-                    if (jsonData.metrics && typeof jsonData.metrics.sale_occurred !== 'undefined') {
-                        if (jsonData.metrics.sale_occurred === true) status = "sales";
-                        else if (jsonData.metrics.sale_occurred === false) status = "refusals";
-                    }
-                    
-                    let summary = jsonData.metrics?.summary || jsonData.summary || "";
-                    
-                    let startTime = "00:00";
-                    const timeMatch = outFolder.name.match(/(\d{2})-(\d{2})-(\d{2})$/);
-                    if (timeMatch) startTime = `${timeMatch[1]}:${timeMatch[2]}`;
-
-                    await Dialog.create({
-                        title: dFolder.name,
-                        status: status,
-                        text: textContent,
-                        summary: summary,
-                        startTime: startTime,
-                        date: dateFolder.name, 
-                        RecordId: record.id,
-                        note: "",
-                        audioUrl: audioFileName, 
-                        folderPath: uniqueKey,
-                        number: 0 
-                    });
-                    
-                    console.log(`Synced: ${uniqueKey}`);
+            let normalizedDate = dateFolder.name;
+            const dParts = normalizedDate.split('.');
+            if (dParts.length === 3) normalizedDate = `20${dParts[2]}-${dParts[1]}-${dParts[0]}`;
+            const datePath = path.posix.join(remoteResultRoot, dateFolder.name);
+            const callFolders = await client.list(datePath);
+            for (const callFolder of callFolders) {
+                if (!callFolder.isDirectory) continue;
+                const uniqueId = callFolder.name; 
+                const exists = await Dialog.findOne({ where: { uid: uniqueId } });
+                if (exists) continue;
+                const dPathRemote = path.posix.join(datePath, callFolder.name);
+                let textContent = "";
+                try {
+                    const chunks = [];
+                    await client.downloadTo(new Writable({ write(chunk, enc, cb) { chunks.push(chunk); cb(); } }), path.posix.join(dPathRemote, "dialog.txt"));
+                    textContent = Buffer.concat(chunks).toString('utf8');
+                } catch (e) {}
+                let jsonData = {};
+                try {
+                    const chunks = [];
+                    await client.downloadTo(new Writable({ write(chunk, enc, cb) { chunks.push(chunk); cb(); } }), path.posix.join(dPathRemote, "metadata.json"));
+                    jsonData = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+                } catch (e) {}
+                let phoneNumber = "";
+                const parts = uniqueId.split('-');
+                if (parts[0] === 'out') phoneNumber = parts[1];
+                else if (parts[0] === 'in') phoneNumber = (parts[1] === 's') ? parts[2] : parts[1];
+                else if (parts[0] === 'internal') phoneNumber = parts[2];
+                let callTime = "00:00:00";
+                const timeMatch = uniqueId.match(/(\d{6})-(\d{6})/); 
+                if (timeMatch && timeMatch[2]) {
+                    const t = timeMatch[2];
+                    callTime = `${t.substring(0,2)}:${t.substring(2,4)}:${t.substring(4,6)}`;
                 }
+                await Dialog.create({
+                    uid: uniqueId, title: `Диалог ${phoneNumber}`, date: normalizedDate,
+                    startTime: callTime, number: phoneNumber, status: "unknown", 
+                    text: textContent, transcribedText: jsonData.transcribed_text || "",
+                    summary: (jsonData.metrics && jsonData.metrics.summary) || jsonData.summary || "",
+                    audioUrl: path.posix.join(remoteAudioRoot, dateFolder.name, uniqueId + ".wav"), 
+                    folderPath: dPathRemote
+                });
             }
         }
-    } catch (err) {
-        console.error("Sync Error:", err);
-    } finally {
-        isSyncing = false;
-        client.close();
-    }
+    } catch (err) { console.error("Sync Error:", err); } finally { isSyncing = false; client.close(); }
 }
 
 module.exports = { runSync, getSyncStatus };
