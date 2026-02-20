@@ -9,6 +9,12 @@ function getSyncStatus() {
 async function runSync() {
     if (isSyncing) return;
     isSyncing = true;
+
+    const { Setting, Call } = require("./db");
+    try {
+        await Setting.upsert({ key: 'last_sync_finish', value: new Date().toISOString() });
+    } catch (e) { console.error("Error saving sync time:", e); }
+
     const client = new ftp.Client(0); 
     client.ftp.ipFamily = 4; 
     client.ftp.verbose = false;
@@ -76,6 +82,11 @@ async function runSync() {
                 });
             }
         }
-    } catch (err) { console.error("Sync Error:", err); } finally { isSyncing = false; client.close(); }
+    } catch (err) {
+        console.error("Sync Error:", err);
+    } finally {
+        isSyncing = false;
+        client.close();
+    }
 }
 module.exports = { runSync, getSyncStatus };

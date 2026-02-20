@@ -1,9 +1,13 @@
 const { Sequelize, DataTypes, Op } = require('sequelize');
 const path = require('path');
 const fs = require('fs');
+
 const DB_FILE = process.env.DB_FILE || 'callcenter.sqlite';
 const DB_STORAGE_DIR = path.join(__dirname, 'db_store');
-if (!fs.existsSync(DB_STORAGE_DIR)) fs.mkdirSync(DB_STORAGE_DIR, { recursive: true });
+
+if (!fs.existsSync(DB_STORAGE_DIR)) {
+    fs.mkdirSync(DB_STORAGE_DIR, { recursive: true });
+}
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
@@ -11,6 +15,7 @@ const sequelize = new Sequelize({
     logging: false,
     retry: { match: [/SQLITE_BUSY/], max: 5 }
 });
+
 
 const Call = sequelize.define('Call', {
     uid: { type: DataTypes.STRING, unique: true },
@@ -44,6 +49,10 @@ const User = sequelize.define('User', {
     avatar: { type: DataTypes.STRING, defaultValue: '/callcenter/public/avatar1.png' }
 });
 
+const ReadStatus = sequelize.define('ReadStatus', {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true }
+});
+
 const Setting = sequelize.define('Setting', {
     key: { type: DataTypes.STRING, unique: true },
     value: { type: DataTypes.STRING }
@@ -53,9 +62,18 @@ const Note = sequelize.define('Note', {
     content: { type: DataTypes.TEXT, allowNull: false } 
 });
 
-User.hasMany(Note); Note.belongsTo(User);
-Call.hasMany(Note); Note.belongsTo(Call);
+
+User.belongsToMany(Call, { through: ReadStatus });
+Call.belongsToMany(User, { through: ReadStatus });
+
+User.hasMany(Note); 
+Note.belongsTo(User);
+
+Call.hasMany(Note); 
+Note.belongsTo(Call);
+
 Call.belongsTo(User, { as: 'Processor', foreignKey: 'processedById' });
+
 
 async function initDB() {
     try {
@@ -71,11 +89,11 @@ async function initDB() {
                 avatar: '/callcenter/public/avatar1.png'
             });
         }
-        if (typeof Setting !== 'undefined') {
-            await Setting.findOrCreate({ where: { key: 'threshold_low' }, defaults: { value: '20' } });
-            await Setting.findOrCreate({ where: { key: 'threshold_high' }, defaults: { value: '50' } });
-        }
-    } catch (err) { console.error("DB Error:", err); }
+        await Setting.findOrCreate({ where: { key: 'threshold_low' }, defaults: { value: '20' } });
+        await Setting.findOrCreate({ where: { key: 'threshold_high' }, defaults: { value: '50' } });
+    } catch (err) { 
+        console.error("DB Error:", err); 
+    }
 }
 
-module.exports = { Call, User, Note, Setting, Op, sequelize, initDB };
+module.exports = { Call, User, Note, Setting, Op, sequelize, initDB, ReadStatus };

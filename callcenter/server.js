@@ -7,7 +7,7 @@ const multer = require('multer');
 const moment = require('moment');
 const cron = require('node-cron');
 const ftp = require("basic-ftp");
-const { Call, User, Note, Setting, Op, sequelize, initDB } = require('./db');
+const { Call, User, Note, Setting, Op, sequelize, initDB, ReadStatus } = require('./db');
 const { runSync, getSyncStatus } = require('./sync');
 
 const app = express();
@@ -78,7 +78,25 @@ function getDateWhere(period, startDate, endDate) {
 app.get(BASE_URL + '/', checkAuth, async (req, res) => {
     const { period, startDate, endDate, view } = req.query;
     try {
+        const currentView = view || 'analytics';
         const dateWhere = getDateWhere(period || 'month', startDate, endDate);
+
+        const lastSync = await Setting.findOne({ where: { key: 'last_sync_finish' } });
+        const syncTime = lastSync ? lastSync.value : moment().subtract(1, 'day').toISOString();
+
+        const newStatsRaw = await Call.findOne({
+            where: { createdAt: { [Op.gte]: syncTime } },
+            attributes: [
+                [sequelize.fn('COUNT', sequelize.col('id')), 'total'],
+                [sequelize.literal("SUM(CASE WHEN rudeness > 0.5 THEN 1 ELSE 0 END)"), 'rudeness'],
+                [sequelize.literal("SUM(CASE WHEN said_hello = 0 THEN 1 ELSE 0 END)"), 'hello'],
+                [sequelize.literal("SUM(CASE WHEN politeness < 0.5 THEN 1 ELSE 0 END)"), 'politeness'],
+                [sequelize.literal("SUM(CASE WHEN friendliness < 0.5 THEN 1 ELSE 0 END)"), 'friendliness'],
+                [sequelize.literal("SUM(CASE WHEN manipulativeness > 0.5 THEN 1 ELSE 0 END)"), 'manipulation'],
+                [sequelize.literal("SUM(CASE WHEN (rudeness > 0.5 OR said_hello = 0 OR politeness < 0.5 OR friendliness < 0.5 OR manipulativeness > 0.5) THEN 1 ELSE 0 END)"), 'violations']
+            ],
+            raw: true
+        });
 
         const summaryStats = await Call.findOne({
             where: { date: dateWhere },
@@ -102,7 +120,16 @@ app.get(BASE_URL + '/', checkAuth, async (req, res) => {
             politeness: parseInt(summaryStats.politeness) || 0,
             friendliness: parseInt(summaryStats.friendliness) || 0,
             manipulation: parseInt(summaryStats.manipulation) || 0,
-            violations: parseInt(summaryStats.violations) || 0
+            violations: parseInt(summaryStats.violations) || 0,
+            new: {
+                total: parseInt(newStatsRaw.total) || 0,
+                rudeness: parseInt(newStatsRaw.rudeness) || 0,
+                hello: parseInt(newStatsRaw.hello) || 0,
+                politeness: parseInt(newStatsRaw.politeness) || 0,
+                friendliness: parseInt(newStatsRaw.friendliness) || 0,
+                manipulation: parseInt(newStatsRaw.manipulation) || 0,
+                violations: parseInt(newStatsRaw.violations) || 0
+            }
         };
 
         const divisor = totalCount || 1;
@@ -113,10 +140,27 @@ app.get(BASE_URL + '/', checkAuth, async (req, res) => {
         stats.p_friendliness = (stats.friendliness / divisor) * 100;
         stats.p_manipulation = (stats.manipulation / divisor) * 100;
 
-        const displayCalls = await Call.findAll({ 
+        const allCalls = await Call.findAll({ 
             where: { date: dateWhere },
-            order: [['date', 'DESC'], ['time', 'DESC']],
-            limit: 500 
+            order: [['date', 'DESC'], ['time', 'DESC']]
+        });
+
+        const groupedByDate = {};
+        allCalls.forEach(c => {
+            if (!groupedByDate[c.date]) {
+                groupedByDate[c.date] = { 
+                    date: c.date, 
+                    count: 0, 
+                    activities: new Set(), 
+                    firstId: c.id 
+                };
+            }
+            groupedByDate[c.date].count++;
+            if (c.rudeness > 0.5) groupedByDate[c.date].activities.add('агрессия');
+            if (c.said_hello === false || c.said_hello === 0) groupedByDate[c.date].activities.add('приветствие');
+            if (c.politeness < 0.5) groupedByDate[c.date].activities.add('вежливость');
+            if (c.friendliness < 0.5) groupedByDate[c.date].activities.add('дружелюбие');
+            if (c.manipulativeness > 0.5) groupedByDate[c.date].activities.add('манипуляция');
         });
 
         let notesDashWhere = {};
@@ -157,61 +201,129 @@ app.get(BASE_URL + '/', checkAuth, async (req, res) => {
             series.manipulation.push(item.getDataValue('manipulation') || 0);
         });
 
-        const groupedByDate = {};
-        displayCalls.forEach(c => {
-            if (!groupedByDate[c.date]) groupedByDate[c.date] = { date: c.date, count: 0, activities: new Set(), firstId: c.id };
-            groupedByDate[c.date].count++;
-            if (c.rudeness > 0.5) groupedByDate[c.date].activities.add('агрессия');
-            if (!c.said_hello) groupedByDate[c.date].activities.add('приветствие');
-            if (c.politeness < 0.5) groupedByDate[c.date].activities.add('вежливость');
-            if (c.friendliness < 0.5) groupedByDate[c.date].activities.add('дружелюбие');
-            if (c.manipulativeness > 0.5) groupedByDate[c.date].activities.add('манипуляция');
-        });
-
         const settings = await Setting.findAll();
         const config = {};
         settings.forEach(s => config[s.key] = parseInt(s.value));
+
+        let calendarData = { cells: [], days: ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'] };
+        if (currentView === 'calendar') {
+            const calStart = moment().subtract(29, 'days').startOf('day');
+            const calEnd = moment().endOf('day');
+            const calCalls = await Call.findAll({
+                where: { date: { [Op.between]: [calStart.format('YYYY-MM-DD'), calEnd.format('YYYY-MM-DD')] } },
+                attributes: ['date', 'said_hello', 'rudeness', 'politeness', 'friendliness', 'manipulativeness']
+            });
+            const calGrouped = {};
+            calCalls.forEach(c => {
+                if (!calGrouped[c.date]) calGrouped[c.date] = new Set();
+                if (c.rudeness > 0.5) calGrouped[c.date].add('агрессия');
+                if (c.said_hello === 0 || c.said_hello === false) calGrouped[c.date].add('приветствие');
+                if (c.politeness < 0.5) calGrouped[c.date].add('вежливость');
+                if (c.friendliness < 0.5) calGrouped[c.date].add('дружелюбие');
+                if (c.manipulativeness > 0.5) calGrouped[c.date].add('манипуляция');
+            });
+            let iterDate = moment(calStart).startOf('isoWeek');
+            const gridEnd = moment(calEnd).endOf('isoWeek');
+            while (iterDate.isBefore(gridEnd)) {
+                const dStr = iterDate.format('YYYY-MM-DD');
+                calendarData.cells.push({
+                    date: dStr,
+                    dayNum: iterDate.date(),
+                    inPeriod: iterDate.isBetween(calStart, calEnd, 'day', '[]'),
+                    activities: Array.from(calGrouped[dStr] || [])
+                });
+                iterDate.add(1, 'day');
+            }
+        }
 
         res.render('dashboard', {
             stats,
             chart: { labels: JSON.stringify(chartLabels), datasets: JSON.stringify(series) },
             activePeriod: period || 'month', 
-            currentView: view || 'analytics', 
+            currentView, 
             currentRange: startDate && endDate ? `${startDate} to ${endDate}` : '', 
             listData: Object.values(groupedByDate).sort((a, b) => new Date(b.date) - new Date(a.date)), 
-            moment, 
-            config, 
-            latestNotes 
+            calendarData,
+            moment, config, latestNotes 
         });
-    } catch (err) { res.status(500).send(err.message); }
+    } catch (err) { 
+        console.error(err);
+        res.status(500).send(err.message); 
+    }
 });
 
 app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
     const { status, activity, tab } = req.query;
+    const userId = req.user.id;
+
     try {
-        let currentCall;
         if (req.params.id.endsWith('_redir')) {
             const targetDate = req.query.date;
             let redirWhere = { date: targetDate };
-            if (status && status !== 'all') redirWhere.status = status;
-            if (activity === 'грубая ошибка') redirWhere[Op.or] = [{ rudeness: { [Op.gt]: 0.5 } }, { said_hello: false }, { politeness: { [Op.lt]: 0.5 } }, { friendliness: { [Op.lt]: 0.5 } }, { manipulativeness: { [Op.gt]: 0.5 } }];
-            else if (activity === 'агрессия') redirWhere.rudeness = { [Op.gt]: 0.5 };
-            else if (activity === 'отсутствие приветствия') redirWhere.said_hello = false;
-            else if (activity === 'вежливость') redirWhere.politeness = { [Op.lt]: 0.5 };
-            else if (activity === 'дружелюбие') redirWhere.friendliness = { [Op.lt]: 0.5 };
-            else if (activity === 'манипуляция') redirWhere.manipulativeness = { [Op.gt]: 0.5 };
 
-            currentCall = await Call.findOne({ where: redirWhere, order: [['time', 'DESC']] });
-            if (!currentCall) currentCall = await Call.findOne({ where: { date: targetDate }, order: [['time', 'DESC']] });
-            if (!currentCall) return res.redirect(BASE_URL + '/');
-            return res.redirect(`${BASE_URL}/details/${currentCall.id}?status=${status || 'all'}&activity=${activity || 'все звонки'}${tab ? '&tab=' + tab : ''}`);
+            if (status && status !== 'all' && status !== 'без статуса') {
+                redirWhere.status = status;
+            } else if (status === 'без статуса') {
+                redirWhere.status = { [Op.or]: [null, 'без статуса', ''] };
+            }
+
+            if (activity === 'грубая ошибка') {
+                redirWhere[Op.or] = [
+                    { rudeness: { [Op.gt]: 0.5 } }, 
+                    { said_hello: false }, 
+                    { politeness: { [Op.lt]: 0.5 } }, 
+                    { friendliness: { [Op.lt]: 0.5 } }, 
+                    { manipulativeness: { [Op.gt]: 0.5 } }
+                ];
+            } else if (activity === 'агрессия') {
+                redirWhere.rudeness = { [Op.gt]: 0.5 };
+            } else if (activity === 'отсутствие приветствия') {
+                redirWhere.said_hello = false;
+            } else if (activity === 'вежливость') {
+                redirWhere.politeness = { [Op.lt]: 0.5 };
+            } else if (activity === 'дружелюбие') {
+                redirWhere.friendliness = { [Op.lt]: 0.5 };
+            } else if (activity === 'манипуляция') {
+                redirWhere.manipulativeness = { [Op.gt]: 0.5 };
+            }
+
+            const redirCall = await Call.findOne({ where: redirWhere, order: [['time', 'DESC']] });
+            
+            if (!redirCall) {
+                const fallbackCall = await Call.findOne({ where: { date: targetDate }, order: [['time', 'DESC']] });
+                if (!fallbackCall) return res.redirect(BASE_URL + '/');
+                return res.redirect(`${BASE_URL}/details/${fallbackCall.id}?status=all&activity=все звонки${tab ? '&tab=' + tab : ''}`);
+            }
+
+            return res.redirect(`${BASE_URL}/details/${redirCall.id}?status=${status || 'all'}&activity=${activity || 'все звонки'}${tab ? '&tab=' + tab : ''}`);
         }
 
-        currentCall = await Call.findByPk(req.params.id, { include: [{ model: User, as: 'Processor' }] });
+        const currentCall = await Call.findByPk(req.params.id, { 
+            include: [{ model: User, as: 'Processor' }] 
+        });
         if (!currentCall) return res.redirect(BASE_URL + '/');
 
+        await ReadStatus.findOrCreate({
+            where: { UserId: userId, CallId: currentCall.id }
+        });
+
+        const readCalls = await ReadStatus.findAll({
+            where: { UserId: userId },
+            attributes: ['CallId'],
+            raw: true
+        });
+        const readIds = readCalls.map(r => r.CallId);
+
         const sidebarDates = await Call.findAll({
-            attributes: ['date', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
+            attributes: [
+                'date',
+                [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+                [sequelize.literal(`(
+                    SELECT COUNT(*) FROM Calls as c2 
+                    WHERE c2.date = Call.date 
+                    AND c2.id NOT IN (SELECT CallId FROM ReadStatuses WHERE UserId = ${userId})
+                )`), 'unreadCount']
+            ],
             group: ['date'],
             order: [['date', 'DESC']],
             limit: 60,
@@ -219,7 +331,11 @@ app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
         });
 
         let dayWhere = { date: currentCall.date };
-        if (status && status !== 'all') dayWhere.status = status;
+        if (status && status !== 'all' && status !== 'без статуса') {
+            dayWhere.status = status;
+        } else if (status === 'без статуса') {
+            dayWhere.status = { [Op.or]: [null, 'без статуса', ''] };
+        }
         
         if (activity === 'грубая ошибка') {
             dayWhere[Op.or] = [
@@ -246,13 +362,8 @@ app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
             order: [['time', 'DESC']]
         });
 
-        let notesWhere = { CallId: currentCall.id };
-        if (req.user.role !== 'superadmin') {
-            notesWhere.UserId = req.user.id;
-        }
-
         const callNotes = await Note.findAll({ 
-            where: notesWhere, 
+            where: { CallId: currentCall.id }, 
             include: [User],
             order: [['createdAt', 'DESC']] 
         });
@@ -261,13 +372,18 @@ app.get(BASE_URL + '/details/:id', checkAuth, async (req, res) => {
             currentCall, 
             sidebarDates, 
             currentDayCalls, 
+            readIds,
             callNotes,
             moment, 
             currentStatusFilter: status || 'all', 
             currentActivityFilter: activity || 'все звонки',
             activeTab: tab || 'brief'
         });
-    } catch (err) { res.status(500).send(err.message); }
+
+    } catch (err) { 
+        console.error("Route Error:", err);
+        res.status(500).send(err.message); 
+    }
 });
 
 app.get(BASE_URL + '/api/audio/:id', checkAuth, async (req, res) => {

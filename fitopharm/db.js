@@ -23,6 +23,7 @@ const Record = sequelize.define('Record', {
 });
 
 const Dialog = sequelize.define('Dialog', {
+    uid: { type: DataTypes.STRING, unique: true },
     title: DataTypes.STRING,
     status: DataTypes.STRING,
     text: DataTypes.TEXT,
@@ -30,7 +31,7 @@ const Dialog = sequelize.define('Dialog', {
     startTime: DataTypes.STRING,
     date: { type: DataTypes.DATEONLY, allowNull: false },
     endTime: DataTypes.STRING,
-    number: { type: DataTypes.INTEGER, allowNull: false },
+    number: { type: DataTypes.STRING, allowNull: false },
     note: { type: DataTypes.TEXT },
     audioUrl: { type: DataTypes.STRING },
     folderPath: { type: DataTypes.STRING, unique: true },
@@ -64,19 +65,26 @@ async function initDB() {
     try {
         await sequelize.sync();
         
-        
+        await Record.findOrCreate({ 
+            where: { address: 'Владимирская 114' }, 
+            defaults: { city: 'Анапа' } 
+        });
+        await Record.findOrCreate({ 
+            where: { address: 'Ленина 22' }, 
+            defaults: { city: 'Анапа' } 
+        });
+
         const adminExists = await User.findOne({ where: { username: 'admin' } });
         if (!adminExists) {
-            await User.create({
-                fullName: 'Администратор',
-                username: 'admin',
+            await User.create({ 
+                fullName: 'Администратор', 
+                username: 'admin', 
+                email: 'admin@fitofarm.ru',
                 password: 'admin', 
-                role: 'superadmin'
+                role: 'superadmin' 
             });
         }
-    } catch (globalErr) {
-        console.error("DB Init Error:", globalErr);
-    }
+    } catch (err) { console.error("DB Error:", err); }
 }
 
 

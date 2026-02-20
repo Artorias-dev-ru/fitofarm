@@ -4,174 +4,90 @@
     <title>Детали диалога</title>
     <link rel="stylesheet" href="<%= baseUrl %>/fonts.css">
     <style>
-        :root { --card-shadow: 0 4px 12px rgba(0,0,0,0.05);
- --orange-accent: #E86B35; }
-        body { margin: 0; padding: 0; background: #E5E5E5; display: flex;
- font-family: 'Manrope', sans-serif; }
-        .main-content { flex: 1; margin-left: 260px; padding: 20px;
- display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; transition: margin-left 0.3s ease;
- }
-        .top-nav { display: flex; background: white; padding: 15px 30px; border-radius: 15px;
- margin-bottom: 15px; box-shadow: var(--card-shadow); align-items: center; min-height: 90px; }
-        .header-date-range { display: flex;
- flex-direction: column; font-size: 22px; font-weight: 500; color: #333; line-height: 1.2; padding-right: 30px; border-right: 1px solid #ddd;
- }
-        .header-date-range div span { color: #999; font-size: 16px; margin-right: 10px; font-weight: 400;
- }
-        .header-filters { flex: 1; padding-left: 30px; display: flex; flex-direction: column; gap: 8px;
- }
-        .filter-activity { position: relative; font-size: 14px; color: #333; font-weight: 500; display: flex;
- align-items: center; gap: 12px; }
-        .activity-pill-dropdown { background: #f0f0f0; padding: 4px 14px;
- border-radius: 8px; color: #555; font-weight: 600; cursor: pointer; }
-        .dropdown-menu-activity { display: none;
- position: absolute; top: 100%; left: 100px; background: #f0f0f0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; min-width: 200px;
- margin-top: 5px; overflow: hidden; }
-        .dropdown-menu-activity.show { display: block;
- }
-        .dropdown-item-act { padding: 10px 15px; font-size: 14px; color: #333; cursor: pointer;
- text-align: center; font-weight: 500; }
-        .dropdown-item-act:hover { background: #e0e0e0;
- }
-        .filter-status { font-size: 14px; color: #aaa; font-weight: 500;
- }
-        .filter-status span { cursor: pointer; transition: 0.2s; padding: 2px 8px; border-radius: 4px;
- }
-        .filter-status .active-status { background: #f0f0f0; color: #333; font-weight: 600;
- }
-        .header-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; height: 75px;
- }
-        .header-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover;
- }
-        .layout-grid { display: grid; grid-template-columns: 280px 1fr 400px; gap: 15px; flex: 1;
- overflow: hidden; }
-        .sidebar-calls { overflow-y: auto; display: flex; flex-direction: column; padding-right: 10px;
- scroll-behavior: smooth; font-family: 'Myriad Pro', sans-serif; }
-        .date-card { position: sticky; top: 0;
- z-index: 10; background: white; border: 1px solid #ccc; border-radius: 0; padding: 12px; text-align: center; cursor: pointer; box-shadow: var(--card-shadow); margin-bottom: 8px;
- }
-        .date-card.active { border-color: #333; border-width: 2px;
-}
-        .date-val { display: block; font-size: 20px; font-weight: 800; color: #333; line-height: 1.1;
- }
-        .date-count { display: block; font-size: 11px; font-weight: 700; color: #333; margin-top: 4px;
- }
-        .dialog-stack { display: none; flex-direction: column; gap: 6px;
- margin: 0 0 15px 0; }
-        .dialog-stack.expanded { display: flex;
- }
-        .dialog-box { background: #929292; border-radius: 0; padding: 12px 15px; color: white;
- cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-decoration: none; border: 1px solid transparent;
- }
-        .dialog-box.current { background: white; border: 1px solid #ccc; color: #333;
- }
-        .dialog-name { font-size: 16px; font-weight: 600;
-}
-        .dialog-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end;
- }
-        .dialog-time-wrap { font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 6px;
- }
-        .error-label { color: #EB5757; font-size: 10px; font-weight: 900; margin-top: 1px; text-transform: lowercase;
- }
-        .center-pane { background: white; border-radius: 15px; display: flex; padding: 30px; gap: 30px;
- overflow-y: auto; box-shadow: var(--card-shadow); border: 1px solid #eee; }
-        .dialog-col { flex: 1; font-size: 14px; line-height: 1.8; color: #333; 
-            overflow-wrap: break-word; word-break: break-word; }
-        .dialog-header-row { display: flex; align-items: center;
- gap: 15px; margin-bottom: 25px; }
-        .violation-tag { font-size: 12px; font-weight: 700; color: #EB5757;
- text-transform: lowercase; }
-        .right-pane { display: flex; flex-direction: column; gap: 15px;
- }
-        .audio-card { background: white;
- border-radius: 15px; padding: 25px; box-shadow: var(--card-shadow);
- border: 1px solid #eee; display: flex; flex-direction: column; gap: 15px;
- }
-        .player-seeker-wrap { width: 100%; height: 4px; background: #eee; border-radius: 2px; position: relative;
- cursor: pointer; }
-        .player-seeker-fill { height: 100%; background: #929292; border-radius: 2px; width: 0%;
- pointer-events: none; }
-        .player-seeker-thumb { width: 12px; height: 12px; background: #929292; border-radius: 50%;
- position: absolute; top: -4px; margin-left: -6px; pointer-events: none; }
-        .player-controls { display: flex;
- align-items: center; gap: 15px; }
-        .play-btn { width: 44px; height: 44px; background: #929292;
- border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer;
- }
-        .play-btn svg { width: 24px; height: 24px; fill: white;
- }
-        .player-timer { font-size: 16px; font-weight: 700; flex-grow: 1;
- }
-        .volume-section { display: flex; align-items: center; gap: 10px;
- }
-        .vol-btn svg { width: 18px; height: 18px; fill: #999;
- }
-        .vol-slider { width: 60px; height: 4px; background: #eee; border-radius: 2px; position: relative;
- cursor: pointer; }
-        .vol-fill { height: 100%; background: #929292; border-radius: 2px; width: 80%;
- }
-        .vol-thumb { width: 10px; height: 10px; background: #929292; border-radius: 50%; position: absolute;
- top: -3px; left: 80%; margin-left: -5px; }
-        .download-btn svg { width: 20px;
- height: 20px; fill: #999; cursor: pointer; }
-        .tabs-card { background: white; border-radius: 15px;
- flex: 1; padding: 0; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--card-shadow); border: 1px solid #eee;
- }
-        .tab-headers { display: flex; border-bottom: 1px solid #f0f0f0;
- }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: #f8f8f8; cursor: pointer;
- font-size: 13px; font-weight: 700; color: #888; border-right: 1px solid #eee;
- }
-        .tab-btn.active { background: var(--orange-accent); color: white;
- }
-        .tab-content { padding: 25px; font-size: 14px; flex: 1; display: none; 
-            overflow-wrap: break-word; word-break: break-word; }
-        .tab-content.active { display: block;
- }
-        .info-box { border: 1px solid var(--orange-accent); border-radius: 12px; padding: 12px; margin-bottom: 10px;
- text-align: center; color: #333; font-weight: 700; font-size: 14px; }
-        .modal-result-overlay { display: none;
- position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 2000; align-items: center; justify-content: center;
- }
-        .modal-result-box { background: #E5E5E5; padding: 25px; border-radius: 12px; width: 600px;
- box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .modal-result-title { font-size: 18px; font-weight: 700;
- margin-bottom: 20px; color: #333; }
-        .modal-result-white-bg { background: white; padding: 30px; border-radius: 12px;
- margin-bottom: 20px; }
-        .status-option { display: flex; align-items: center; gap: 15px; margin-bottom: 20px;
- cursor: pointer; font-size: 18px; font-weight: 600; color: #000; }
-        .result-textarea { width: 100%;
- border: none; font-size: 16px; outline: none; resize: none; min-height: 100px; font-family: inherit;
- }
-        .btn-cancel-res { background: #929292; color: white; border: none; padding: 10px 30px;
- border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 16px; }
-        .btn-save-res { background: var(--orange-accent);
- color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 16px;
- }
- .note-block { background: #f9f9f9;
- border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-top: 10px; position: relative; }
-    .note-meta { display: flex;
- justify-content: space-between; font-size: 11px; color: #999; margin-bottom: 5px; font-weight: 600; padding-right: 50px; }
-    .note-text { font-size: 13px; color: #333; line-height: 1.4; white-space: pre-wrap; 
-        overflow-wrap: break-word; word-break: break-word; }
-    .note-actions { position: absolute; top: 10px; right: 10px; display: flex;
- gap: 8px; }
-    .note-action-btn { cursor: pointer; opacity: 0.5; transition: 0.2s; background: none; border: none; padding: 0;
- }
-    .note-action-btn:hover { opacity: 1; }
-    .note-action-btn svg { width: 14px; height: 14px;
- }
-    
-    .modal-note-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%;
- height: 100%; background: rgba(0,0,0,0.4); z-index: 3000; align-items: center; justify-content: center; }
-    .modal-note-box { background: white; padding: 25px;
- border-radius: 12px; width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
- .status-отработано { color: #27ae60 !important; }
-.status-неотработано { color: #e74c3c !important; }
-.status-нераспознано { color: #95a5a6 !important; }
-.status-безстатуса { color: #aaa !important; }
-</style>
+        :root { --card-shadow: 0 4px 12px rgba(0,0,0,0.05); --orange-accent: #E86B35; }
+        body { margin: 0; padding: 0; background: #E5E5E5; display: flex; font-family: 'Manrope', sans-serif; }
+        .main-content { flex: 1; margin-left: 260px; padding: 20px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; transition: margin-left 0.3s ease; }
+        .top-nav { display: flex; background: white; padding: 15px 30px; border-radius: 15px; margin-bottom: 15px; box-shadow: var(--card-shadow); align-items: center; min-height: 90px; }
+        .header-date-range { display: flex; flex-direction: column; font-size: 22px; font-weight: 500; color: #333; line-height: 1.2; padding-right: 30px; border-right: 1px solid #ddd; }
+        .header-date-range div span { color: #999; font-size: 16px; margin-right: 10px; font-weight: 400; }
+        .header-filters { flex: 1; padding-left: 30px; display: flex; flex-direction: column; gap: 8px; }
+        .filter-activity { position: relative; font-size: 14px; color: #333; font-weight: 500; display: flex; align-items: center; gap: 12px; }
+        .activity-pill-dropdown { background: #f0f0f0; padding: 4px 14px; border-radius: 8px; color: #555; font-weight: 600; cursor: pointer; }
+        .dropdown-menu-activity { display: none; position: absolute; top: 100%; left: 100px; background: #f0f0f0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; min-width: 200px; margin-top: 5px; overflow: hidden; }
+        .dropdown-menu-activity.show { display: block; }
+        .dropdown-item-act { padding: 10px 15px; font-size: 14px; color: #333; cursor: pointer; text-align: center; font-weight: 500; }
+        .dropdown-item-act:hover { background: #e0e0e0; }
+        .filter-status { font-size: 14px; color: #aaa; font-weight: 500; }
+        .filter-status span { cursor: pointer; transition: 0.2s; padding: 2px 8px; border-radius: 4px; }
+        .filter-status .active-status { background: #f0f0f0; color: #333; font-weight: 600; }
+        .header-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; height: 75px; }
+        .header-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+        .layout-grid { display: grid; grid-template-columns: 280px 1fr 400px; gap: 15px; flex: 1; overflow: hidden; }
+        .sidebar-calls { overflow-y: auto; display: flex; flex-direction: column; padding-right: 10px; scroll-behavior: smooth; font-family: 'Myriad Pro', sans-serif; }
+        .date-card { position: sticky; top: 0; z-index: 10; background: white; border: 1px solid #ccc; border-radius: 0; padding: 12px; text-align: center; cursor: pointer; box-shadow: var(--card-shadow); margin-bottom: 8px; width: 100%; }
+        .date-card.active { border-color: #333; border-width: 2px; }
+        .date-val { display: block; font-size: 20px; font-weight: 800; color: #333; line-height: 1.1; }
+        .date-count { display: block; font-size: 11px; font-weight: 700; color: #333; margin-top: 4px; }
+        .dialog-stack { display: none; flex-direction: column; gap: 6px; margin: 0 0 15px 0; }
+        .dialog-stack.expanded { display: flex; }
+        .dialog-box { background: #929292; border-radius: 0; padding: 12px 15px; color: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-decoration: none; border: 1px solid transparent; width: 70%; }
+        .dialog-box.current { background: white; border: 1px solid #ccc; color: #333; }
+        .dialog-name { font-size: 16px; font-weight: 600; }
+        .dialog-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+        .dialog-time-wrap { font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+        .error-label { color: #EB5757; font-size: 10px; font-weight: 900; margin-top: 1px; text-transform: lowercase; }
+        .center-pane { background: white; border-radius: 15px; display: flex; padding: 30px; gap: 30px; overflow-y: auto; box-shadow: var(--card-shadow); border: 1px solid #eee; }
+        .dialog-col { flex: 1; font-size: 14px; line-height: 1.8; color: #333; overflow-wrap: break-word; word-break: break-word; }
+        .dialog-header-row { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .violation-tag { font-size: 12px; font-weight: 700; color: #EB5757; text-transform: lowercase; }
+        .right-pane { display: flex; flex-direction: column; gap: 15px; }
+        .audio-card { background: white; border-radius: 15px; padding: 25px; box-shadow: var(--card-shadow); border: 1px solid #eee; display: flex; flex-direction: column; gap: 15px; }
+        .player-seeker-wrap { width: 100%; height: 4px; background: #eee; border-radius: 2px; position: relative; cursor: pointer; }
+        .player-seeker-fill { height: 100%; background: #929292; border-radius: 2px; width: 0%; pointer-events: none; }
+        .player-seeker-thumb { width: 12px; height: 12px; background: #929292; border-radius: 50%; position: absolute; top: -4px; margin-left: -6px; pointer-events: none; }
+        .player-controls { display: flex; align-items: center; gap: 15px; }
+        .play-btn { width: 44px; height: 44px; background: #929292; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; }
+        .play-btn svg { width: 24px; height: 24px; fill: white; }
+        .player-timer { font-size: 16px; font-weight: 700; flex-grow: 1; }
+        .volume-section { display: flex; align-items: center; gap: 10px; }
+        .vol-btn svg { width: 18px; height: 18px; fill: #999; }
+        .vol-slider { width: 60px; height: 4px; background: #eee; border-radius: 2px; position: relative; cursor: pointer; }
+        .vol-fill { height: 100%; background: #929292; border-radius: 2px; width: 80%; }
+        .vol-thumb { width: 10px; height: 10px; background: #929292; border-radius: 50%; position: absolute; top: -3px; left: 80%; margin-left: -5px; }
+        .download-btn svg { width: 20px; height: 20px; fill: #999; cursor: pointer; }
+        .tabs-card { background: white; border-radius: 15px; flex: 1; padding: 0; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--card-shadow); border: 1px solid #eee; }
+        .tab-headers { display: flex; border-bottom: 1px solid #f0f0f0; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: #f8f8f8; cursor: pointer; font-size: 13px; font-weight: 700; color: #888; border-right: 1px solid #eee; }
+        .tab-btn.active { background: var(--orange-accent); color: white; }
+        .tab-content { padding: 25px; font-size: 14px; flex: 1; display: none; overflow-wrap: break-word; word-break: break-word; }
+        .tab-content.active { display: block; }
+        .info-box { border: 1px solid var(--orange-accent); border-radius: 12px; padding: 12px; margin-bottom: 10px; text-align: center; color: #333; font-weight: 700; font-size: 14px; }
+        .modal-result-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-result-box { background: #E5E5E5; padding: 25px; border-radius: 12px; width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-result-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: #333; }
+        .modal-result-white-bg { background: white; padding: 30px; border-radius: 12px; margin-bottom: 20px; }
+        .status-option { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; cursor: pointer; font-size: 18px; font-weight: 600; color: #000; }
+        .result-textarea { width: 100%; border: none; font-size: 16px; outline: none; resize: none; min-height: 100px; font-family: inherit; }
+        .btn-cancel-res { background: #929292; color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 16px; }
+        .btn-save-res { background: var(--orange-accent); color: white; border: none; padding: 10px 30px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 16px; }
+        .note-block { background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-top: 10px; position: relative; }
+        .note-meta { display: flex; justify-content: space-between; font-size: 11px; color: #999; margin-bottom: 5px; font-weight: 600; padding-right: 50px; }
+        .note-text { font-size: 13px; color: #333; line-height: 1.4; white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word; }
+        .note-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; }
+        .note-action-btn { cursor: pointer; opacity: 0.5; transition: 0.2s; background: none; border: none; padding: 0; }
+        .note-action-btn:hover { opacity: 1; }
+        .note-action-btn svg { width: 14px; height: 14px; }
+        .modal-note-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 3000; align-items: center; justify-content: center; }
+        .modal-note-box { background: white; padding: 25px; border-radius: 12px; width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .status-отработано { color: #27ae60 !important; }
+        .status-неотработано { color: #e74c3c !important; }
+        .status-нераспознано { color: #95a5a6 !important; }
+        .status-безстатуса { color: #aaa !important; }
+        .unread-dot { width: 15px; height: 15px; background-color: var(--orange-accent); border-radius: 50%; display: inline-block; flex-shrink: 0; margin: 5px 5px 13px 5px; transition: background-color 0.2s; }
+        .unread-dot.read { background-color: transparent; }
+        .date-card-header { display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .date-card-wrapper { display: flex; justify-content: end; align-items: center; }
+    </style>
 </head>
 <body>
     <%- include('sidebar') %>
@@ -204,18 +120,44 @@
                 <% sidebarDates.forEach(item => { %>
                     <% const isDateActive = item.date === currentCall.date; %>
                     <div class="date-group">
-                        <div class="date-card <%= isDateActive ? 'active' : '' %>" onclick="toggleDate(this, '<%= item.date %>')">
-                            <span class="date-val"><%= moment(item.date).format('DD.MM.YY') %></span>
-                            <span class="date-count">Диалогов <%= item.count %></span>
+                        <div class="date-card-wrapper">
+                            <div class="unread-dot <%= item.unreadCount > 0 ? '' : 'read' %>" 
+                                 title="<%= item.unreadCount > 0 ? 'Есть непрочитанные' : '' %>"></div>
+                            
+                            <div class="date-card <%= isDateActive ? 'active' : '' %>" onclick="toggleDate(this, '<%= item.date %>')">
+                                <div class="date-card-header">
+                                    <span class="date-val"><%= moment(item.date).format('DD.MM.YY') %></span>
+                                </div>
+                                <span class="date-count">Диалогов <%= item.count %></span>
+                            </div>
                         </div>
+                        
                         <div class="dialog-stack <%= isDateActive ? 'expanded' : '' %>">
                             <% if (isDateActive) { %>
                                 <% currentDayCalls.forEach((call, idx) => { %>
-                                    <% const isError = (call.rudeness > 0.5 || call.said_hello === false); %>
-                                    <a id="dialog-<%= call.id %>" href="<%= baseUrl %>/details/<%= call.id %>?status=<%= currentStatusFilter %>&activity=<%= currentActivityFilter %>" class="dialog-box <%= call.id == currentCall.id ? 'current' : '' %>">
-                                        <span class="dialog-name">Диалог <%= idx + 1 %></span>
-                                        <div class="dialog-meta"><div class="dialog-time-wrap"><%= Math.floor(call.duration/60) %>:<%= String(Math.floor(call.duration%60)).padStart(2, '0') %></div><% if(isError) { %><span class="error-label">ошибка!</span><% } %></div>
-                                    </a>
+                                    <% 
+                                       const isError = (call.rudeness > 0.5 || call.said_hello === false); 
+                                       const isUnread = !readIds.includes(call.id);
+                                    %>
+                                    <div class="date-card-wrapper">
+                                        <div class="unread-dot <%= isUnread ? '' : 'read' %>"></div>
+                                        
+                                        <a id="dialog-<%= call.id %>" 
+                                           href="<%= baseUrl %>/details/<%= call.id %>?status=<%= currentStatusFilter %>&activity=<%= currentActivityFilter %>" 
+                                           class="dialog-box <%= call.id == currentCall.id ? 'current' : '' %>">
+                                            
+                                            <div style="display: flex; align-items: center;">
+                                                <span class="dialog-name">Диалог <%= idx + 1 %></span>
+                                            </div>
+                                    
+                                            <div class="dialog-meta">
+                                                <div class="dialog-time-wrap">
+                                                    <%= Math.floor(call.duration/60) %>:<%= String(Math.floor(call.duration%60)).padStart(2, '0') %>
+                                                </div>
+                                                <% if(isError) { %><span class="error-label">ошибка!</span><% } %>
+                                            </div>
+                                        </a>
+                                    </div>
                                 <% }) %>
                             <% } %>
                         </div>

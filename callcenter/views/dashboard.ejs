@@ -225,6 +225,7 @@
             margin: 0 2px;
             display: inline-block;
             font-weight: 600;
+            text-transform: lowercase;
         }
 
         .tag-error {
@@ -328,6 +329,102 @@
         .status-безстатуса {
             color: #aaa !important;
         }
+        .calendar-container { 
+    background: white; 
+    border-radius: 12px; 
+    padding: 20px; 
+    box-shadow: var(--card-shadow); 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    overflow: hidden; 
+}
+
+.calendar-header-month { 
+    font-size: 24px; 
+    font-weight: 600; 
+    margin-bottom: 15px; 
+    color: #333; 
+}
+
+.calendar-grid { 
+    display: grid; 
+    grid-template-columns: repeat(7, 1fr); 
+    grid-template-rows: min-content; 
+    grid-auto-rows: 1fr; 
+    border-top: 1px solid #ddd; 
+    border-left: 1px solid #ddd; 
+    flex: 1;
+}
+
+.cal-weekday { 
+    padding: 10px; 
+    text-align: center; 
+    border-bottom: 1px solid #ddd; 
+    border-right: 1px solid #ddd; 
+    color: #999; 
+    font-size: 12px; 
+    font-weight: 500; 
+    background: #fdfdfd;
+    text-transform: lowercase; 
+}
+
+.cal-day { 
+    padding: 10px; 
+    border-bottom: 1px solid #ddd; 
+    border-right: 1px solid #ddd; 
+    background: #fff; 
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: background 0.2s;
+    min-height: 0; 
+}
+
+.cal-day:hover { background: #fcfcfc; }
+.cal-day.out-period { background: #f9f9f9; color: #ccc; cursor: default; }
+
+.cal-day-num { 
+    font-size: 22px; 
+    font-weight: 500; 
+    color: #333; 
+    margin-bottom: 8px;
+}
+
+.cal-tags { 
+    display: flex; 
+    flex-wrap: wrap;
+    gap: 4px; 
+    align-content: flex-start;
+}
+
+.cal-tag { 
+    padding: 2px 6px; 
+    border-radius: 4px; 
+    font-size: 10px; 
+    font-weight: 700; 
+    width: fit-content;
+    white-space: nowrap;
+}
+
+.tag-агрессия, .cal-tag.агрессия { background: #FFEBEE; color: #D32F2F; }
+.tag-приветствие, .cal-tag.приветствие { background: #FFF3E0; color: #E86B35; }
+.tag-вежливость, .cal-tag.вежливость { background: #E3F2FD; color: #1976D2; }
+.tag-дружелюбие, .cal-tag.дружелюбие { background: #E8F5E9; color: #2E7D32; }
+.tag-манипуляция, .cal-tag.манипуляция { background: #F3E5F5; color: #7B1FA2; }
+.stat-card {
+    position: relative;
+}
+
+.new-badge {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #D32F2F;
+    font-size: 18px;
+    font-weight: 700;
+    pointer-events: none;
+}
     </style>
 </head>
 
@@ -364,7 +461,7 @@
                         <a href="?view=analytics"
                             class="view-btn <%= currentView === 'analytics' ? 'active' : '' %>">Аналитика</a>
                         <a href="?view=list" class="view-btn <%= currentView === 'list' ? 'active' : '' %>">Список</a>
-                        <a href="#" class="view-btn">Календарь</a>
+                        <a href="?view=calendar" class="view-btn <%= currentView === 'calendar' ? 'active' : '' %>">Календарь</a>
                     </div>
                 </div>
                 <% if (currentView==='analytics' ) { %>
@@ -386,68 +483,42 @@
                                     <%= stats.violations %>
                                 </div>
                             </div>
-
-                            <div class="stat-card"
-                                style="background: <%= getGradient(stats.p_rudeness, config.threshold_low, config.threshold_high) %>"
-                                onclick="window.location.href='<%= baseUrl %>/details/<%= firstId %>?activity=грубая ошибка'">
+                            <div class="stat-card" style="background: <%= getGradient(stats.p_violations, config.threshold_low, config.threshold_high) %>" onclick="window.location.href='<%= baseUrl %>/details/<%= firstId %>?activity=грубая ошибка'">
+                                <% if (stats.new.violations > 0) { %><div class="new-badge">+<%= stats.new.violations %></div><% } %>
                                 <div class="card-label">Грубая ошибка</div>
-                                <div class="card-value">
-                                    <%= stats.rudeness %>
-                                </div>
+                                <div class="card-value"><%= stats.violations %></div>
                             </div>
-
-                            <div class="stat-card"
-                                style="background: <%= getGradient(stats.p_hello, config.threshold_low, config.threshold_high) %>"
-                                onclick="window.location.href='<%= baseUrl %>/details/<%= firstId %>?activity=отсутствие приветствия'">
+                            <div class="stat-card" style="background: <%= getGradient(stats.p_hello, config.threshold_low, config.threshold_high) %>" onclick="window.location.href='<%= baseUrl %>/details/<%= firstId %>?activity=отсутствие приветствия'">
+                                <% if (stats.new.hello > 0) { %><div class="new-badge">+<%= stats.new.hello %></div><% } %>
                                 <div class="card-label">Приветствие</div>
-                                <div class="card-value">
-                                    <%= stats.hello %>
-                                </div>
+                                <div class="card-value"><%= stats.hello %></div>
                             </div>
-
                             <div class="chart-container">
                                 <div id="chartTitle" class="chart-title-dynamic">Статистика звонков</div>
                                 <button class="chart-arrow arrow-left" onclick="changeStat(-1)">&#10094;</button>
                                 <button class="chart-arrow arrow-right" onclick="changeStat(1)">&#10095;</button>
                                 <canvas id="callsChart"></canvas>
                             </div>
-
-                            <div class="stat-card"
-                                style="background: <%= getGradient(stats.p_rudeness, config.threshold_low, config.threshold_high) %>"
-                                onclick="window.location.href='<%= baseUrl %>/details/<%= firstId %>?activity=агрессия'">
+                            <div class="stat-card" style="background: <%= getGradient(stats.p_rudeness, config.threshold_low, config.threshold_high) %>" onclick="window.location.href='<%= baseUrl %>/details/<%= firstId %>?activity=агрессия'">
+                                <% if (stats.new.rudeness > 0) { %><div class="new-badge">+<%= stats.new.rudeness %></div><% } %>
                                 <div class="card-label">Агрессия</div>
-                                <div class="card-value">
-                                    <%= stats.rudeness %>
-                                </div>
+                                <div class="card-value"><%= stats.rudeness %></div>
                             </div>
-
-                            <div class="stat-card"
-                                style="background: <%= getGradient(stats.p_politeness, config.threshold_low, config.threshold_high) %>"
-                                onclick="window.location.href='<%= baseUrl %>/details/<%= firstId %>?activity=вежливость'">
+                            <div class="stat-card" style="background: <%= getGradient(stats.p_politeness, config.threshold_low, config.threshold_high) %>" onclick="window.location.href='<%= baseUrl %>/details/<%= firstId %>?activity=вежливость'">
+                                <% if (stats.new.politeness > 0) { %><div class="new-badge">+<%= stats.new.politeness %></div><% } %>
                                 <div class="card-label">Вежливость</div>
-                                <div class="card-value">
-                                    <%= stats.politeness %>
-                                </div>
+                                <div class="card-value"><%= stats.politeness %></div>
                             </div>
-
-                            <div class="stat-card"
-                                style="background: <%= getGradient(stats.p_friendliness, config.threshold_low, config.threshold_high) %>"
-                                onclick="window.location.href='<%= baseUrl %>/details/<%= firstId %>?activity=дружелюбие'">
+                            <div class="stat-card" style="background: <%= getGradient(stats.p_friendliness, config.threshold_low, config.threshold_high) %>" onclick="window.location.href='<%= baseUrl %>/details/<%= firstId %>?activity=дружелюбие'">
+                                <% if (stats.new.friendliness > 0) { %><div class="new-badge">+<%= stats.new.friendliness %></div><% } %>
                                 <div class="card-label">Дружелюбие</div>
-                                <div class="card-value">
-                                    <%= stats.friendliness %>
-                                </div>
+                                <div class="card-value"><%= stats.friendliness %></div>
                             </div>
-
-                            <div class="stat-card"
-                                style="background: <%= getGradient(stats.p_manipulation, config.threshold_low, config.threshold_high) %>"
-                                onclick="window.location.href='<%= baseUrl %>/details/<%= firstId %>?activity=манипуляция'">
+                            <div class="stat-card" style="background: <%= getGradient(stats.p_manipulation, config.threshold_low, config.threshold_high) %>" onclick="window.location.href='<%= baseUrl %>/details/<%= firstId %>?activity=манипуляция'">
+                                <% if (stats.new.manipulation > 0) { %><div class="new-badge">+<%= stats.new.manipulation %></div><% } %>
                                 <div class="card-label">Манипуляция</div>
-                                <div class="card-value red">
-                                    <%= stats.manipulation %>
-                                </div>
+                                <div class="card-value red"><%= stats.manipulation %></div>
                             </div>
-
                             <div class="notes-preview-card">
                                 <table class="notes-mini-table">
                                     <tbody>
@@ -489,7 +560,7 @@
                                 <a href="<%= baseUrl %>/my-notes" class="more-link">Подробнее ></a>
                             </div>
                     </div>
-                    <% } else { %>
+                    <% } else if (currentView === 'list') { %>
                         <div class="list-container">
                             <table class="data-table">
                                 <thead>
@@ -501,35 +572,63 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <% listData.forEach(row=> { %>
-                                        <tr style="cursor: pointer"
-                                            onclick="window.location.href='<%= baseUrl %>/details/<%= row.firstId %>'">
-                                            <td><strong>
-                                                    <%= moment(row.date).format('DD.MM.YY') %>
-                                                </strong></td>
+                                    <% listData.forEach(row => { %>
+                                        <tr style="cursor: pointer" onclick="window.location.href='<%= baseUrl %>/details/<%= row.firstId %>'">
+                                            <td><strong><%= moment(row.date).format('DD.MM.YY') %></strong></td>
+                                            <td><%= row.count %></td>
                                             <td>
-                                                <%= row.count %>
+                                                <% if(row.activities.size === 0) { %> 
+                                                    <span style="color: #ccc">—</span> 
+                                                <% } else { %>
+                                                    <% row.activities.forEach(act => { %>
+                                                        <span class="tag tag-<%= act %>"><%= act %></span>
+                                                    <% }) %>
+                                                <% } %>
                                             </td>
-                                            <td>
-                                                <% if(row.activities.size===0) { %> — <% } else { %>
-                                                        <% row.activities.forEach(act=> { %>
-                                                            <% let tagClass='tag-greet' ; if (act==='грубая ошибка' )
-                                                                tagClass='tag-error' ; else if (act==='агрессия' )
-                                                                tagClass='tag-aggression' ; %>
-                                                                <span class="tag <%= tagClass %>">
-                                                                    <%= act %>
-                                                                </span>
-                                                                <% }) %>
-                                                                    <% } %>
+                                            <td style="color: #666;">
+                                                <%  %>
+                                                <span style="font-size: 12px; color: #999;">нажмите для деталей</span>
                                             </td>
-                                            <td style="color: #666;">test</td>
                                         </tr>
-                                        <% }) %>
+                                    <% }) %>
+                                    <% if (listData.length === 0) { %>
+                                        <tr>
+                                            <td colspan="4" style="padding: 40px; color: #999;">Нет данных за выбранный период</td>
+                                        </tr>
+                                    <% } %>
                                 </tbody>
                             </table>
                         </div>
-                        <% } %>
-            </div>
+            
+                    <% } else if (currentView === 'calendar') { %>
+                        <div class="calendar-container">
+                            <div class="calendar-header-month">
+                                <% const mName = moment().locale('ru').format('MMMM'); %>
+                                <%= mName.charAt(0).toUpperCase() + mName.slice(1) %>
+                            </div>
+                            
+                            <div class="calendar-grid">
+                                <% calendarData.days.forEach(day => { %>
+                                    <div class="cal-weekday"><%= day %></div>
+                                <% }) %>
+                                
+                                <% calendarData.cells.forEach(cell => { %>
+                                    <div class="cal-day <%= !cell.inPeriod ? 'out-period' : '' %>" 
+                                         onclick="<%= cell.inPeriod ? `window.location.href='${baseUrl}/details/${cell.date}_redir?date=${cell.date}'` : '' %>">
+                                        
+                                        <div class="cal-day-num"><%= cell.dayNum %></div>
+                                        
+                                        <div class="cal-tags">
+                                            <% cell.activities.forEach(act => { %>
+                                                <span class="cal-tag <%= act %>"><%= act %></span>
+                                            <% }) %>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
             <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
             <script>
                 const rawLabels = <%- chart.labels %>;
