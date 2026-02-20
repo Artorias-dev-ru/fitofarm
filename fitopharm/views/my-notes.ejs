@@ -7,15 +7,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         .note-row {
-                    display: grid;
-                    grid-template-columns: 145px 300px 145px 105px 1fr auto; 
-                    border-bottom: 1px solid #eee;
-                    align-items: center;
-                    padding: 15px; 
-                    background: #fff;
-                    transition: background 0.2s;
-                    gap: 15px;
-                }
+            background: #fff;
+            cursor: pointer;
+        }
         .note-row:hover { background-color: #fcfcfc; }
         .actions-cell {
             display: flex;
@@ -75,73 +69,73 @@
         <div class="header-container" style="padding-top: 20px; padding-bottom: 0;">
             <h2 style="font-family: 'Inter', sans-serif; margin-bottom: 30px; font-size: 28px; font-weight: 800; color: #000;">Мои заметки</h2>
         </div>
-        <style>
-            /* Усиленный черный цвет для плейсхолдеров и текста */
-            .filter-input::placeholder { color: #000 !important; opacity: 1 !important; font-weight: 700; }
-            .filter-input { color: #000 !important; font-weight: 700; font-size: 15px !important; }
-            
-            /* Стили для разных браузеров */
-            .filter-input::-webkit-input-placeholder { color: #000 !important; opacity: 1; }
-            .filter-input::-moz-placeholder { color: #000 !important; opacity: 1; }
-        </style>
-        
-        <div class="notes-container" style="padding-top: 0;">
-            <div class="notes-header-row" style="display: grid; grid-template-columns: 130px 280px 130px 90px 1fr; gap: 15px; padding: 10px 15px; align-items: center;">
-                
-                <div class="filter-box" style="background: #bdc3c7; border-radius: 8px; padding: 18px 10px; display: flex; align-items: center; justify-content: center;">
-                    <input type="text" id="filter-date-dialog" class="filter-input" placeholder="Дата диа." style="width: 100%; border: none; background: transparent; outline: none; text-align: center; cursor: pointer;">
-                </div>
-                
-                <div class="filter-box" style="background: #bdc3c7; border-radius: 8px; padding: 18px 10px; display: flex; align-items: center; justify-content: center;">
-                    <input type="text" id="filter-address" class="filter-input" placeholder="Адрес аптеки" style="width: 100%; border: none; background: transparent; outline: none; text-align: center;">
-                </div>
-        
-                <div class="filter-box" style="background: #bdc3c7; border-radius: 8px; padding: 18px 10px; display: flex; align-items: center; justify-content: center;">
-                    <input type="text" id="filter-date-note" class="filter-input" placeholder="Дата заметки" style="width: 100%; border: none; background: transparent; outline: none; text-align: center; cursor: pointer;">
-                </div>
-        
-                <div class="filter-box label-only" style="background: #bdc3c7; border-radius: 8px; padding: 18px 10px; text-align: center; font-size: 15px; color: #000; font-weight: 700;">Статус</div>
-                
-                <div class="filter-box label-only" style="background: #bdc3c7; border-radius: 8px; padding: 18px 10px; text-align: center; font-size: 15px; color: #000; font-weight: 700;">Заметка</div>
-            </div>
-        </div>
+
+       <div class="notes-header-row">
+           <div class="filter-box">
+               <input type="text" id="filter-date-dialog" class="filter-input" placeholder="Дата диалога" readonly>
+               <img src="<%= baseUrl %>/icons/triangle.svg" class="header-icon">
+           </div>
+           
+           <div class="filter-box search-box">
+               <input type="text" id="filter-address" class="filter-input" placeholder="Адрес аптеки">
+               <img src="<%= baseUrl %>/icons/search.svg" class="header-icon">
+           </div>
+       
+           <div class="filter-box">
+               <input type="text" id="filter-date-note" class="filter-input" placeholder="Дата заметки" readonly>
+               <img src="<%= baseUrl %>/icons/triangle.svg" class="header-icon">
+           </div>
+       
+           <div class="filter-box label-only">
+               <span>Статус<br>диалога</span>
+           </div>
+           
+           <div class="filter-box label-only label-note">
+               <span>Заметка</span>
+           </div>
+           
+           <div style="width: 80px;"></div>
+       </div>
+   
             <div class="notes-list" id="notesList">
                 <% function formatDate(dateString) { if (!dateString) return ''; const d = new Date(dateString); return ('0' + d.getDate()).slice(-2) + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + d.getFullYear().toString().slice(-2); } %>
+                
                 <% notes.forEach(note => { 
-                    let statusIcon = note.Dialog.status === 'sales' ? '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : (note.Dialog.status === 'refusals' ? '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' : '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>');
+                    /* Логика для иконок статуса */
+                    let statusIcon = '';
+                    if (note.Dialog.status === 'sales') {
+                        statusIcon = '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                    } else if (note.Dialog.status === 'refusals') {
+                        statusIcon = '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                    } else {
+                        statusIcon = '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+                    }
+                    
                     const addressFull = note.Dialog.Record ? note.Dialog.Record.address : 'Неизвестно';
                     const city = note.Dialog.Record ? note.Dialog.Record.city : '';
                 %>
+                
                 <div class="note-row" id="note-row-<%= note.id %>" 
                      data-dialog-date="<%= note.Dialog.date %>" 
                      data-note-date="<%= note.updatedAt %>" 
                      data-address="<%= (city + ' ' + addressFull).toLowerCase() %>" 
-                     onclick="window.location.href='<%= baseUrl %>/details/<%= note.Dialog.RecordId %>?dialogId=<%= note.Dialog.id %>&tab=notes'" 
-                     style="cursor: pointer; display: grid; grid-template-columns: 145px 300px 145px 105px 1fr auto; gap: 15px; align-items: center; padding: 15px;">
+                     onclick="window.location.href='<%= baseUrl %>/details/<%= note.Dialog.RecordId %>?dialogId=<%= note.Dialog.id %>&tab=notes'">
                     
-                    <div class="cell-date" style="text-align: center; font-weight: 500;"><%= formatDate(note.Dialog.date) %></div>
-                    
-                    <div class="cell-address" style="text-align: center; line-height: 1.3;">
-                        <strong style="display: block;"><%= city %></strong> 
-                        <span style="font-size: 0.9em; color: #666;"><%= addressFull %></span>
+                    <div class="cell-date" style="text-align: left; font-weight: 600; color: #333;">
+                        <%= formatDate(note.Dialog.date) %>
                     </div>
-                    
-                    <div class="cell-date" style="text-align: center; font-weight: 500;"><%= formatDate(note.updatedAt) %></div>
-                    
-                    <div class="cell-status <%= note.Dialog.status %>" style="display: flex; justify-content: center;">
-                        <%- statusIcon %>
+                    <div class="cell-address"><strong><%= city %></strong> <span><%= addressFull %></span></div>
+                    <div class="cell-date" style="text-align: left; font-weight: 600; color: #333;">
+                        <%= formatDate(note.updatedAt) %>
                     </div>
-                    
-                    <div class="cell-note" id="content-<%= note.id %>" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 10px;">
-                        <%= note.content %>
-                    </div>
-                
-                    <div class="actions-cell" onclick="event.stopPropagation()" style="display: flex; gap: 10px; padding-right: 10px;">
+                    <div class="cell-status <%= note.Dialog.status %>"><%- statusIcon %></div>
+                    <div class="cell-note" id="content-<%= note.id %>"><%= note.content %></div>
+                    <div class="actions-cell" onclick="event.stopPropagation()">
                         <button class="action-btn" onclick="openEditModal(<%= note.id %>)">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                         </button>
                         <button class="action-btn delete" onclick="deleteNote(<%= note.id %>)">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </button>
                     </div>
                 </div>

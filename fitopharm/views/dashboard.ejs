@@ -5,9 +5,79 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<%= baseUrl %>/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    .input-capsule input, 
+    .flatpickr-input,
+    .input-capsule .flatpickr-mobile {
+        text-align: center !important;
+        padding: 0 !important;
+        width: 100% !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+        color: #999 !important;
+        font-weight: 500;
+    }
+    .flatpickr-input.form-control {
+        padding-right: 0 !important;
+        padding-left: 0 !important;
+    }
+    .calendar-icon-custom, 
+    .input-capsule img {
+        width: 24px !important;
+        height: 24px !important;
+    }
+    .dropdown {
+        position: relative; 
+    }
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        top: calc(100% + 10px); 
+        left: 50%;             
+        transform: translateX(-80%); 
+        background-color: white;
+        min-width: 180px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+        border-radius: 12px;   
+        padding: 8px 0;
+        z-index: 1000;
+        border: 1px solid #eee;
+    }
+    @keyframes menuFadeIn {
+        from { opacity: 0; transform: translate(-80%, -10px); }
+        to { opacity: 1; transform: translate(-80%, 0); }
+    }
+    .dropdown.active .dropdown-content {
+        display: block;
+        animation: slideUp 0.2s ease-out;
+    }
+    .dropdown-content.is-right {
+        left: auto !important;
+        right: 0 !important;
+        transform: none !important;
+    }
+    .dropdown-content a {
+        color: #333;
+        padding: 10px 20px;
+        text-decoration: none;
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+    .dropdown-content a:hover {
+        background-color: #f5f7f9;
+        color: #27ae60;
+    }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translate(-50%, 10px); }
+        to { opacity: 1; transform: translate(-50%, 0); }
+    }
+</style>
 </head>
 <body>
-    
     <%- include('sidebar') %>
 
     <div class="content-wrapper" id="contentWrapper"> 
@@ -53,51 +123,60 @@
                     </div>
                 </div>
                 
-               <div class="input-capsule" style="position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                                  <input type="text" 
-                                         id="date-range-picker" 
-                                         placeholder="Период" 
-                                         value="<%= currentRange %>" 
-                                         style="background-image: none !important; 
-                                                background-color: transparent !important;
-                                                border: none !important; 
-                                                outline: none !important; 
-                                                width: 100% !important; /* На всю ширину, чтобы работало центрирование */
-                                                font-weight: 500; 
-                                                color: #999 !important; /* Серый цвет как на макете */
-                                                text-align: center !important; /* Центрируем весь текст */
-                                                padding: 0 !important;
-                                                padding-right: 35px !important;
-                                                z-index: 2;
-                                                cursor: pointer;">
-                                              
-                                  <img src="/icons/calendar.svg" 
-                                       alt="📅"
-                                       style="position: absolute; 
-                                              right: 12px; 
-                                              top: 50%; 
-                                              transform: translateY(-50%); 
-                                              width: 18px; 
-                                              height: 18px; 
-                                              opacity: 0.3; 
-                                              pointer-events: none; 
-                                              z-index: 1;">
-                              </div>
+               <div class="input-capsule" style="position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; min-width: 180px;">
+                   <input type="text" 
+                          id="date-range-picker" 
+                          placeholder="Период" 
+                          value="<%= currentRange %>" 
+                          style="background-image: none !important; 
+                                 background-color: transparent !important;
+                                 border: none !important; 
+                                 outline: none !important; 
+                                 width: 100% !important; 
+                                 font-weight: 500;  
+                                 color: #999 !important; 
+                                 text-align: center !important; 
+                                 padding: 0 !important; 
+                                 z-index: 2;
+                                 cursor: pointer;">
+                                 
+                   <img src="/icons/calendar.svg" 
+                        alt="📅"
+                        style="position: absolute; 
+                               right: 12px; 
+                               top: 50%; 
+                               transform: translateY(-50%); 
+                               width: 24px; 
+                               height: 24px; 
+                               opacity: 0.4; 
+                               pointer-events: none; 
+                               z-index: 1;">
+               </div>
                 
                 <div class="input-capsule" style="color: #ccc;">Город</div> 
                 <div class="input-capsule" style="color: #ccc;">Адрес</div>
 
-                <div class="dropdown" style="margin-left: auto;">
-                                    <div class="input-capsule" style="color: #999; font-weight: 500; font-size: 1.1vw;">
-                                        ≡ <%= (activeSort === 'sales') ? 'Больше продаж' : 
-                                              (activeSort === 'refusals') ? 'Больше отказов' : 'По алфавиту' %> ▾
-                                    </div>
-                                    <div class="dropdown-content" style="right: 0; left: auto; min-width: 180px;">
-                                        <a href="#" onclick="applySort('alphabet')">По алфавиту</a>
-                                        <a href="#" onclick="applySort('sales')">Больше продаж</a>
-                                        <a href="#" onclick="applySort('refusals')">Больше отказов</a>
-                 </div>
-              </div>
+                <div class="dropdown" style="margin-left: auto; margin-right: 5px;">
+                    <div class="input-capsule" style="min-width: 150px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                        
+                        <span style="color: #999; font-weight: 500;">
+                            <%= (activeSort === 'sales') ? 'Больше продаж' : 
+                                (activeSort === 'refusals') ? 'Больше отказов' : 'По алфавиту' %>
+                        </span>
+                        
+                        </div>
+                    
+                    <div class="dropdown-content is-right">
+                        <a href="#" onclick="applySort('alphabet')">По алфавиту</a>
+                        <a href="#" onclick="applySort('sales')">Больше продаж</a>
+                        <a href="#" onclick="applySort('refusals')">Больше отказов</a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -110,12 +189,12 @@
                               </div>
                               <p style="color: #333333 !important; font-weight: 600; margin: 0;">Продажа</p>
                               <p style="color: #333333 !important; font-weight: 600; margin: 0;">Отказ</p>
-                              <p style="color: #333333 !important; font-weight: 600; margin: 0;">Нераспознан</p>
+                              <p style="color: #333333 !important; font-weight: 600; margin: 0;">Нераспознанные</p>
                           </div>
                       </div>
               
                       <div class="total-card" style="background-color: #abb7c2 !important; border-radius: 5px; font-size: 1.3vw; color: #333333 !important; font-weight: 600; box-shadow: none !important;">
-                          Итог
+                          Итого
                       </div>
               
               </div>
@@ -246,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(document.getElementById('statusChart'), {
         type: 'doughnut',
         data: {
-            labels: ['Продажи', 'Отказы', 'Нераспознан'],
+            labels: ['Продажи', 'Отказы', 'Нераспознанные'],
             datasets: [{
                 data: [visualSales, visualRefusals, visualUnknown],
                 backgroundColor: ['#27ae60', '#c0392b', '#999999'],
@@ -381,8 +460,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderColor: '#27ae60',
                     backgroundColor: '#27ae60',
                     tension: 0,
-                    pointRadius: 3,
-                    borderWidth: 2
+                    pointRadius: 4,
+                    borderWidth: 3
                 },
                 {
                     label: 'Отказы',
@@ -390,8 +469,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderColor: '#c0392b',
                     backgroundColor: '#c0392b',
                     tension: 0,
-                    pointRadius: 3,
-                    borderWidth: 2
+                    pointRadius: 4,
+                    borderWidth: 3
                 },
                 {
                     label: 'Нераспознан',
@@ -399,8 +478,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderColor: '#999999',
                     backgroundColor: '#999999',
                     tension: 0,
-                    pointRadius: 3,
-                    borderWidth: 2
+                    pointRadius: 4,
+                    borderWidth: 3
                 }
             ]
         },

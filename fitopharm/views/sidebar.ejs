@@ -1,52 +1,72 @@
 <style>
-    .logo-container {
-        display: block;
-        text-decoration: none;
-        margin-bottom: 30px;
-        padding-left: 5px;
-    }
-    .sidebar-logo-full {
-        height: 40px;
-        object-fit: contain;
-        display: block;
-    }
-    .sidebar-logo-small {
-        height: 32px;
-        width: 32px;
-        display: none;
-        margin: 0 auto;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none'%3E%3Crect width='40' height='40' rx='8' fill='%2327ae60'/%3E%3Cpath d='M12 10H28V14H16V18H26V22H16V30H12V10Z' fill='white'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-    }
-    .sidebar.collapsed .sidebar-logo-full { display: none !important; }
-    .sidebar.collapsed .sidebar-logo-small { display: block !important; }
-
-    .sync-indicator {
-        display: flex;
-        align-items: center;
-        padding: 10px 15px;
-        margin-bottom: 10px;
-        background: #e8f5e9;
-        border-radius: 8px;
-        color: #27ae60;
-        font-size: 13px;
+    .input-capsule input, 
+    .flatpickr-input,
+    .input-capsule .flatpickr-mobile {
+        text-align: center !important;
+        padding: 0 !important;
+        width: 100% !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+        color: #999 !important;
         font-weight: 500;
-        overflow: hidden;
     }
-    .spinner {
-        width: 16px;
-        height: 16px;
-        border: 2px solid #27ae60;
-        border-top-color: transparent;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-right: 10px;
-        flex-shrink: 0;
+
+    .flatpickr-input.form-control {
+        padding-right: 0 !important;
+        padding-left: 0 !important;
     }
-    .sidebar.collapsed .sync-indicator { justify-content: center; padding: 10px; background: transparent; }
-    .sidebar.collapsed .sync-text { display: none; }
-    .sidebar.collapsed .spinner { margin-right: 0; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .calendar-icon-custom, 
+    .input-capsule img {
+        width: 24px !important;
+        height: 24px !important;
+    }
+
+    .dropdown {
+        position: relative;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        top: calc(100% + 12px);
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        background-color: #ffffff;
+        min-width: 180px;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
+        border: 1px solid #edf1f4 !important;
+        padding: 8px 0;
+        z-index: 2000;
+    }
+
+    .dropdown.active .dropdown-content {
+        display: block;
+    }
+
+    .dropdown-content.is-right {
+        left: auto !important;
+        right: 0 !important;
+        transform: none !important;
+    }
+
+    .dropdown-content a {
+        color: #4a5568;
+        padding: 12px 20px;
+        text-decoration: none;
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .dropdown-content a:hover {
+        background-color: #f7fafc;
+        color: #27ae60;
+    }
 </style>
 
 <div class="sidebar" id="sidebar">
